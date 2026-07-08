@@ -6,6 +6,8 @@ export const supabase = createClient(
   process.env.SUPABASE_SERVICE_ROLE_KEY! // server-side only
 )
 
+const AUDIO_BUCKET = process.env.SUPABASE_AUDIO_BUCKET || 'afroqueens-audio'
+
 export async function uploadAudio(
   file: Buffer,
   fileName: string,
@@ -14,7 +16,7 @@ export async function uploadAudio(
   const path = `${folder}/${Date.now()}-${fileName}`
 
   const { error } = await supabase.storage
-    .from('afroqueens-audio')
+    .from(AUDIO_BUCKET)
     .upload(path, file, {
       contentType: 'audio/mpeg',
       upsert: false,
@@ -23,13 +25,11 @@ export async function uploadAudio(
   if (error) throw new Error(error.message)
 
   const { data } = supabase.storage
-    .from('afroqueens-audio')
+    .from(AUDIO_BUCKET)
     .getPublicUrl(path)
 
   return data.publicUrl
 }
-
-const AUDIO_BUCKET = 'afroqueens-audio'
 
 /** Storage object path from a Supabase public URL, e.g. episodes/123-track.mp3 */
 export function supabaseStoragePathFromUrl(publicUrl: string): string | null {

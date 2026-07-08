@@ -1,5 +1,5 @@
 // Runs once when the Next.js server starts (dev or `next start`).
-// Keeps Neon awake during local dev; use Vercel Cron or an external pinger in production.
+// Keeps Neon + Supabase awake during local dev; use external pinger in production.
 export async function register() {
   if (process.env.NEXT_RUNTIME === 'edge') return
   if (process.env.DB_KEEP_ALIVE === 'false') return
@@ -9,19 +9,28 @@ export async function register() {
   if (!isDev && !forceOn) return
 
   const intervalMs = Number(process.env.DB_KEEP_ALIVE_INTERVAL_MS || 4 * 60 * 1000)
-  const { pingDatabase } = await import('./lib/dbPing')
+  const { pingKeepAliveServices, keepAliveSucceeded } = await import('./lib/keepAlive')
 
   const ping = () => {
-    pingDatabase()
-      .then(({ latencyMs }) => {
-        console.log(`[db-keepalive] ok (${latencyMs}ms)`)
+    pingKeepAliveServices()
+      .then(result => {
+        if (keepAliveSucceeded(result)) {
+          const db = result.database && 'latencyMs' in result.database ? result.database.latencyMs : '?'
+          const storage =
+            result.supabaseStorage && 'latencyMs' in result.supabaseStorage
+              ? result.supabaseStorage.latencyMs
+              : '?'
+          console.log(`[keep-alive] ok db=${db}ms storage=${storage}ms`)
+          return
+        }
+        console.warn('[keep-alive] partial failure:', result)
       })
       .catch(err => {
-        console.warn('[db-keepalive] failed:', err instanceof Error ? err.message : err)
+        console.warn('[keep-alive] failed:', err instanceof Error ? err.message : err)
       })
   }
 
   ping()
   setInterval(ping, intervalMs)
-  console.log(`[db-keepalive] pinging every ${Math.round(intervalMs / 1000)}s`)
+  console.log(`[keep-alive] pinging db + supabase storage every ${Math.round(intervalMs / 1000)}s`)
 }

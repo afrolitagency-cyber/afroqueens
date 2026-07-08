@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server'
-import { pingDatabase } from '@/lib/dbPing'
+import { keepAliveSucceeded, pingKeepAliveServices } from '@/lib/keepAlive'
 
 export const dynamic = 'force-dynamic'
 export const runtime = 'nodejs'
@@ -10,23 +10,26 @@ function authorized(req: Request): boolean {
   return req.headers.get('authorization') === `Bearer ${secret}`
 }
 
-/** Ping the database to keep Neon compute awake. Hit via cron every ~4–5 min. */
+/**
+ * Ping Neon Postgres + Supabase Storage so free-tier projects stay awake.
+ * Hit from Vercel Cron (daily on Hobby) or an external scheduler every ~4–5 min.
+ */
 export async function GET(req: Request) {
   if (!authorized(req)) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
 
-  try {
-    const { latencyMs } = await pingDatabase()
-    return NextResponse.json({
-      ok: true,
-      latencyMs,
+  const result = await pingKeepAliveServices()
+  const ok = keepAliveSucceeded(result)
+
+  return NextResponse.json(
+    {
+      ok,
+      ...result,
       at: new Date().toISOString(),
-    })
-  } catch (err) {
-    const message = err instanceof Error ? err.message : 'Database unreachable'
-    return NextResponse.json({ ok: false, error: message }, { status: 503 })
-  }
+    },
+    { status: ok ? 200 : 503 },
+  )
 }
 
 export async function POST(req: Request) {
