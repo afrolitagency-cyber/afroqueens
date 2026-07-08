@@ -1,0 +1,56 @@
+/* app/(admin)/admin/settings/general/general.module.css */
+.formWrap {
+  max-width: 720px;
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+}
+
+.section {
+  background: #fff;
+  border: 1px solid #f0f0f0;
+  border-radius: 10px;
+  padding: 1.8rem;
+}
+
+.sectionTitle {
+  font-family: 'DM Sans', sans-serif;
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: #888;
+  margin: 0 0 1.4rem;
+}
+
+.hint {
+  font-size: 0.72rem;
+  color: #aaa;
+  font-family: 'DM Sans', sans-serif;
+  margin-top: 0.25rem;
+}
+
+.socialGrid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+}
+
+.saveBar {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 1rem;
+  padding-top: 0.5rem;
+}
+
+.savedMsg {
+  font-size: 0.82rem;
+  color: #16a34a;
+  font-family: 'DM Sans', sans-serif;
+  font-weight: 500;
+}
+
+@media (max-width: 640px) {
+  .socialGrid { grid-template-columns: 1fr; }
+}

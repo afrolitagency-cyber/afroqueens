@@ -1,0 +1,537 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Analytics — Afroqueens Admin</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet" />
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'DM Sans',sans-serif;background:#f8f8f8;color:#0a0a0a;display:flex;min-height:100vh}
+
+/* ── Sidebar ── */
+.sidebar{width:240px;min-height:100vh;background:#0a0a0a;display:flex;flex-direction:column;position:fixed;top:0;left:0;bottom:0;border-right:1px solid rgba(255,255,255,.06)}
+.logo{display:flex;align-items:center;gap:.8rem;padding:1.6rem 1.5rem;border-bottom:1px solid rgba(255,255,255,.06);margin-bottom:.5rem}
+.logo-acc{background:#C8102E;color:#fff;font-family:'Bebas Neue',sans-serif;font-size:1.1rem;letter-spacing:.1em;padding:.3rem .6rem;border-radius:4px}
+.logo-text{font-size:.75rem;font-weight:600;letter-spacing:.12em;text-transform:uppercase;color:rgba(255,255,255,.45)}
+.group{padding:1rem 0 .5rem}
+.group-label{font-size:.6rem;font-weight:600;letter-spacing:.2em;text-transform:uppercase;color:rgba(255,255,255,.25);padding:0 1.5rem .6rem}
+.nav-item{display:flex;align-items:center;gap:.75rem;padding:.7rem 1.5rem;font-size:.8rem;font-weight:500;color:rgba(255,255,255,.45);text-decoration:none;transition:color .2s,background .2s;border-left:2px solid transparent}
+.nav-item:hover{color:rgba(255,255,255,.85);background:rgba(255,255,255,.04)}
+.nav-item.active{color:#fff;background:rgba(200,16,46,.12);border-left-color:#C8102E}
+.nav-icon{font-size:.85rem;width:18px;text-align:center;opacity:.7}
+.sidebar-bottom{margin-top:auto;padding:1.2rem 1.5rem;border-top:1px solid rgba(255,255,255,.06)}
+.signout{font-size:.74rem;font-weight:500;color:rgba(255,255,255,.3);text-decoration:none}
+.signout:hover{color:#C8102E}
+
+/* ── Main ── */
+.main{flex:1;margin-left:240px;display:flex;flex-direction:column;min-height:100vh}
+
+/* ── Topbar ── */
+.topbar{height:60px;background:#fff;border-bottom:1px solid #f0f0f0;display:flex;align-items:center;justify-content:space-between;padding:0 2rem;position:sticky;top:0;z-index:100}
+.greeting{font-size:.85rem;font-weight:500;color:#444}
+.topbar-right{display:flex;align-items:center;gap:1.2rem}
+.switcher-group{display:flex;align-items:center;gap:.6rem}
+.switch-label{font-size:.65rem;font-weight:600;letter-spacing:.12em;text-transform:uppercase;color:#aaa}
+.pills{display:flex;border:1px solid #e5e5e5;border-radius:6px;overflow:hidden}
+.pill{padding:.3rem .7rem;font-size:.72rem;font-weight:500;background:#fff;color:#888;border:none;cursor:pointer;transition:background .2s,color .2s;white-space:nowrap}
+.pill:first-child{border-right:1px solid #e5e5e5}
+.pill.active{background:#C8102E;color:#fff}
+.topbar-divider{width:1px;height:20px;background:#e5e5e5}
+.view-site{padding:.38rem 1rem;background:#0a0a0a;color:#fff;font-size:.72rem;font-weight:500;letter-spacing:.06em;text-decoration:none;border-radius:5px;transition:background .2s;white-space:nowrap}
+.view-site:hover{background:#C8102E}
+
+/* ── Content ── */
+.content{flex:1;overflow-y:auto}
+.page{padding:2rem;max-width:1200px}
+
+.page-header{margin-bottom:2rem}
+.page-title{font-family:'Bebas Neue',sans-serif;font-size:2.2rem;letter-spacing:.06em;color:#0a0a0a}
+.page-sub{font-size:.82rem;color:#aaa;margin-top:.2rem}
+
+/* date range + notice bar */
+.top-bar{display:flex;align-items:center;justify-content:space-between;margin-bottom:1.8rem;flex-wrap:wrap;gap:1rem}
+.date-tabs{display:flex;border:1px solid #e5e5e5;border-radius:6px;overflow:hidden}
+.date-tab{padding:.38rem .9rem;font-size:.72rem;font-weight:600;background:#fff;color:#888;border:none;border-right:1px solid #e5e5e5;cursor:pointer;font-family:'DM Sans',sans-serif;transition:all .2s;white-space:nowrap}
+.date-tab:last-child{border-right:none}
+.date-tab.active{background:#0a0a0a;color:#fff}
+.ga-notice{display:flex;align-items:center;gap:.6rem;font-size:.74rem;color:#555;background:#fff;border:1px solid #e5e5e5;border-radius:6px;padding:.5rem 1rem}
+.ga-notice a{color:#C8102E;font-weight:600;text-decoration:none}
+.ga-dot{width:8px;height:8px;border-radius:50%;background:#16a34a;flex-shrink:0;box-shadow:0 0 0 3px rgba(22,163,74,.15)}
+
+/* Stats row */
+.stats-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:1rem;margin-bottom:2rem}
+.stat-card{background:#fff;border:1px solid #f0f0f0;border-radius:8px;padding:1.4rem 1.2rem;display:flex;flex-direction:column;gap:.5rem;transition:border-color .2s}
+.stat-card:hover{border-color:#C8102E}
+.stat-icon{width:36px;height:36px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:1rem;margin-bottom:.2rem}
+.stat-val{font-family:'Bebas Neue',sans-serif;font-size:2rem;letter-spacing:.04em;color:#0a0a0a;line-height:1}
+.stat-change{font-size:.72rem;font-weight:600}
+.stat-change.up{color:#16a34a}
+.stat-change.down{color:#dc2626}
+.stat-label{font-size:.7rem;font-weight:500;letter-spacing:.06em;text-transform:uppercase;color:#aaa}
+
+/* Chart card */
+.chart-card{background:#fff;border:1px solid #f0f0f0;border-radius:8px;padding:1.5rem;margin-bottom:1.5rem}
+.chart-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:1.5rem;flex-wrap:wrap;gap:.8rem}
+.chart-title{font-size:.72rem;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:#888}
+.chart-meta{font-size:.72rem;color:#aaa}
+.chart-legend{display:flex;gap:1.2rem}
+.legend-item{display:flex;align-items:center;gap:.4rem;font-size:.72rem;color:#666}
+.legend-dot{width:8px;height:8px;border-radius:50%}
+
+/* Line chart SVG */
+.chart-wrap{position:relative;overflow:hidden}
+.chart-labels-y{position:absolute;left:0;top:0;bottom:24px;display:flex;flex-direction:column;justify-content:space-between;font-size:.65rem;color:#ccc;width:36px}
+.chart-labels-x{display:flex;justify-content:space-between;padding:0 0 0 36px;margin-top:.5rem;font-size:.65rem;color:#ccc}
+
+/* Two col */
+.two-col{display:grid;grid-template-columns:1fr 1fr;gap:1.5rem;margin-bottom:1.5rem}
+
+/* Table */
+.section-title{font-size:.72rem;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:#888;margin-bottom:1rem}
+table{width:100%;border-collapse:collapse;font-family:'DM Sans',sans-serif}
+th{font-size:.65rem;font-weight:600;letter-spacing:.12em;text-transform:uppercase;color:#bbb;text-align:left;padding:.7rem 1.2rem;border-bottom:1px solid #f5f5f5}
+td{font-size:.8rem;color:#444;padding:.7rem 1.2rem;border-bottom:1px solid #f9f9f9}
+tr:last-child td{border-bottom:none}
+tr:hover td{background:#fafafa}
+
+.bar-wrap{display:flex;align-items:center;gap:.7rem}
+.bar-track{flex:1;height:5px;background:#f0f0f0;border-radius:3px;overflow:hidden}
+.bar-fill{height:100%;background:#C8102E;border-radius:3px;transition:width .4s}
+.bar-pct{font-size:.72rem;color:#aaa;min-width:32px;text-align:right}
+
+/* Geo list */
+.geo-list{display:flex;flex-direction:column;gap:.6rem}
+.geo-row{display:flex;align-items:center;gap:.8rem}
+.geo-flag{font-size:1.1rem;width:24px;text-align:center}
+.geo-name{font-size:.82rem;color:#333;flex:1}
+.geo-bar-track{flex:2;height:4px;background:#f0f0f0;border-radius:3px;overflow:hidden}
+.geo-bar{height:100%;background:#C8102E;border-radius:3px}
+.geo-val{font-size:.78rem;color:#aaa;min-width:52px;text-align:right}
+
+/* Device donut mock */
+.device-section{display:flex;align-items:center;gap:2rem}
+.donut-wrap{position:relative;width:120px;height:120px;flex-shrink:0}
+.donut-wrap svg{width:120px;height:120px}
+.donut-center{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center}
+.donut-main{font-family:'Bebas Neue',sans-serif;font-size:1.5rem;color:#0a0a0a;line-height:1}
+.donut-sub{font-size:.62rem;color:#aaa;text-align:center}
+.device-legend{display:flex;flex-direction:column;gap:.7rem}
+.device-item{display:flex;align-items:center;gap:.6rem;font-size:.8rem;color:#444}
+.device-dot{width:10px;height:10px;border-radius:50%;flex-shrink:0}
+
+/* Real-time badge */
+.realtime-badge{display:inline-flex;align-items:center;gap:.5rem;background:rgba(22,163,74,.08);border:1px solid rgba(22,163,74,.2);border-radius:20px;padding:.3rem .8rem;font-size:.72rem;color:#16a34a;font-weight:600}
+.rt-dot{width:6px;height:6px;border-radius:50%;background:#16a34a;animation:pulse 2s infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}
+
+/* CTA to GA4 */
+.ga-cta{background:#fff;border:1px solid #f0f0f0;border-radius:8px;padding:1.8rem;display:flex;align-items:center;justify-content:space-between;gap:2rem;flex-wrap:wrap}
+.ga-cta-left h3{font-family:'Bebas Neue',sans-serif;font-size:1.3rem;letter-spacing:.04em;margin-bottom:.3rem}
+.ga-cta-left p{font-size:.82rem;color:#888;max-width:440px;line-height:1.7}
+.ga-btn{padding:.6rem 1.4rem;background:#C8102E;color:#fff;font-size:.78rem;font-weight:600;letter-spacing:.08em;border-radius:6px;text-decoration:none;white-space:nowrap;transition:opacity .2s}
+.ga-btn:hover{opacity:.88}
+</style>
+</head>
+<body>
+
+<!-- Sidebar -->
+<aside class="sidebar">
+  <div class="logo"><span class="logo-acc">AQ</span><span class="logo-text">Admin</span></div>
+  <div class="group">
+    <div class="group-label">Content</div>
+    <a href="admin-dashboard.html" class="nav-item"><span class="nav-icon">▣</span>Dashboard</a>
+    <a href="admin-blogs.html" class="nav-item"><span class="nav-icon">✎</span>Blog Posts</a>
+    <a href="#" class="nav-item"><span class="nav-icon">♪</span>Artists</a>
+    <a href="admin-gallery.html" class="nav-item"><span class="nav-icon">⊡</span>Gallery</a>
+    <a href="#" class="nav-item"><span class="nav-icon">◉</span>Episodes</a>
+  </div>
+  <div class="group">
+    <div class="group-label">Community</div>
+    <a href="#" class="nav-item"><span class="nav-icon">◻</span>Comments</a>
+    <a href="#" class="nav-item"><span class="nav-icon">✉</span>Newsletter</a>
+    <a href="#" class="nav-item"><span class="nav-icon">⊠</span>Inbox</a>
+  </div>
+  <div class="group">
+    <div class="group-label">Insights</div>
+    <a href="admin-analytics.html" class="nav-item active"><span class="nav-icon">◈</span>Analytics</a>
+  </div>
+  <div class="group">
+    <div class="group-label">Site</div>
+    <a href="#" class="nav-item"><span class="nav-icon">⊞</span>Widget Panel</a>
+    <a href="#" class="nav-item"><span class="nav-icon">◐</span>Theme & Design</a>
+    <a href="#" class="nav-item"><span class="nav-icon">⚙</span>General</a>
+  </div>
+  <div class="sidebar-bottom"><a href="#" class="signout">← Sign Out</a></div>
+</aside>
+
+<!-- Main -->
+<div class="main">
+  <header class="topbar">
+    <span class="greeting">Welcome back, Admin</span>
+    <div class="topbar-right">
+      <div class="switcher-group">
+        <span class="switch-label">Live Theme</span>
+        <div class="pills"><button class="pill active">◑ Dark</button><button class="pill">◯ Light</button></div>
+      </div>
+      <div class="topbar-divider"></div>
+      <div class="switcher-group">
+        <span class="switch-label">Design</span>
+        <div class="pills"><button class="pill active">D1</button><button class="pill">D2</button></div>
+      </div>
+      <a href="#" class="view-site">View Site ↗</a>
+    </div>
+  </header>
+
+  <div class="content">
+    <div class="page">
+
+      <div class="page-header">
+        <div class="page-title">Analytics</div>
+        <div class="page-sub">Powered by Google Analytics 4 · Data updates every 24 hours</div>
+      </div>
+
+      <!-- Top bar -->
+      <div class="top-bar">
+        <div class="date-tabs">
+          <button class="date-tab">7 Days</button>
+          <button class="date-tab active">28 Days</button>
+          <button class="date-tab">90 Days</button>
+          <button class="date-tab">12 Months</button>
+        </div>
+        <div style="display:flex;align-items:center;gap:.8rem;flex-wrap:wrap">
+          <span class="realtime-badge"><span class="rt-dot"></span>142 users right now</span>
+          <div class="ga-notice">
+            <span class="ga-dot"></span>
+            GA4 connected ·
+            <a href="https://analytics.google.com" target="_blank">Open GA4 Dashboard ↗</a>
+          </div>
+        </div>
+      </div>
+
+      <!-- Stats -->
+      <div class="stats-grid">
+        <div class="stat-card">
+          <div class="stat-icon" style="background:#C8102E18;color:#C8102E">◎</div>
+          <div class="stat-val">124,830</div>
+          <div class="stat-change up">↑ 18.4%</div>
+          <div class="stat-label">Total Users</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon" style="background:#2563eb18;color:#2563eb">⊕</div>
+          <div class="stat-val">198,442</div>
+          <div class="stat-change up">↑ 12.1%</div>
+          <div class="stat-label">Page Views</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon" style="background:#7c3aed18;color:#7c3aed">◷</div>
+          <div class="stat-val">3m 24s</div>
+          <div class="stat-change up">↑ 8.7%</div>
+          <div class="stat-label">Avg. Session</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon" style="background:#0891b218;color:#0891b2">◌</div>
+          <div class="stat-val">38.2%</div>
+          <div class="stat-change down">↓ 2.3%</div>
+          <div class="stat-label">Bounce Rate</div>
+        </div>
+      </div>
+
+      <!-- Traffic chart -->
+      <div class="chart-card">
+        <div class="chart-header">
+          <span class="chart-title">Traffic Overview — Last 28 Days</span>
+          <div class="chart-legend">
+            <div class="legend-item"><div class="legend-dot" style="background:#C8102E"></div>Users</div>
+            <div class="legend-item"><div class="legend-dot" style="background:#e5e5e5"></div>Page Views</div>
+          </div>
+        </div>
+        <div class="chart-wrap">
+          <div style="display:flex;gap:0">
+            <!-- Y labels -->
+            <div style="display:flex;flex-direction:column;justify-content:space-between;padding-bottom:24px;font-size:.65rem;color:#ccc;min-width:40px;text-align:right;padding-right:8px">
+              <span>8K</span><span>6K</span><span>4K</span><span>2K</span><span>0</span>
+            </div>
+            <!-- SVG chart -->
+            <div style="flex:1;position:relative">
+              <svg viewBox="0 0 700 180" preserveAspectRatio="none" style="width:100%;height:180px;display:block">
+                <!-- Grid lines -->
+                <line x1="0" y1="0"   x2="700" y2="0"   stroke="#f5f5f5" stroke-width="1"/>
+                <line x1="0" y1="45"  x2="700" y2="45"  stroke="#f5f5f5" stroke-width="1"/>
+                <line x1="0" y1="90"  x2="700" y2="90"  stroke="#f5f5f5" stroke-width="1"/>
+                <line x1="0" y1="135" x2="700" y2="135" stroke="#f5f5f5" stroke-width="1"/>
+                <line x1="0" y1="180" x2="700" y2="180" stroke="#f5f5f5" stroke-width="1"/>
+                <!-- Page views area (light) -->
+                <path d="M0,120 L25,115 L50,100 L75,108 L100,95 L125,90 L150,85 L175,92 L200,80 L225,75 L250,68 L275,72 L300,60 L325,55 L350,62 L375,50 L400,45 L425,52 L450,40 L475,35 L500,42 L525,30 L550,25 L575,32 L600,20 L625,28 L650,15 L675,22 L700,10 L700,180 L0,180 Z"
+                  fill="rgba(229,229,229,.35)" stroke="none"/>
+                <!-- Page views line -->
+                <path d="M0,120 L25,115 L50,100 L75,108 L100,95 L125,90 L150,85 L175,92 L200,80 L225,75 L250,68 L275,72 L300,60 L325,55 L350,62 L375,50 L400,45 L425,52 L450,40 L475,35 L500,42 L525,30 L550,25 L575,32 L600,20 L625,28 L650,15 L675,22 L700,10"
+                  fill="none" stroke="#e5e5e5" stroke-width="1.5"/>
+                <!-- Users area (red) -->
+                <path d="M0,140 L25,135 L50,128 L75,132 L100,120 L125,115 L150,110 L175,118 L200,105 L225,100 L250,92 L275,98 L300,85 L325,80 L350,88 L375,72 L400,68 L425,75 L450,62 L475,56 L500,65 L525,50 L550,44 L575,52 L600,38 L625,46 L650,30 L675,38 L700,25 L700,180 L0,180 Z"
+                  fill="rgba(200,16,46,.12)" stroke="none"/>
+                <!-- Users line -->
+                <path d="M0,140 L25,135 L50,128 L75,132 L100,120 L125,115 L150,110 L175,118 L200,105 L225,100 L250,92 L275,98 L300,85 L325,80 L350,88 L375,72 L400,68 L425,75 L450,62 L475,56 L500,65 L525,50 L550,44 L575,52 L600,38 L625,46 L650,30 L675,38 L700,25"
+                  fill="none" stroke="#C8102E" stroke-width="2"/>
+                <!-- Tooltip indicator -->
+                <line x1="550" y1="0" x2="550" y2="180" stroke="#C8102E" stroke-width="1" stroke-dasharray="4,3"/>
+                <circle cx="550" cy="44" r="4" fill="#C8102E"/>
+                <rect x="540" y="14" width="90" height="24" rx="4" fill="#0a0a0a"/>
+                <text x="585" y="30" fill="#fff" font-size="10" font-family="DM Sans,sans-serif" text-anchor="middle">4,820 users</text>
+              </svg>
+              <!-- X labels -->
+              <div style="display:flex;justify-content:space-between;padding:4px 0 0;font-size:.65rem;color:#ccc">
+                <span>Jun 1</span><span>Jun 5</span><span>Jun 10</span><span>Jun 15</span><span>Jun 20</span><span>Jun 25</span><span>Jun 28</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Two col: top pages + sources -->
+      <div class="two-col">
+
+        <!-- Top pages -->
+        <div class="chart-card" style="margin-bottom:0">
+          <div class="section-title">Top Pages</div>
+          <table>
+            <thead><tr><th>Page</th><th>Views</th><th>Share</th></tr></thead>
+            <tbody>
+              <tr>
+                <td style="font-size:.78rem;color:#0a0a0a;font-weight:500">/blog/how-afrobeats-rewired…</td>
+                <td style="font-size:.8rem;font-weight:600;color:#0a0a0a">24,120</td>
+                <td>
+                  <div class="bar-wrap">
+                    <div class="bar-track"><div class="bar-fill" style="width:100%"></div></div>
+                    <span class="bar-pct">100%</span>
+                  </div>
+                </td>
+              </tr>
+              <tr>
+                <td style="font-size:.78rem;color:#0a0a0a;font-weight:500">/artists</td>
+                <td style="font-size:.8rem;font-weight:600;color:#0a0a0a">18,744</td>
+                <td>
+                  <div class="bar-wrap">
+                    <div class="bar-track"><div class="bar-fill" style="width:78%"></div></div>
+                    <span class="bar-pct">78%</span>
+                  </div>
+                </td>
+              </tr>
+              <tr>
+                <td style="font-size:.78rem;color:#0a0a0a;font-weight:500">/ (Homepage)</td>
+                <td style="font-size:.8rem;font-weight:600;color:#0a0a0a">15,302</td>
+                <td>
+                  <div class="bar-wrap">
+                    <div class="bar-track"><div class="bar-fill" style="width:63%"></div></div>
+                    <span class="bar-pct">63%</span>
+                  </div>
+                </td>
+              </tr>
+              <tr>
+                <td style="font-size:.78rem;color:#0a0a0a;font-weight:500">/blog/adaeze-silence-as-an-i…</td>
+                <td style="font-size:.8rem;font-weight:600;color:#0a0a0a">9,881</td>
+                <td>
+                  <div class="bar-wrap">
+                    <div class="bar-track"><div class="bar-fill" style="width:41%"></div></div>
+                    <span class="bar-pct">41%</span>
+                  </div>
+                </td>
+              </tr>
+              <tr>
+                <td style="font-size:.78rem;color:#0a0a0a;font-weight:500">/episodes</td>
+                <td style="font-size:.8rem;font-weight:600;color:#0a0a0a">7,540</td>
+                <td>
+                  <div class="bar-wrap">
+                    <div class="bar-track"><div class="bar-fill" style="width:31%"></div></div>
+                    <span class="bar-pct">31%</span>
+                  </div>
+                </td>
+              </tr>
+              <tr>
+                <td style="font-size:.78rem;color:#0a0a0a;font-weight:500">/blog/lagos-electronic-fest…</td>
+                <td style="font-size:.8rem;font-weight:600;color:#0a0a0a">6,200</td>
+                <td>
+                  <div class="bar-wrap">
+                    <div class="bar-track"><div class="bar-fill" style="width:26%"></div></div>
+                    <span class="bar-pct">26%</span>
+                  </div>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <!-- Traffic sources -->
+        <div class="chart-card" style="margin-bottom:0">
+          <div class="section-title">Traffic Sources</div>
+          <table>
+            <thead><tr><th>Source</th><th>Users</th><th>Share</th></tr></thead>
+            <tbody>
+              <tr>
+                <td>
+                  <div style="display:flex;align-items:center;gap:.6rem">
+                    <div style="width:22px;height:22px;border-radius:4px;background:#4285F4;display:flex;align-items:center;justify-content:center;font-size:.65rem;color:#fff;font-weight:700">G</div>
+                    <span style="font-size:.8rem;font-weight:500;color:#0a0a0a">Google / Organic</span>
+                  </div>
+                </td>
+                <td style="font-size:.8rem;font-weight:600;color:#0a0a0a">54,120</td>
+                <td><div class="bar-wrap"><div class="bar-track"><div class="bar-fill" style="width:100%"></div></div><span class="bar-pct">43%</span></div></td>
+              </tr>
+              <tr>
+                <td>
+                  <div style="display:flex;align-items:center;gap:.6rem">
+                    <div style="width:22px;height:22px;border-radius:4px;background:#E1306C;display:flex;align-items:center;justify-content:center;font-size:.65rem;color:#fff;font-weight:700">IG</div>
+                    <span style="font-size:.8rem;font-weight:500;color:#0a0a0a">Instagram</span>
+                  </div>
+                </td>
+                <td style="font-size:.8rem;font-weight:600;color:#0a0a0a">28,440</td>
+                <td><div class="bar-wrap"><div class="bar-track"><div class="bar-fill" style="width:53%"></div></div><span class="bar-pct">23%</span></div></td>
+              </tr>
+              <tr>
+                <td>
+                  <div style="display:flex;align-items:center;gap:.6rem">
+                    <div style="width:22px;height:22px;border-radius:4px;background:#1DA1F2;display:flex;align-items:center;justify-content:center;font-size:.65rem;color:#fff;font-weight:700">X</div>
+                    <span style="font-size:.8rem;font-weight:500;color:#0a0a0a">X / Twitter</span>
+                  </div>
+                </td>
+                <td style="font-size:.8rem;font-weight:600;color:#0a0a0a">16,220</td>
+                <td><div class="bar-wrap"><div class="bar-track"><div class="bar-fill" style="width:30%"></div></div><span class="bar-pct">13%</span></div></td>
+              </tr>
+              <tr>
+                <td>
+                  <div style="display:flex;align-items:center;gap:.6rem">
+                    <div style="width:22px;height:22px;border-radius:4px;background:#0a0a0a;display:flex;align-items:center;justify-content:center;font-size:.65rem;color:#fff;font-weight:700">D</div>
+                    <span style="font-size:.8rem;font-weight:500;color:#0a0a0a">Direct</span>
+                  </div>
+                </td>
+                <td style="font-size:.8rem;font-weight:600;color:#0a0a0a">14,830</td>
+                <td><div class="bar-wrap"><div class="bar-track"><div class="bar-fill" style="width:27%"></div></div><span class="bar-pct">12%</span></div></td>
+              </tr>
+              <tr>
+                <td>
+                  <div style="display:flex;align-items:center;gap:.6rem">
+                    <div style="width:22px;height:22px;border-radius:4px;background:#25D366;display:flex;align-items:center;justify-content:center;font-size:.65rem;color:#fff;font-weight:700">W</div>
+                    <span style="font-size:.8rem;font-weight:500;color:#0a0a0a">WhatsApp</span>
+                  </div>
+                </td>
+                <td style="font-size:.8rem;font-weight:600;color:#0a0a0a">11,218</td>
+                <td><div class="bar-wrap"><div class="bar-track"><div class="bar-fill" style="width:21%"></div></div><span class="bar-pct">9%</span></div></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Two col: geography + devices -->
+      <div class="two-col">
+
+        <!-- Geography -->
+        <div class="chart-card" style="margin-bottom:0">
+          <div class="section-title">Top Countries</div>
+          <div class="geo-list">
+            <div class="geo-row">
+              <span class="geo-flag">🇳🇬</span>
+              <span class="geo-name">Nigeria</span>
+              <div class="geo-bar-track"><div class="geo-bar" style="width:100%"></div></div>
+              <span class="geo-val">48,120 · 39%</span>
+            </div>
+            <div class="geo-row">
+              <span class="geo-flag">🇬🇧</span>
+              <span class="geo-name">United Kingdom</span>
+              <div class="geo-bar-track"><div class="geo-bar" style="width:55%"></div></div>
+              <span class="geo-val">26,440 · 21%</span>
+            </div>
+            <div class="geo-row">
+              <span class="geo-flag">🇺🇸</span>
+              <span class="geo-name">United States</span>
+              <div class="geo-bar-track"><div class="geo-bar" style="width:42%"></div></div>
+              <span class="geo-val">20,302 · 16%</span>
+            </div>
+            <div class="geo-row">
+              <span class="geo-flag">🇬🇭</span>
+              <span class="geo-name">Ghana</span>
+              <div class="geo-bar-track"><div class="geo-bar" style="width:22%"></div></div>
+              <span class="geo-val">10,881 · 9%</span>
+            </div>
+            <div class="geo-row">
+              <span class="geo-flag">🇨🇦</span>
+              <span class="geo-name">Canada</span>
+              <div class="geo-bar-track"><div class="geo-bar" style="width:14%"></div></div>
+              <span class="geo-val">6,744 · 5%</span>
+            </div>
+            <div class="geo-row">
+              <span class="geo-flag">🇿🇦</span>
+              <span class="geo-name">South Africa</span>
+              <div class="geo-bar-track"><div class="geo-bar" style="width:10%"></div></div>
+              <span class="geo-val">5,021 · 4%</span>
+            </div>
+            <div class="geo-row">
+              <span class="geo-flag">🌍</span>
+              <span class="geo-name">Other</span>
+              <div class="geo-bar-track"><div class="geo-bar" style="width:8%"></div></div>
+              <span class="geo-val">7,322 · 6%</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Devices -->
+        <div class="chart-card" style="margin-bottom:0">
+          <div class="section-title">Devices</div>
+          <div class="device-section">
+            <!-- Donut SVG -->
+            <div class="donut-wrap">
+              <svg viewBox="0 0 120 120">
+                <!-- Total circle track -->
+                <circle cx="60" cy="60" r="46" fill="none" stroke="#f0f0f0" stroke-width="14"/>
+                <!-- Mobile 62% -->
+                <circle cx="60" cy="60" r="46" fill="none" stroke="#C8102E" stroke-width="14"
+                  stroke-dasharray="289.02 466.16" stroke-dashoffset="116.24" transform="rotate(-90 60 60)"/>
+                <!-- Desktop 28% -->
+                <circle cx="60" cy="60" r="46" fill="none" stroke="#0a0a0a" stroke-width="14"
+                  stroke-dasharray="130.38 466.16" stroke-dashoffset="405.26" transform="rotate(-90 60 60)"/>
+                <!-- Tablet 10% -->
+                <circle cx="60" cy="60" r="46" fill="none" stroke="#e5e5e5" stroke-width="14"
+                  stroke-dasharray="46.60 466.16" stroke-dashoffset="274.88" transform="rotate(-90 60 60)"/>
+              </svg>
+              <div class="donut-center">
+                <div class="donut-main">62%</div>
+                <div class="donut-sub">Mobile</div>
+              </div>
+            </div>
+            <div class="device-legend">
+              <div class="device-item"><div class="device-dot" style="background:#C8102E"></div><span>Mobile — <strong>62%</strong></span></div>
+              <div class="device-item"><div class="device-dot" style="background:#0a0a0a"></div><span>Desktop — <strong>28%</strong></span></div>
+              <div class="device-item"><div class="device-dot" style="background:#e5e5e5"></div><span>Tablet — <strong>10%</strong></span></div>
+            </div>
+          </div>
+
+          <div style="height:1px;background:#f5f5f5;margin:1.5rem 0"></div>
+          <div class="section-title">New vs Returning</div>
+          <div style="display:flex;gap:1.5rem">
+            <div>
+              <div style="font-family:'Bebas Neue',sans-serif;font-size:1.6rem;color:#C8102E;letter-spacing:.04em">68%</div>
+              <div style="font-size:.72rem;color:#aaa;letter-spacing:.08em;text-transform:uppercase">New Users</div>
+            </div>
+            <div>
+              <div style="font-family:'Bebas Neue',sans-serif;font-size:1.6rem;color:#0a0a0a;letter-spacing:.04em">32%</div>
+              <div style="font-size:.72rem;color:#aaa;letter-spacing:.08em;text-transform:uppercase">Returning</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- GA4 CTA -->
+      <div class="ga-cta" style="margin-top:1.5rem">
+        <div class="ga-cta-left">
+          <h3>Full Analytics in Google Analytics 4</h3>
+          <p>This summary pulls key metrics from GA4. For conversion funnels, event tracking, audience segments, and real-time reports — open your full GA4 dashboard.</p>
+        </div>
+        <a href="https://analytics.google.com" target="_blank" class="ga-btn">Open GA4 ↗</a>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+</body>
+</html>

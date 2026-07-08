@@ -1,0 +1,121 @@
+/* app/(public)/episodes/episodes.module.css */
+
+.pageHero {
+  padding: 5rem 0 4rem;
+  border-bottom: 1px solid var(--bdr);
+  background: var(--bg-mid);
+  transition: background .5s, border-color .5s;
+}
+.heroInner { max-width: 720px; }
+.heroDesc {
+  font-size: 1rem;
+  color: var(--fg-dim);
+  line-height: 1.8;
+  margin-top: 1rem;
+  font-family: var(--fb);
+}
+
+/* Featured episode */
+.featEp {
+  display: grid;
+  grid-template-columns: 1.2fr .8fr;
+  gap: 3rem;
+  margin-bottom: 4rem;
+  padding: 2.5rem;
+  background: var(--bg-card);
+  border: 1px solid var(--bdr);
+  transition: background .5s, border-color .5s;
+}
+[data-design="2"] .featEp { border-radius: 18px; }
+
+.featLeft { display: flex; flex-direction: column; gap: 1rem; }
+
+.featLabel {
+  font-size: .62rem;
+  font-weight: 700;
+  letter-spacing: .18em;
+  text-transform: uppercase;
+  color: var(--acc);
+  font-family: var(--fb);
+}
+
+.featTitle {
+  font-family: var(--fs);
+  font-size: clamp(1.6rem, 3vw, 2.4rem);
+  line-height: 1.2;
+  font-weight: 600;
+  color: var(--fg);
+}
+[data-design="1"] .featTitle { font-family: 'Bebas Neue', sans-serif; letter-spacing: .03em; }
+
+.featDesc {
+  font-size: .92rem;
+  color: var(--fg-dim);
+  line-height: 1.8;
+  font-family: var(--fb);
+  max-width: 560px;
+}
+
+.featMeta {
+  display: flex;
+  gap: 2rem;
+  flex-wrap: wrap;
+  margin-top: .5rem;
+}
+
+.metaItem {
+  display: flex;
+  flex-direction: column;
+  gap: .25rem;
+  font-size: .62rem;
+  font-weight: 700;
+  letter-spacing: .14em;
+  text-transform: uppercase;
+  color: var(--fg-dim);
+  font-family: var(--fb);
+}
+.metaItem span {
+  font-size: .9rem;
+  font-weight: 500;
+  letter-spacing: 0;
+  text-transform: none;
+  color: var(--fg);
+}
+
+.featActions {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  flex-wrap: wrap;
+  margin-top: .5rem;
+}
+
+.audioPlayer { width: 100%; max-width: 480px; border-radius: 8px; }
+
+.featRight {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.vinyl {
+  width: 220px;
+  height: 220px;
+  border-radius: 50%;
+  background:
+    radial-gradient(circle at center, #111 18%, transparent 19%),
+    repeating-radial-gradient(circle at center, #1a1a1a 0 2px, #0d0d0d 2px 4px);
+  border: 8px solid #222;
+  box-shadow: 0 0 0 2px var(--acc), 0 20px 50px rgba(0,0,0,.35);
+  animation: spin 8s linear infinite;
+}
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to   { transform: rotate(360deg); }
+}
+
+@media (max-width: 900px) {
+  .featEp { grid-template-columns: 1fr; }
+  .featRight { order: -1; }
+  .vinyl { width: 160px; height: 160px; }
+}

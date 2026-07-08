@@ -1,0 +1,96 @@
+/* components/public/newsletter/newsletter.module.css */
+.wrap {
+  display: grid;
+  gap: 3rem;
+  background: var(--bg-mid);
+  border-top: 1px solid var(--bdr);
+  border-bottom: 1px solid var(--bdr);
+  transition: background .5s;
+}
+
+/* Banner = full section, side by side */
+.banner {
+  grid-template-columns: 1fr 1fr;
+  align-items: center;
+  padding: 5rem 0;
+  margin: 0 auto;
+  max-width: 1280px;
+  padding-left: 4rem;
+  padding-right: 4rem;
+}
+
+/* Inline = stacked, narrower (e.g. inside blog post) */
+.inline {
+  grid-template-columns: 1fr;
+  max-width: 560px;
+  padding: 2.5rem;
+  border-radius: 12px;
+  border: 1px solid var(--bdr);
+  margin: 3rem 0;
+}
+
+.copy {}
+.heading {
+  font-family: var(--fs);
+  font-size: clamp(1.8rem, 3vw, 2.8rem);
+  line-height: 1.15;
+  color: var(--fg);
+  margin-bottom: .8rem;
+}
+.desc { font-size: .9rem; color: var(--fg-dim); line-height: 1.9; font-family: var(--fb); }
+
+.fields { display: flex; flex-direction: column; gap: .9rem; }
+.input {
+  padding: .85rem 1.1rem;
+  background: var(--bg-card);
+  border: 1px solid var(--bdr);
+  border-radius: 6px;
+  color: var(--fg);
+  font-family: var(--fb);
+  font-size: .9rem;
+  outline: none;
+  transition: border-color .2s, background .5s, color .5s;
+}
+.input:focus { border-color: var(--acc); }
+.error { font-size: .78rem; color: #dc2626; font-family: var(--fb); }
+.btn {
+  padding: .88rem 2rem;
+  background: var(--acc);
+  color: #fff;
+  border: none;
+  border-radius: 6px;
+  font-size: .82rem;
+  font-weight: 700;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+  cursor: pointer;
+  font-family: var(--fb);
+  transition: opacity .2s;
+  align-self: flex-start;
+}
+.btn:hover    { opacity: .88; }
+.btn:disabled { opacity: .5; cursor: not-allowed; }
+.fine { font-size: .72rem; color: var(--fg-dim); font-family: var(--fb); opacity: .7; }
+
+/* Done state */
+.done {
+  display: flex !important;
+  grid-template-columns: unset !important;
+  flex-direction: row;
+  align-items: center;
+  gap: 1rem;
+  padding: 2rem 4rem !important;
+  justify-content: center;
+}
+.doneIcon {
+  width: 40px; height: 40px; border-radius: 50%;
+  background: rgba(22,163,74,.15); color: #16a34a;
+  display: flex; align-items: center; justify-content: center;
+  font-weight: 700; font-size: 1.1rem; flex-shrink: 0;
+}
+.doneText { font-size: .95rem; color: var(--fg); font-family: var(--fb); }
+
+@media (max-width: 860px) {
+  .banner { grid-template-columns: 1fr; padding: 4rem 2rem; }
+  .done   { padding: 2rem !important; }
+}

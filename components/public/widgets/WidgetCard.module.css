@@ -1,0 +1,47 @@
+.card {
+  background: var(--bg-card);
+  border: 1px solid var(--bdr);
+  border-radius: 10px;
+  overflow: hidden;
+  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.12);
+}
+
+.title {
+  margin: 0;
+  padding: 0.65rem 0.85rem;
+  font-size: 0.72rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--fg-dim);
+  border-bottom: 1px solid var(--bdr);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.embedWrap {
+  position: relative;
+  width: 100%;
+  background: var(--bg-soft);
+}
+
+.embedWrapVideo {
+  aspect-ratio: 16 / 9;
+}
+
+.embed {
+  display: block;
+  width: 100%;
+  height: 100%;
+  border: none;
+}
+
+.embedWrapVideo .embed {
+  position: absolute;
+  inset: 0;
+}
+
+.embedWrap:not(.embedWrapVideo) .embed {
+  min-height: 100%;
+}

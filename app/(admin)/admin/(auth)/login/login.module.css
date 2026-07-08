@@ -1,0 +1,109 @@
+/* app/(admin)/admin/login/login.module.css */
+.page {
+  min-height: 100vh;
+  background: #0a0a0a;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 2rem;
+}
+
+.card {
+  width: 100%;
+  max-width: 400px;
+  background: #141414;
+  border: 1px solid rgba(255,255,255,.08);
+  padding: 2.5rem;
+}
+
+.logo {
+  display: flex;
+  align-items: center;
+  gap: .8rem;
+  margin-bottom: 2rem;
+}
+
+.logoAcc {
+  background: #C8102E;
+  color: #fff;
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 1.1rem;
+  letter-spacing: .1em;
+  padding: .3rem .6rem;
+  border-radius: 4px;
+}
+
+.logoText {
+  font-size: .75rem;
+  font-weight: 600;
+  letter-spacing: .12em;
+  text-transform: uppercase;
+  color: rgba(255,255,255,.35);
+  font-family: 'DM Sans', sans-serif;
+}
+
+.title {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 2.2rem;
+  letter-spacing: .06em;
+  color: #f5f0eb;
+  margin-bottom: .4rem;
+}
+
+.sub {
+  font-size: .82rem;
+  color: rgba(245,240,235,.4);
+  font-family: 'DM Sans', sans-serif;
+  margin-bottom: 2rem;
+}
+
+.form { display: flex; flex-direction: column; gap: 1.2rem; }
+
+.field { display: flex; flex-direction: column; gap: .4rem; }
+
+.label {
+  font-size: .68rem;
+  letter-spacing: .14em;
+  text-transform: uppercase;
+  color: rgba(245,240,235,.45);
+  font-family: 'DM Sans', sans-serif;
+}
+
+.input {
+  padding: .8rem 1rem;
+  background: rgba(245,240,235,.05);
+  border: 1px solid rgba(245,240,235,.1);
+  color: #f5f0eb;
+  font-family: 'DM Sans', sans-serif;
+  font-size: .9rem;
+  outline: none;
+  transition: border-color .3s;
+}
+.input:focus { border-color: #C8102E; }
+.input::placeholder { color: rgba(245,240,235,.25); }
+
+.error {
+  font-size: .8rem;
+  color: #C8102E;
+  font-family: 'DM Sans', sans-serif;
+  padding: .6rem .8rem;
+  background: rgba(200,16,46,.1);
+  border: 1px solid rgba(200,16,46,.25);
+}
+
+.submitBtn {
+  padding: .9rem;
+  background: #C8102E;
+  color: #fff;
+  font-family: 'DM Sans', sans-serif;
+  font-size: .82rem;
+  font-weight: 600;
+  letter-spacing: .1em;
+  text-transform: uppercase;
+  border: none;
+  cursor: pointer;
+  transition: opacity .2s;
+  margin-top: .4rem;
+}
+.submitBtn:hover { opacity: .88; }
+.submitBtn:disabled { opacity: .5; cursor: not-allowed; }

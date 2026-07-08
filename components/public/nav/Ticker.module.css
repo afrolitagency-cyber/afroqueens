@@ -1,0 +1,43 @@
+/* components/public/nav/Ticker.module.css */
+.ticker {
+  position: fixed;
+  top: 0; left: 0; right: 0;
+  z-index: 1100;
+  height: 32px;
+  overflow: hidden;
+  background: var(--acc);
+  display: flex;
+  align-items: center;
+}
+
+.track {
+  display: flex;
+  gap: 5rem;
+  animation: tickScroll 28s linear infinite;
+  white-space: nowrap;
+  padding: 0 2rem;
+}
+
+.item {
+  font-size: .63rem;
+  letter-spacing: .2em;
+  text-transform: uppercase;
+  color: rgba(255,255,255,.9);
+  font-family: var(--fb);
+  display: flex;
+  align-items: center;
+  gap: .7rem;
+  flex-shrink: 0;
+}
+
+.dot {
+  width: 4px; height: 4px;
+  border-radius: 50%;
+  background: rgba(255,255,255,.6);
+  flex-shrink: 0;
+}
+
+@keyframes tickScroll {
+  from { transform: translateX(0); }
+  to   { transform: translateX(-50%); }
+}

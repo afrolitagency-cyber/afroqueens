@@ -1,0 +1,45 @@
+/* app/(public)/episodes/[id]/episode.module.css */
+.page { min-height: 100vh; }
+
+.hero {
+  position: relative; min-height: 400px;
+  display: flex; align-items: flex-end; padding-bottom: 3rem; overflow: hidden;
+}
+.heroBg {
+  position: absolute; inset: 0;
+  background-size: cover; background-position: center;
+  transform: scale(1.05);
+}
+.heroOverlay {
+  position: absolute; inset: 0;
+  background: linear-gradient(to bottom, rgba(0,0,0,0.15) 0%, rgba(0,0,0,0.88) 100%);
+}
+.heroContent { position: relative; z-index: 1; }
+
+.epNumber {
+  font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.12em;
+  color: var(--acc); font-weight: 600; margin-bottom: 0.4rem;
+}
+.category {
+  font-size: 0.78rem; color: rgba(255,255,255,0.55);
+  text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 0.6rem;
+}
+.title { font-size: clamp(1.8rem, 5vw, 3.2rem); font-weight: 700; color: #fff; margin: 0 0 0.5rem; line-height: 1.15; }
+.subtitle { font-size: 1rem; color: rgba(255,255,255,0.6); margin: 0 0 0.75rem; }
+.meta { display: flex; gap: 0.5rem; color: rgba(255,255,255,0.55); font-size: 0.88rem; flex-wrap: wrap; }
+.dot { opacity: 0.4; }
+
+.playerSection { padding: 2rem 0 0; }
+.audio { width: 100%; border-radius: 8px; }
+
+.body { padding: 2.5rem 0 4rem; }
+.sectionTitle {
+  font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.12em;
+  color: var(--acc); margin-bottom: 1rem; font-weight: 600;
+}
+.description p { font-size: 1.05rem; line-height: 1.75; color: var(--fg-dim); max-width: 680px; }
+
+@media (max-width: 767px) {
+  .hero { min-height: 340px; padding-bottom: 2rem; }
+  .title { font-size: 1.6rem; }
+}

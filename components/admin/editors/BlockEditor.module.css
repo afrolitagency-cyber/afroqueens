@@ -1,0 +1,35 @@
+/* components/admin/editors/BlockEditor.module.css */
+.wrap {
+  min-height: 500px;
+  font-family: 'DM Sans', sans-serif;
+}
+
+/* Override BlockNote defaults to match our admin aesthetic */
+.wrap :global(.bn-editor) {
+  font-family: 'DM Sans', sans-serif !important;
+  font-size: 1rem !important;
+  padding: 0 !important;
+}
+
+.wrap :global(.bn-block-content) {
+  font-size: 1rem !important;
+  line-height: 1.8 !important;
+  color: #333 !important;
+}
+
+.wrap :global(.bn-inline-content) {
+  font-size: 1rem !important;
+}
+
+/* Slash menu styling */
+.wrap :global(.bn-suggestion-menu) {
+  border: 1px solid #e5e5e5 !important;
+  border-radius: 8px !important;
+  box-shadow: 0 8px 30px rgba(0,0,0,.12) !important;
+}
+
+.wrap :global(.bn-suggestion-menu-item:hover),
+.wrap :global(.bn-suggestion-menu-item[data-selected="true"]) {
+  background: rgba(200,16,46,.06) !important;
+  color: #C8102E !important;
+}

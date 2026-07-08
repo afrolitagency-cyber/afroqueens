@@ -1,0 +1,176 @@
+/* components/public/episodes/EpisodeList.module.css */
+.filters {
+  display: flex;
+  gap: .7rem;
+  margin-bottom: 2rem;
+  flex-wrap: wrap;
+}
+
+[data-design="1"] .filterBtn {
+  padding: .42rem 1.1rem;
+  border: 1px solid var(--bdr);
+  font-size: .68rem;
+  letter-spacing: .14em;
+  text-transform: uppercase;
+  color: var(--fg-dim);
+  background: none;
+  cursor: pointer;
+  transition: all .3s;
+  font-family: var(--fb);
+}
+[data-design="2"] .filterBtn {
+  padding: .4rem 1.1rem;
+  border: 1px solid var(--bdr);
+  font-size: .66rem;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+  color: var(--fg-dim);
+  background: none;
+  cursor: pointer;
+  transition: all .3s;
+  font-family: var(--fb);
+  font-weight: 600;
+  border-radius: 20px;
+}
+.filterBtn.active,
+.filterBtn:hover {
+  border-color: var(--acc);
+  color: var(--acc);
+  background: var(--acc-gl);
+}
+
+.list { display: flex; flex-direction: column; }
+
+/* Design 1 — underline list */
+[data-design="1"] .row {
+  display: grid;
+  grid-template-columns: 80px 1fr auto auto;
+  align-items: center;
+  gap: 2rem;
+  padding: 1.8rem 2rem;
+  border-bottom: 1px solid var(--bdr);
+  cursor: pointer;
+  position: relative;
+  transition: background .3s, padding-left .3s, border-color .5s;
+}
+[data-design="1"] .row::before {
+  content: '';
+  position: absolute;
+  left: 0; top: 0; bottom: 0;
+  width: 0;
+  background: var(--acc);
+  transition: width .35s cubic-bezier(.4,0,.2,1);
+}
+[data-design="1"] .row:hover { background: var(--fg-faint); padding-left: 2.8rem; }
+[data-design="1"] .row:hover::before { width: 3px; }
+[data-design="1"] .row:hover .num { color: var(--acc); }
+[data-design="1"] .row:hover .dur { color: var(--fg); }
+
+[data-design="1"] .num {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 2rem;
+  color: var(--fg-faint);
+  text-align: center;
+  transition: color .3s;
+}
+
+/* Design 2 — card rows */
+[data-design="2"] .row {
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
+  padding: 1.4rem 1.8rem;
+  border-radius: 12px;
+  margin-bottom: .7rem;
+  background: var(--bg-card);
+  border: 1px solid var(--bdr);
+  cursor: pointer;
+  transition: all .3s;
+}
+[data-design="2"] .row:hover {
+  border-color: var(--acc-bdr);
+  transform: translateX(6px);
+  box-shadow: 0 10px 30px rgba(0,0,0,.15);
+}
+[data-design="2"] .row:hover .playBtn {
+  background: var(--acc);
+  border-color: var(--acc);
+  color: #fff;
+}
+[data-design="2"] .num {
+  font-family: 'Syne', sans-serif;
+  font-size: 1.1rem;
+  font-weight: 800;
+  color: var(--acc);
+  min-width: 36px;
+  text-align: center;
+}
+
+/* Shared */
+.info { flex: 1; }
+
+.title {
+  font-family: var(--fs);
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: var(--fg);
+  margin-bottom: .2rem;
+  transition: color .5s;
+}
+[data-design="2"] .title { font-family: 'Playfair Display', serif; }
+
+.sub {
+  font-size: .74rem;
+  color: var(--fg-dim);
+  letter-spacing: .06em;
+  font-family: var(--fb);
+  transition: color .5s;
+}
+
+.dur {
+  font-family: var(--fd);
+  font-size: 1.1rem;
+  color: var(--fg-dim);
+  transition: color .3s;
+  margin-left: auto;
+}
+[data-design="2"] .dur {
+  font-family: 'Syne', sans-serif;
+  font-weight: 700;
+  font-size: 1rem;
+}
+
+.playBtn {
+  width: 42px; height: 42px;
+  border-radius: 50%;
+  border: 1px solid var(--bdr);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--fg-dim);
+  background: none;
+  cursor: pointer;
+  transition: all .3s;
+  flex-shrink: 0;
+}
+[data-design="1"] .row:hover .playBtn,
+.playBtn.playing {
+  background: var(--acc);
+  border-color: var(--acc);
+  color: #fff;
+}
+
+.empty {
+  padding: 3rem;
+  text-align: center;
+  color: var(--fg-dim);
+  font-family: var(--fb);
+  font-size: .9rem;
+}
+
+@media (max-width: 640px) {
+  [data-design="1"] .row {
+    grid-template-columns: 50px 1fr auto;
+  }
+  .dur { display: none; }
+}

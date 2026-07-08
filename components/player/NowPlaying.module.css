@@ -1,0 +1,82 @@
+/* components/player/NowPlaying.module.css */
+.np {
+  position: fixed;
+  bottom: 2rem; right: 2rem;
+  z-index: 700;
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: .9rem 1.4rem;
+  background: var(--bg-card);
+  border: 1px solid var(--acc-bdr);
+  opacity: 0;
+  transform: translateY(8px);
+  transition: opacity .5s, transform .5s, background .5s, border-color .5s;
+  cursor: pointer;
+}
+[data-design="2"] .np { border-radius: 40px; padding: .85rem 1.6rem; }
+
+.np.visible { opacity: 1; transform: translateY(0); }
+
+.bars {
+  display: flex;
+  align-items: flex-end;
+  gap: 2px;
+  height: 20px;
+}
+
+.bar {
+  width: 3px;
+  background: var(--acc);
+  border-radius: 1px;
+  height: 40%;
+  transition: height .3s;
+}
+.bar.playing {
+  animation: barB .9s ease-in-out infinite;
+}
+.bar:nth-child(1) { height: 60%; }
+.bar:nth-child(2) { height: 100%; }
+.bar:nth-child(3) { height: 40%; }
+.bar:nth-child(4) { height: 80%; }
+
+@keyframes barB {
+  0%, 100% { transform: scaleY(.5); }
+  50%       { transform: scaleY(1); }
+}
+
+.info { }
+.label {
+  color: var(--acc);
+  letter-spacing: .12em;
+  text-transform: uppercase;
+  font-size: .62rem;
+  margin-bottom: .1rem;
+  font-family: var(--fb);
+}
+.track {
+  color: var(--fg);
+  font-weight: 500;
+  font-size: .72rem;
+  font-family: var(--fb);
+  white-space: nowrap;
+  max-width: 180px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  transition: color .5s;
+}
+
+.playBtn {
+  width: 28px; height: 28px;
+  border-radius: 50%;
+  border: 1px solid var(--bdr);
+  background: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--fg-dim);
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: all .3s;
+}
+.playBtn:hover { background: var(--acc); border-color: var(--acc); color: #fff; }

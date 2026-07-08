@@ -1,0 +1,387 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Create Newsletter — Afroqueens Admin</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet" />
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'DM Sans',sans-serif;background:#f8f8f8;color:#0a0a0a;display:flex;min-height:100vh}
+
+/* ── Sidebar ── */
+.sidebar{width:240px;min-height:100vh;background:#0a0a0a;display:flex;flex-direction:column;position:fixed;top:0;left:0;bottom:0;border-right:1px solid rgba(255,255,255,.06)}
+.logo{display:flex;align-items:center;gap:.8rem;padding:1.6rem 1.5rem;border-bottom:1px solid rgba(255,255,255,.06);margin-bottom:.5rem}
+.logo-acc{background:#C8102E;color:#fff;font-family:'Bebas Neue',sans-serif;font-size:1.1rem;letter-spacing:.1em;padding:.3rem .6rem;border-radius:4px}
+.logo-text{font-size:.75rem;font-weight:600;letter-spacing:.12em;text-transform:uppercase;color:rgba(255,255,255,.45)}
+.group{padding:1rem 0 .5rem}
+.group-label{font-size:.6rem;font-weight:600;letter-spacing:.2em;text-transform:uppercase;color:rgba(255,255,255,.25);padding:0 1.5rem .6rem}
+.nav-item{display:flex;align-items:center;gap:.75rem;padding:.7rem 1.5rem;font-size:.8rem;font-weight:500;color:rgba(255,255,255,.45);text-decoration:none;transition:color .2s,background .2s;border-left:2px solid transparent}
+.nav-item:hover{color:rgba(255,255,255,.85);background:rgba(255,255,255,.04)}
+.nav-item.active{color:#fff;background:rgba(200,16,46,.12);border-left-color:#C8102E}
+.nav-icon{font-size:.85rem;width:18px;text-align:center;opacity:.7}
+.sidebar-bottom{margin-top:auto;padding:1.2rem 1.5rem;border-top:1px solid rgba(255,255,255,.06)}
+.signout{font-size:.74rem;font-weight:500;color:rgba(255,255,255,.3);text-decoration:none}
+.signout:hover{color:#C8102E}
+
+/* ── Main ── */
+.main{flex:1;margin-left:240px;display:flex;flex-direction:column;min-height:100vh}
+
+/* ── Topbar ── */
+.topbar{height:60px;background:#fff;border-bottom:1px solid #f0f0f0;display:flex;align-items:center;justify-content:space-between;padding:0 2rem;position:sticky;top:0;z-index:100}
+.greeting{font-size:.85rem;font-weight:500;color:#444}
+.topbar-right{display:flex;align-items:center;gap:1.2rem}
+.switcher-group{display:flex;align-items:center;gap:.6rem}
+.switch-label{font-size:.65rem;font-weight:600;letter-spacing:.12em;text-transform:uppercase;color:#aaa}
+.pills{display:flex;border:1px solid #e5e5e5;border-radius:6px;overflow:hidden}
+.pill{padding:.3rem .7rem;font-size:.72rem;font-weight:500;background:#fff;color:#888;border:none;cursor:pointer;transition:all .2s;white-space:nowrap}
+.pill:first-child{border-right:1px solid #e5e5e5}
+.pill.active{background:#C8102E;color:#fff}
+.topbar-divider{width:1px;height:20px;background:#e5e5e5}
+.view-site{padding:.38rem 1rem;background:#0a0a0a;color:#fff;font-size:.72rem;font-weight:500;letter-spacing:.06em;text-decoration:none;border-radius:5px;transition:background .2s;white-space:nowrap}
+.view-site:hover{background:#C8102E}
+
+/* ── Editor topbar ── */
+.editor-topbar{display:flex;align-items:center;justify-content:space-between;padding:1rem 2rem;background:#fff;border-bottom:1px solid #f0f0f0;position:sticky;top:60px;z-index:99;gap:1rem;flex-wrap:wrap}
+.editor-top-left{display:flex;align-items:center;gap:1rem}
+.back-btn{font-size:.78rem;color:#888;text-decoration:none;transition:color .2s}
+.back-btn:hover{color:#C8102E}
+.editor-page-title{font-size:1rem;font-weight:600;color:#0a0a0a}
+.editor-top-right{display:flex;align-items:center;gap:.8rem}
+.draft-btn{padding:.5rem 1.2rem;border:1px solid #e5e5e5;border-radius:6px;font-size:.78rem;font-weight:500;background:#fff;color:#444;cursor:pointer;transition:all .2s;white-space:nowrap;font-family:'DM Sans',sans-serif}
+.draft-btn:hover{border-color:#888}
+.preview-btn{padding:.5rem 1.2rem;border:1px solid #0a0a0a;border-radius:6px;font-size:.78rem;font-weight:500;background:#fff;color:#0a0a0a;cursor:pointer;transition:all .2s;white-space:nowrap;font-family:'DM Sans',sans-serif}
+.preview-btn:hover{background:#0a0a0a;color:#fff}
+.send-btn{padding:.5rem 1.4rem;background:#C8102E;color:#fff;border:none;border-radius:6px;font-size:.78rem;font-weight:600;cursor:pointer;white-space:nowrap;font-family:'DM Sans',sans-serif;transition:opacity .2s}
+.send-btn:hover{opacity:.88}
+
+/* ── Layout ── */
+.composer-layout{display:grid;grid-template-columns:1fr 300px;min-height:calc(100vh - 120px)}
+.composer-main{padding:2rem;background:#fff;border-right:1px solid #f0f0f0;display:flex;flex-direction:column;gap:1.4rem}
+.composer-sidebar{padding:1.5rem;background:#fafafa;display:flex;flex-direction:column;gap:1.2rem}
+
+/* ── Form fields ── */
+.field-group{display:flex;flex-direction:column;gap:.4rem}
+.field-label{font-size:.65rem;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:#aaa}
+.field-input{padding:.7rem .9rem;border:1px solid #e5e5e5;border-radius:6px;font-size:.88rem;color:#333;font-family:'DM Sans',sans-serif;outline:none;transition:border-color .2s;background:#fff;width:100%}
+.field-input:focus{border-color:#C8102E}
+.subject-input{font-size:1rem;font-weight:600;padding:.8rem .9rem;border:1px solid #e5e5e5;border-radius:6px;font-family:'DM Sans',sans-serif;outline:none;width:100%;color:#0a0a0a;transition:border-color .2s}
+.subject-input:focus{border-color:#C8102E}
+
+/* Recipient pill row */
+.recipient-row{display:flex;align-items:center;gap:.6rem;flex-wrap:wrap}
+.recip-pill{display:inline-flex;align-items:center;gap:.4rem;padding:.3rem .75rem;background:rgba(200,16,46,.08);border:1px solid rgba(200,16,46,.2);border-radius:20px;font-size:.74rem;color:#C8102E;font-weight:600}
+.recip-count{font-size:.74rem;color:#aaa}
+
+/* Email body */
+.email-frame{border:1px solid #e5e5e5;border-radius:8px;overflow:hidden}
+.email-header-bar{background:#0a0a0a;padding:1rem 1.5rem;display:flex;align-items:center;justify-content:space-between}
+.email-logo{font-family:'Bebas Neue',sans-serif;font-size:1.3rem;letter-spacing:.14em;color:#fff}
+.email-logo span{color:#C8102E}
+.email-logo-date{font-size:.66rem;color:rgba(255,255,255,.4);letter-spacing:.1em;text-transform:uppercase}
+.email-hero{background:linear-gradient(135deg,#111,#1a1a1a);padding:2.5rem 2rem;border-bottom:1px solid #e5e5e5}
+.email-hero-label{font-size:.62rem;letter-spacing:.2em;text-transform:uppercase;color:#C8102E;margin-bottom:.5rem;font-weight:600}
+.email-hero-title{font-family:'Bebas Neue',sans-serif;font-size:2.2rem;letter-spacing:.04em;color:#fff;line-height:1.05;margin-bottom:.8rem}
+.email-hero-sub{font-size:.85rem;color:rgba(255,255,255,.55);line-height:1.8}
+.email-body{background:#fff;padding:1.8rem 2rem;display:flex;flex-direction:column;gap:1.2rem}
+.email-p{font-size:.88rem;color:#444;line-height:1.9;outline:none}
+.email-p[contenteditable]:focus{border-bottom:1px dashed #C8102E}
+.email-divider{height:1px;background:#f0f0f0}
+.email-section-title{font-family:'Bebas Neue',sans-serif;font-size:1.3rem;letter-spacing:.06em;color:#0a0a0a}
+.email-block{background:#f9f9f9;border-left:3px solid #C8102E;padding:1rem 1.2rem;border-radius:0 6px 6px 0}
+.email-block-title{font-weight:600;font-size:.88rem;color:#0a0a0a;margin-bottom:.3rem}
+.email-block-body{font-size:.82rem;color:#666;line-height:1.7}
+.email-cta-wrap{text-align:center;padding:.5rem 0}
+.email-cta{display:inline-block;padding:.75rem 2rem;background:#C8102E;color:#fff;font-size:.78rem;font-weight:600;letter-spacing:.08em;text-transform:uppercase;text-decoration:none;border-radius:4px}
+.email-footer-bar{background:#f9f9f9;padding:1.2rem 2rem;border-top:1px solid #f0f0f0;text-align:center}
+.email-footer-text{font-size:.72rem;color:#aaa;line-height:1.7}
+.email-footer-text a{color:#C8102E;text-decoration:none}
+
+/* Toolbar above email body */
+.body-toolbar{display:flex;align-items:center;gap:.3rem;padding:.6rem 1rem;background:#fafafa;border-bottom:1px solid #e5e5e5;flex-wrap:wrap}
+.tb{padding:.22rem .5rem;border:1px solid #e5e5e5;border-radius:4px;font-size:.76rem;cursor:pointer;background:#fff;color:#555;font-family:'DM Sans',sans-serif;transition:all .15s}
+.tb:hover{border-color:#C8102E;color:#C8102E}
+.tb-sep{border:none;color:#ddd;cursor:default;padding:0 .15rem;font-size:.9rem}
+.tb-add{padding:.22rem .7rem;border:1px dashed #e5e5e5;border-radius:4px;font-size:.74rem;color:#C8102E;background:#fff;cursor:pointer;font-family:'DM Sans',sans-serif;font-weight:600}
+
+/* Sidebar sections */
+.side-card{background:#fff;border:1px solid #f0f0f0;border-radius:8px;padding:1.3rem}
+.side-title{font-size:.65rem;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:#888;margin-bottom:.9rem}
+.side-input{width:100%;padding:.55rem .75rem;border:1px solid #e5e5e5;border-radius:6px;font-size:.82rem;color:#333;font-family:'DM Sans',sans-serif;outline:none;transition:border-color .2s;background:#fff}
+.side-input:focus{border-color:#C8102E}
+.side-select{width:100%;padding:.55rem .75rem;border:1px solid #e5e5e5;border-radius:6px;font-size:.82rem;color:#333;font-family:'DM Sans',sans-serif;outline:none;background:#fff;appearance:none;cursor:pointer}
+.side-select:focus{border-color:#C8102E}
+.side-field{display:flex;flex-direction:column;gap:.4rem;margin-bottom:.9rem}
+.side-label{font-size:.65rem;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:#aaa}
+.side-divider{height:1px;background:#f0f0f0;margin:.4rem 0 1rem}
+
+/* Stats mini */
+.stat-row{display:grid;grid-template-columns:1fr 1fr;gap:.7rem}
+.mini-stat{background:#f9f9f9;border-radius:6px;padding:.8rem;text-align:center}
+.mini-stat-val{font-family:'Bebas Neue',sans-serif;font-size:1.5rem;color:#0a0a0a;line-height:1}
+.mini-stat-label{font-size:.62rem;color:#aaa;letter-spacing:.08em;text-transform:uppercase;margin-top:.2rem}
+
+/* Schedule toggle */
+.schedule-toggle{display:flex;gap:.5rem;margin-bottom:.8rem}
+.sched-btn{flex:1;padding:.45rem;border:1px solid #e5e5e5;border-radius:6px;font-size:.74rem;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;background:#fff;color:#888;transition:all .2s;text-align:center}
+.sched-btn.active{background:#0a0a0a;color:#fff;border-color:#0a0a0a}
+
+/* Send confirmation box */
+.send-confirm{background:rgba(200,16,46,.04);border:1px solid rgba(200,16,46,.15);border-radius:8px;padding:1rem;font-size:.78rem;color:#555;line-height:1.7}
+.send-confirm strong{color:#C8102E}
+</style>
+</head>
+<body>
+
+<!-- Sidebar -->
+<aside class="sidebar">
+  <div class="logo"><span class="logo-acc">AQ</span><span class="logo-text">Admin</span></div>
+  <div class="group">
+    <div class="group-label">Content</div>
+    <a href="admin-dashboard.html" class="nav-item"><span class="nav-icon">▣</span>Dashboard</a>
+    <a href="admin-blogs.html" class="nav-item"><span class="nav-icon">✎</span>Blog Posts</a>
+    <a href="#" class="nav-item"><span class="nav-icon">♪</span>Artists</a>
+    <a href="admin-gallery.html" class="nav-item"><span class="nav-icon">⊡</span>Gallery</a>
+    <a href="#" class="nav-item"><span class="nav-icon">◉</span>Episodes</a>
+  </div>
+  <div class="group">
+    <div class="group-label">Community</div>
+    <a href="#" class="nav-item"><span class="nav-icon">◻</span>Comments</a>
+    <a href="#" class="nav-item active"><span class="nav-icon">✉</span>Newsletter</a>
+    <a href="#" class="nav-item"><span class="nav-icon">⊠</span>Inbox</a>
+  </div>
+  <div class="group">
+    <div class="group-label">Insights</div>
+    <a href="admin-analytics.html" class="nav-item"><span class="nav-icon">◈</span>Analytics</a>
+  </div>
+  <div class="group">
+    <div class="group-label">Site</div>
+    <a href="#" class="nav-item"><span class="nav-icon">⊞</span>Widget Panel</a>
+    <a href="#" class="nav-item"><span class="nav-icon">◐</span>Theme & Design</a>
+    <a href="#" class="nav-item"><span class="nav-icon">⚙</span>General</a>
+  </div>
+  <div class="sidebar-bottom"><a href="#" class="signout">← Sign Out</a></div>
+</aside>
+
+<!-- Main -->
+<div class="main">
+  <header class="topbar">
+    <span class="greeting">Welcome back, Admin</span>
+    <div class="topbar-right">
+      <div class="switcher-group">
+        <span class="switch-label">Live Theme</span>
+        <div class="pills"><button class="pill active">◑ Dark</button><button class="pill">◯ Light</button></div>
+      </div>
+      <div class="topbar-divider"></div>
+      <div class="switcher-group">
+        <span class="switch-label">Design</span>
+        <div class="pills"><button class="pill active">D1</button><button class="pill">D2</button></div>
+      </div>
+      <a href="#" class="view-site">View Site ↗</a>
+    </div>
+  </header>
+
+  <!-- Editor topbar -->
+  <div class="editor-topbar">
+    <div class="editor-top-left">
+      <a href="#" class="back-btn">← Back to Newsletter</a>
+      <span class="editor-page-title">Create Newsletter</span>
+    </div>
+    <div class="editor-top-right">
+      <button class="draft-btn">Save Draft</button>
+      <button class="preview-btn">👁 Preview Email</button>
+      <button class="send-btn">✉ Send Now</button>
+    </div>
+  </div>
+
+  <!-- Composer layout -->
+  <div class="composer-layout">
+
+    <!-- Main composer -->
+    <div class="composer-main">
+
+      <!-- Subject line -->
+      <div class="field-group">
+        <div class="field-label">Subject Line</div>
+        <input class="subject-input" value="The Frequency: Issue #12 — June 2026 Edition" />
+      </div>
+
+      <!-- Preview text -->
+      <div class="field-group">
+        <div class="field-label">Preview Text <span style="font-weight:400;text-transform:none;letter-spacing:0;color:#ccc">(shown in inbox before opening)</span></div>
+        <input class="field-input" value="This month: Adaeze's studio diary, Lagos Electronic recap, and 5 artists you need to know →" />
+      </div>
+
+      <!-- Recipients -->
+      <div class="field-group">
+        <div class="field-label">To</div>
+        <div class="recipient-row">
+          <div class="recip-pill">✉ All Active Subscribers</div>
+          <span class="recip-count">5 recipients</span>
+          <a href="#" style="font-size:.72rem;color:#C8102E;text-decoration:none;font-weight:600">+ Add segment</a>
+        </div>
+      </div>
+
+      <div style="height:1px;background:#f5f5f5"></div>
+
+      <!-- Email body editor -->
+      <div class="field-group">
+        <div class="field-label">Email Body</div>
+
+        <!-- Body toolbar -->
+        <div class="body-toolbar">
+          <button class="tb"><b>B</b></button>
+          <button class="tb"><i>I</i></button>
+          <button class="tb"><u>U</u></button>
+          <span class="tb-sep">|</span>
+          <button class="tb">H2</button>
+          <button class="tb">H3</button>
+          <span class="tb-sep">|</span>
+          <button class="tb">≡ List</button>
+          <button class="tb">" Quote</button>
+          <span class="tb-sep">|</span>
+          <button class="tb">🔗 Link</button>
+          <button class="tb">🖼 Image</button>
+          <span class="tb-sep">|</span>
+          <button class="tb-add">+ Article Block</button>
+          <button class="tb-add">+ CTA Button</button>
+          <button class="tb-add">+ Divider</button>
+        </div>
+
+        <!-- Email preview/editor -->
+        <div class="email-frame">
+          <!-- Brand header -->
+          <div class="email-header-bar">
+            <div class="email-logo">AFRO<span>Q</span>UEENS</div>
+            <div class="email-logo-date">The Frequency · Issue #12 · June 2026</div>
+          </div>
+
+          <!-- Hero block -->
+          <div class="email-hero">
+            <div class="email-hero-label">Monthly Newsletter</div>
+            <div class="email-hero-title" contenteditable="true">The Frequency<br />June 2026 Edition</div>
+            <div class="email-hero-sub" contenteditable="true">Your monthly deep dive into African music, culture, and the women shaping its future.</div>
+          </div>
+
+          <!-- Body -->
+          <div class="email-body">
+            <p class="email-p" contenteditable="true">Hi [First Name],</p>
+            <p class="email-p" contenteditable="true">June has been extraordinary. From Adaeze's sold-out London residency to the electric atmosphere at Lagos Electronic 2026, this month reminded us exactly why we do what we do. Thank you for being part of this community.</p>
+
+            <div class="email-divider"></div>
+            <div class="email-section-title">This Month's Highlights</div>
+
+            <!-- Article block 1 -->
+            <div class="email-block">
+              <div class="email-block-title" contenteditable="true">Cover Story: Adaeze's Studio Diary</div>
+              <div class="email-block-body" contenteditable="true">We spent 48 hours inside Adaeze's London studio as she recorded what may be her most ambitious work yet. She told us everything — the silence, the pressure, and the moment it all clicked.</div>
+            </div>
+
+            <!-- Article block 2 -->
+            <div class="email-block">
+              <div class="email-block-title" contenteditable="true">Festival Review: Lagos Electronic 2026</div>
+              <div class="email-block-body" contenteditable="true">40,000 people, five stages, two unforgettable headliners. Our correspondent filed this from the pit of the main stage as the sun set over Lagos Island.</div>
+            </div>
+
+            <!-- Article block 3 -->
+            <div class="email-block">
+              <div class="email-block-title" contenteditable="true">5 Artists You Need to Know Right Now</div>
+              <div class="email-block-body" contenteditable="true">From Abuja to Amsterdam — emerging artists from across the continent who are quietly building something remarkable. Our list for June 2026.</div>
+            </div>
+
+            <div class="email-divider"></div>
+
+            <p class="email-p" contenteditable="true">As always, if there's an artist you think we should be covering, hit reply. We read every message.</p>
+            <p class="email-p" contenteditable="true">With love and sound,<br /><strong>The Afroqueens FM Team</strong></p>
+
+            <!-- CTA -->
+            <div class="email-cta-wrap">
+              <a href="#" class="email-cta">Read This Month's Stories →</a>
+            </div>
+          </div>
+
+          <!-- Email footer -->
+          <div class="email-footer-bar">
+            <div class="email-footer-text">
+              You're receiving this because you subscribed at afroqueens.fm<br />
+              <a href="#">Unsubscribe</a> · <a href="#">View in browser</a> · <a href="#">Privacy Policy</a>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Sidebar -->
+    <div class="composer-sidebar">
+
+      <!-- Subscriber stats -->
+      <div class="side-card">
+        <div class="side-title">Audience</div>
+        <div class="stat-row">
+          <div class="mini-stat">
+            <div class="mini-stat-val">5</div>
+            <div class="mini-stat-label">Recipients</div>
+          </div>
+          <div class="mini-stat">
+            <div class="mini-stat-val">100%</div>
+            <div class="mini-stat-label">Active</div>
+          </div>
+        </div>
+        <div style="margin-top:.8rem;font-size:.74rem;color:#aaa;line-height:1.6">Sending to all active subscribers. <a href="#" style="color:#C8102E;text-decoration:none;font-weight:600">Manage segments →</a></div>
+      </div>
+
+      <!-- Schedule -->
+      <div class="side-card">
+        <div class="side-title">Send Schedule</div>
+        <div class="schedule-toggle">
+          <div class="sched-btn active">Send Now</div>
+          <div class="sched-btn">Schedule</div>
+        </div>
+        <div style="font-size:.78rem;color:#aaa;line-height:1.6">Email will be sent immediately to all active subscribers once you click <strong style="color:#0a0a0a">Send Now</strong>.</div>
+      </div>
+
+      <!-- From details -->
+      <div class="side-card">
+        <div class="side-title">From</div>
+        <div class="side-field">
+          <div class="side-label">Sender Name</div>
+          <input class="side-input" value="Afroqueens FM" />
+        </div>
+        <div class="side-field">
+          <div class="side-label">Sender Email</div>
+          <input class="side-input" type="email" value="hello@afroqueens.fm" />
+        </div>
+        <div class="side-field" style="margin-bottom:0">
+          <div class="side-label">Reply-To</div>
+          <input class="side-input" type="email" value="hello@afroqueens.fm" />
+        </div>
+      </div>
+
+      <!-- Template picker -->
+      <div class="side-card">
+        <div class="side-title">Template</div>
+        <div class="side-field" style="margin-bottom:0">
+          <select class="side-select">
+            <option selected>The Frequency (Monthly)</option>
+            <option>New Episode Alert</option>
+            <option>Artist Spotlight</option>
+            <option>Event Announcement</option>
+            <option>Plain Text</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- Send confirm -->
+      <div class="send-confirm">
+        Ready to send? This email will go to <strong>5 active subscribers</strong>. This action cannot be undone.
+        <div style="margin-top:.8rem;display:flex;gap:.5rem">
+          <button style="flex:1;padding:.5rem;background:#C8102E;color:#fff;border:none;border-radius:6px;font-size:.78rem;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif">✉ Send Now</button>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+</body>
+</html>

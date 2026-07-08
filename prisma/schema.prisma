@@ -1,0 +1,223 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ─── SITE SETTINGS (theme, design) ───────────────────────────────────────────
+model SiteSettings {
+  id              String   @id @default("singleton")
+  theme           Theme    @default(DARK)
+  design          Design   @default(ONE)
+  siteName        String   @default("Afroqueens FM")
+  siteDescription String   @default("Celebrating women in Afrobeats and African music culture.")
+  contactEmail    String   @default("")
+  socialInstagram String   @default("")
+  socialTwitter   String   @default("")
+  socialYoutube   String   @default("")
+  updatedAt       DateTime @updatedAt
+}
+
+enum Theme {
+  DARK
+  LIGHT
+}
+
+enum Design {
+  ONE
+  TWO
+}
+
+// ─── ADMIN USERS ─────────────────────────────────────────────────────────────
+model User {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  password  String   // hashed with bcrypt
+  name      String
+  role      Role     @default(EDITOR)
+  createdAt DateTime @default(now())
+}
+
+enum Role {
+  SUPER_ADMIN
+  EDITOR
+}
+
+// ─── ARTISTS ─────────────────────────────────────────────────────────────────
+model Artist {
+  id               String        @id @default(cuid())
+  name             String
+  slug             String        @unique
+  genre            String
+  location         String
+  monthlyListeners String?       // e.g. "1.3M"
+  bio              String?       @db.Text
+  profileImageUrl  String?       // Cloudinary
+  streamSource     StreamSource  @default(YOUTUBE)
+  spotifyTrackId   String?
+  youtubeVideoId   String?
+  soundcloudUrl    String?
+  customAudioUrl   String?       // Supabase Storage
+  instagramUrl     String?
+  twitterUrl       String?
+  tiktokUrl        String?
+  facebookUrl      String?
+  releaseUrl       String?       // OUT NOW / smart link (e.g. lnk.to)
+  featured         Boolean       @default(false)
+  order            Int           @default(0)
+  createdAt        DateTime      @default(now())
+  updatedAt        DateTime      @updatedAt
+}
+
+enum StreamSource {
+  SPOTIFY
+  YOUTUBE
+  SOUNDCLOUD
+  CUSTOM
+}
+
+// ─── BLOG ─────────────────────────────────────────────────────────────────────
+model BlogPost {
+  id             String      @id @default(cuid())
+  title          String
+  slug           String      @unique
+  excerpt        String?     @db.Text
+  content        Json        // BlockNote JSON blocks
+  coverImageUrl  String?     // Cloudinary
+  category       String
+  author         String      @default("Afroqueens Editorial")
+  status         PostStatus  @default(DRAFT)
+  metaTitle      String?
+  metaDesc       String?
+  featured       Boolean     @default(false)
+  readingTime    Int?        // minutes
+  publishedAt    DateTime?
+  createdAt      DateTime    @default(now())
+  updatedAt      DateTime    @updatedAt
+  tags           Tag[]       @relation("BlogTags")
+  comments       Comment[]
+}
+
+model Tag {
+  id    String     @id @default(cuid())
+  name  String     @unique
+  slug  String     @unique
+  posts BlogPost[] @relation("BlogTags")
+}
+
+enum PostStatus {
+  DRAFT
+  PUBLISHED
+}
+
+// ─── GALLERY ─────────────────────────────────────────────────────────────────
+model GalleryItem {
+  id          String   @id @default(cuid())
+  label       String
+  category    GalleryCategory
+  imageUrl    String   // Cloudinary
+  featured    Boolean  @default(false)
+  order       Int      @default(0)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+enum GalleryCategory {
+  LIVE_SESSIONS
+  STUDIO
+  FESTIVALS
+  PORTRAITS
+  BEHIND_THE_SCENES
+  ON_THE_ROAD
+}
+
+// ─── EPISODES ─────────────────────────────────────────────────────────────────
+model Episode {
+  id             String          @id @default(cuid())
+  number         Int             @unique
+  title          String
+  subtitle       String?
+  description    String?         @db.Text
+  duration       String          // e.g. "58:22"
+  releaseDate    DateTime
+  category       EpisodeCategory
+  audioUrl       String?         // Supabase Storage or external
+  coverImageUrl  String?         // Cloudinary
+  featured       Boolean         @default(false)
+  createdAt      DateTime        @default(now())
+  updatedAt      DateTime        @updatedAt
+}
+
+enum EpisodeCategory {
+  INTERVIEWS
+  EVENT_COVERAGE
+  DEEP_DIVES
+  PANEL_DISCUSSIONS
+}
+
+// ─── COMMENTS ─────────────────────────────────────────────────────────────────
+model Comment {
+  id          String        @id @default(cuid())
+  postId      String
+  post        BlogPost      @relation(fields: [postId], references: [id], onDelete: Cascade)
+  name        String
+  email       String
+  body        String        @db.Text
+  status      CommentStatus @default(PENDING)
+  createdAt   DateTime      @default(now())
+}
+
+enum CommentStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
+// ─── NEWSLETTER ───────────────────────────────────────────────────────────────
+model NewsletterSubscriber {
+  id          String   @id @default(cuid())
+  email       String   @unique
+  name        String?
+  active      Boolean  @default(true)
+  createdAt   DateTime @default(now())
+}
+
+// ─── CONTACT SUBMISSIONS ──────────────────────────────────────────────────────
+model ContactSubmission {
+  id        String   @id @default(cuid())
+  name      String
+  email     String
+  subject   String
+  message   String   @db.Text
+  read      Boolean  @default(false)
+  createdAt DateTime @default(now())
+}
+
+// ─── WIDGETS (embed panel) ────────────────────────────────────────────────────
+model Widget {
+  id        String         @id @default(cuid())
+  type      WidgetType
+  title     String
+  embedUrl  String         @db.Text
+  position  WidgetPosition @default(RIGHT)
+  active    Boolean        @default(true)
+  order     Int            @default(0)
+  createdAt DateTime       @default(now())
+  updatedAt DateTime       @updatedAt
+}
+
+enum WidgetType {
+  YOUTUBE
+  SPOTIFY
+  SOUNDCLOUD
+  APPLE_MUSIC
+  CUSTOM
+}
+
+enum WidgetPosition {
+  LEFT
+  RIGHT
+}

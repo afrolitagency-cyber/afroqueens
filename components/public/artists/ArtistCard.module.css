@@ -1,0 +1,80 @@
+/* components/public/artists/ArtistCard.module.css */
+.card {
+  position: relative;
+  aspect-ratio: 2/3;
+  overflow: hidden;
+  cursor: pointer;
+  background: var(--bg-card);
+  border: 1px solid var(--bdr);
+  text-decoration: none;
+  display: block;
+  transition: transform .4s cubic-bezier(.4,0,.2,1),
+              border-color .5s, background .5s, box-shadow .4s;
+}
+[data-design="2"] .card { border-radius: 16px; }
+
+.card:hover { transform: translateY(-6px); }
+[data-design="2"] .card:hover { box-shadow: 0 20px 50px rgba(0,0,0,.4); }
+.card:hover .bg { transform: scale(1.06); }
+.card:hover .overlay { opacity: 1; }
+.card:hover .meta { opacity: 1; transform: translateY(0); }
+
+.bg {
+  position: absolute;
+  inset: 0;
+  transition: transform .6s;
+}
+
+.overlay {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(to top, rgba(10,10,10,.96) 0%, rgba(10,10,10,.4) 55%, transparent 100%);
+  opacity: .7;
+  transition: opacity .4s;
+}
+
+.info {
+  position: absolute;
+  bottom: 0; left: 0; right: 0;
+  padding: 1.8rem;
+}
+
+.genre {
+  font-size: .62rem;
+  letter-spacing: .18em;
+  text-transform: uppercase;
+  color: var(--acc);
+  margin-bottom: .4rem;
+  font-family: var(--fb);
+}
+[data-design="2"] .genre {
+  display: inline-flex;
+  align-items: center;
+  padding: .22rem .7rem;
+  border-radius: 20px;
+  background: var(--acc-gl);
+  border: 1px solid var(--acc-bdr);
+  font-weight: 600;
+  letter-spacing: .08em;
+  margin-bottom: .7rem;
+}
+
+.name {
+  font-family: var(--fd);
+  font-size: 2rem;
+  letter-spacing: .04em;
+  line-height: 1;
+  margin-bottom: .5rem;
+  color: #f5f0eb;
+  transition: font-family .5s;
+}
+[data-design="2"] .name { font-size: 1.8rem; font-weight: 800; letter-spacing: .01em; }
+
+.meta {
+  font-size: .74rem;
+  color: rgba(245,240,235,.6);
+  opacity: 0;
+  transform: translateY(8px);
+  transition: all .35s .05s;
+  font-family: var(--fb);
+}

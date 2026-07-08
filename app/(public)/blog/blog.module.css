@@ -1,0 +1,226 @@
+/* app/(public)/blog/blog.module.css */
+
+.pageHero {
+  padding: 5rem 0 4rem;
+  border-bottom: 1px solid var(--bdr);
+  background: var(--bg-mid);
+  transition: background .5s, border-color .5s;
+}
+.heroInner { max-width: 720px; }
+.heroDesc {
+  font-size: 1rem;
+  color: var(--fg-dim);
+  line-height: 1.8;
+  margin-top: 1rem;
+  font-family: var(--fb);
+}
+
+/* Featured post */
+.featCard {
+  position: relative;
+  display: block;
+  min-height: 420px;
+  margin-bottom: 3rem;
+  overflow: hidden;
+  text-decoration: none;
+  color: #fff;
+  transition: transform .35s;
+}
+[data-design="1"] .featCard { border: 1px solid var(--bdr); }
+[data-design="2"] .featCard { border-radius: 18px; }
+.featCard:hover { transform: translateY(-3px); }
+
+.featBg {
+  position: absolute;
+  inset: 0;
+  background-size: cover;
+  background-position: center;
+  transform: scale(1.03);
+  transition: transform .6s cubic-bezier(.4,0,.2,1);
+}
+.featBgPlaceholder {
+  background: linear-gradient(135deg, #111 0%, #1a1a1a 50%, #111 100%);
+}
+.featBgPlaceholder::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(ellipse 70% 60% at 70% 30%, rgba(200,16,46,.28) 0%, transparent 70%);
+}
+.featCard:hover .featBg { transform: scale(1.07); }
+
+.featOverlay {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(to top, rgba(0,0,0,.92) 0%, rgba(0,0,0,.35) 55%, rgba(0,0,0,.15) 100%);
+}
+
+.featContent {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  min-height: 420px;
+  padding: 3rem;
+  gap: .75rem;
+}
+
+.cat {
+  font-size: .62rem;
+  font-weight: 700;
+  letter-spacing: .18em;
+  text-transform: uppercase;
+  color: var(--acc);
+  font-family: var(--fb);
+}
+
+.featTitle {
+  font-family: var(--fs);
+  font-size: clamp(1.8rem, 4vw, 3rem);
+  line-height: 1.15;
+  font-weight: 600;
+  max-width: 760px;
+}
+[data-design="1"] .featTitle { font-family: 'Bebas Neue', sans-serif; letter-spacing: .03em; }
+
+.featExc {
+  font-size: .92rem;
+  color: rgba(255,255,255,.72);
+  line-height: 1.8;
+  max-width: 620px;
+  font-family: var(--fb);
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.meta {
+  display: flex;
+  align-items: center;
+  gap: .5rem;
+  flex-wrap: wrap;
+  font-size: .78rem;
+  color: rgba(255,255,255,.6);
+  font-family: var(--fb);
+}
+.dot { opacity: .45; }
+
+/* Post grid */
+.grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1.5rem;
+}
+[data-design="1"] .grid { gap: 1.5px; background: var(--bdr); }
+
+.card {
+  display: flex;
+  flex-direction: column;
+  text-decoration: none;
+  color: var(--fg);
+  overflow: hidden;
+  transition: background .35s, transform .3s, border-color .3s, box-shadow .3s;
+}
+[data-design="1"] .card { background: var(--bg); min-height: 320px; }
+[data-design="2"] .card {
+  background: var(--bg-card);
+  border: 1px solid var(--bdr);
+  border-radius: 14px;
+}
+[data-design="2"] .card:hover {
+  transform: translateY(-4px);
+  border-color: var(--acc-bdr);
+  box-shadow: 0 18px 40px rgba(0,0,0,.18);
+}
+
+.cardImg {
+  height: 180px;
+  background-size: cover;
+  background-position: center;
+  flex-shrink: 0;
+}
+.cardImgPlaceholder {
+  background: linear-gradient(135deg, rgba(200,16,46,.1) 0%, rgba(200,16,46,.22) 100%);
+}
+[data-design="1"] .cardImgPlaceholder {
+  background: linear-gradient(135deg, #141414 0%, #1a1a1a 100%);
+}
+[data-design="2"] .cardImgPlaceholder {
+  background: linear-gradient(135deg, rgba(200,16,46,.08) 0%, rgba(200,16,46,.18) 100%);
+}
+
+.cardBody {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  padding: 2rem;
+  gap: .6rem;
+}
+
+.cardTitle {
+  font-family: var(--fs);
+  font-size: 1.15rem;
+  line-height: 1.35;
+  font-weight: 600;
+}
+[data-design="1"] .cardTitle { font-family: 'Bebas Neue', sans-serif; font-size: 1.35rem; letter-spacing: .02em; }
+
+.cardExc {
+  font-size: .83rem;
+  color: var(--fg-dim);
+  line-height: 1.75;
+  flex: 1;
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  font-family: var(--fb);
+}
+
+.cardFoot {
+  display: flex;
+  justify-content: space-between;
+  font-size: .72rem;
+  color: var(--fg-dim);
+  font-family: var(--fb);
+  margin-top: .5rem;
+}
+
+.emptyState {
+  text-align: center;
+  padding: 4rem 2rem;
+  border: 1px solid var(--bdr);
+  background: var(--bg-card);
+}
+[data-design="2"] .emptyState { border-radius: 14px; }
+.emptyTitle {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 1.8rem;
+  letter-spacing: .04em;
+  color: var(--fg);
+  margin-bottom: .75rem;
+}
+.emptyDesc {
+  font-size: .9rem;
+  color: var(--fg-dim);
+  font-family: var(--fb);
+  line-height: 1.7;
+}
+.gridNote {
+  text-align: center;
+  font-size: .85rem;
+  color: var(--fg-dim);
+  font-family: var(--fb);
+  padding: 2rem 0 0;
+  letter-spacing: .04em;
+}
+
+@media (max-width: 1024px) {
+  .grid { grid-template-columns: repeat(2, 1fr); }
+}
+@media (max-width: 640px) {
+  .featContent { padding: 2rem; min-height: 340px; }
+  .grid { grid-template-columns: 1fr; }
+}

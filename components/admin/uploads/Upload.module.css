@@ -1,0 +1,105 @@
+/* components/admin/uploads/Upload.module.css */
+.wrap { width: 100%; }
+
+.dropzone {
+  width: 100%;
+  min-height: 120px;
+  border: 2px dashed #e0e0e0;
+  border-radius: 8px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: .5rem;
+  cursor: pointer;
+  transition: border-color .2s, background .2s;
+  padding: 2rem;
+  text-align: center;
+  background: #fafafa;
+}
+.dropzone:hover { border-color: #C8102E; background: rgba(200,16,46,.03); }
+.dropzone.uploading { border-color: #C8102E; background: rgba(200,16,46,.05); cursor: not-allowed; }
+
+.icon {
+  font-size: 1.8rem;
+  color: #C8102E;
+}
+.dropText {
+  font-size: .85rem;
+  font-weight: 500;
+  color: #444;
+  font-family: 'DM Sans', sans-serif;
+}
+.dropSub {
+  font-size: .72rem;
+  color: #aaa;
+  font-family: 'DM Sans', sans-serif;
+}
+.uploadingText {
+  font-size: .85rem;
+  color: #C8102E;
+  font-family: 'DM Sans', sans-serif;
+  font-weight: 500;
+}
+
+/* Preview */
+.preview {
+  display: flex;
+  flex-direction: column;
+  gap: .8rem;
+}
+.previewImg {
+  width: 100%;
+  max-height: 240px;
+  object-fit: cover;
+  border-radius: 6px;
+  border: 1px solid #e5e5e5;
+}
+
+.audioPreview {
+  display: flex;
+  flex-direction: column;
+  gap: .8rem;
+}
+.audioPlayer {
+  width: 100%;
+  border-radius: 6px;
+}
+
+.previewActions {
+  display: flex;
+  gap: .6rem;
+}
+.changeBtn {
+  padding: .35rem .9rem;
+  font-size: .72rem;
+  font-weight: 500;
+  border: 1px solid #e5e5e5;
+  border-radius: 5px;
+  cursor: pointer;
+  background: #fff;
+  color: #444;
+  font-family: 'DM Sans', sans-serif;
+  transition: all .2s;
+}
+.changeBtn:hover { border-color: #C8102E; color: #C8102E; }
+.removeBtn {
+  padding: .35rem .9rem;
+  font-size: .72rem;
+  font-weight: 500;
+  border: 1px solid #fecaca;
+  border-radius: 5px;
+  cursor: pointer;
+  background: #fff;
+  color: #dc2626;
+  font-family: 'DM Sans', sans-serif;
+  transition: all .2s;
+}
+.removeBtn:hover { background: #fee2e2; }
+
+.error {
+  font-size: .76rem;
+  color: #dc2626;
+  font-family: 'DM Sans', sans-serif;
+  margin-top: .4rem;
+}

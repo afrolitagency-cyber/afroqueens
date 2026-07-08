@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Edit Post — Afroqueens Admin</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet" />
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'DM Sans',sans-serif;background:#f8f8f8;color:#0a0a0a;display:flex;min-height:100vh}
+
+/* ── Sidebar (same) ── */
+.sidebar{width:240px;min-height:100vh;background:#0a0a0a;display:flex;flex-direction:column;position:fixed;top:0;left:0;bottom:0;border-right:1px solid rgba(255,255,255,.06)}
+.logo{display:flex;align-items:center;gap:.8rem;padding:1.6rem 1.5rem;border-bottom:1px solid rgba(255,255,255,.06);margin-bottom:.5rem}
+.logo-acc{background:#C8102E;color:#fff;font-family:'Bebas Neue',sans-serif;font-size:1.1rem;letter-spacing:.1em;padding:.3rem .6rem;border-radius:4px}
+.logo-text{font-size:.75rem;font-weight:600;letter-spacing:.12em;text-transform:uppercase;color:rgba(255,255,255,.45)}
+.group{padding:1rem 0 .5rem}
+.group-label{font-size:.6rem;font-weight:600;letter-spacing:.2em;text-transform:uppercase;color:rgba(255,255,255,.25);padding:0 1.5rem .6rem}
+.nav-item{display:flex;align-items:center;gap:.75rem;padding:.7rem 1.5rem;font-size:.8rem;font-weight:500;color:rgba(255,255,255,.45);text-decoration:none;transition:color .2s,background .2s;border-left:2px solid transparent}
+.nav-item:hover{color:rgba(255,255,255,.85);background:rgba(255,255,255,.04)}
+.nav-item.active{color:#fff;background:rgba(200,16,46,.12);border-left-color:#C8102E}
+.nav-icon{font-size:.85rem;width:18px;text-align:center;opacity:.7}
+.sidebar-bottom{margin-top:auto;padding:1.2rem 1.5rem;border-top:1px solid rgba(255,255,255,.06)}
+.signout{font-size:.74rem;font-weight:500;color:rgba(255,255,255,.3);text-decoration:none}
+.signout:hover{color:#C8102E}
+
+/* ── Main ── */
+.main{flex:1;margin-left:240px;display:flex;flex-direction:column;min-height:100vh}
+
+/* ── Topbar ── */
+.topbar{display:flex;align-items:center;justify-content:space-between;padding:.85rem 2rem;background:#fff;border-bottom:1px solid #f0f0f0;position:sticky;top:0;z-index:50}
+.topbar-left .greeting{font-size:.82rem;color:#888;font-weight:500}
+.topbar-right{display:flex;align-items:center;gap:1rem}
+.switcher-group{display:flex;align-items:center;gap:.5rem}
+.switch-label{font-size:.65rem;text-transform:uppercase;letter-spacing:.12em;color:#bbb;font-weight:600}
+.pills{display:flex;gap:.3rem}
+.pill{padding:.25rem .65rem;border:1px solid #e5e5e5;border-radius:20px;font-size:.68rem;font-weight:600;background:#fff;color:#888;cursor:pointer}
+.pill.active{background:#0a0a0a;color:#fff;border-color:#0a0a0a}
+.topbar-divider{width:1px;height:20px;background:#f0f0f0}
+.view-site{font-size:.72rem;font-weight:600;color:#C8102E;text-decoration:none;padding:.3rem .7rem;border:1px solid rgba(200,16,46,.3);border-radius:5px;transition:all .2s}
+
+/* ── Editor Topbar ── */
+.editor-topbar{display:flex;align-items:center;justify-content:space-between;padding:1rem 2rem;background:#fff;border-bottom:1px solid #f0f0f0;position:sticky;top:57px;z-index:49;gap:1rem;flex-wrap:wrap}
+.editor-top-left{display:flex;align-items:center;gap:1rem}
+.back-btn{font-size:.78rem;color:#888;background:none;border:none;cursor:pointer;text-decoration:none;transition:color .2s}
+.back-btn:hover{color:#C8102E}
+.editor-page-title{font-size:1rem;font-weight:600;color:#0a0a0a}
+.editor-top-right{display:flex;align-items:center;gap:.8rem;flex-wrap:wrap}
+.feat-check{display:flex;align-items:center;gap:.4rem;font-size:.78rem;color:#555;cursor:pointer}
+.draft-btn{padding:.5rem 1.2rem;border:1px solid #e5e5e5;border-radius:6px;font-size:.78rem;font-weight:500;background:#fff;color:#444;cursor:pointer;transition:all .2s;white-space:nowrap}
+.draft-btn:hover{border-color:#888}
+.publish-btn{padding:.5rem 1.4rem;background:#C8102E;color:#fff;border:none;border-radius:6px;font-size:.78rem;font-weight:600;cursor:pointer;white-space:nowrap}
+.publish-btn:hover{opacity:.88}
+
+/* ── Editor Layout ── */
+.editor-layout{display:grid;grid-template-columns:1fr 280px;flex:1}
+.editor-main{padding:2rem;background:#fff;border-right:1px solid #f0f0f0}
+.editor-sidebar{padding:1.5rem;background:#fafafa}
+
+/* Cover */
+.cover-preview{position:relative;margin-bottom:1rem}
+.cover-img{width:100%;max-height:220px;object-fit:cover;border-radius:6px;background:linear-gradient(135deg,#C8102E18,#C8102E44);display:flex;align-items:center;justify-content:center;min-height:160px;font-size:.8rem;color:#C8102E;font-weight:600}
+.remove-cover{position:absolute;top:.5rem;right:.5rem;width:28px;height:28px;border-radius:50%;background:rgba(0,0,0,.5);color:#fff;border:none;cursor:pointer;font-size:.85rem;display:flex;align-items:center;justify-content:center}
+
+/* Inputs */
+.cover-input{width:100%;padding:.6rem .8rem;border:1px solid #e5e5e5;border-radius:6px;font-size:.82rem;color:#444;margin-bottom:1rem;font-family:'DM Sans',sans-serif;outline:none;transition:border-color .2s}
+.cover-input:focus{border-color:#C8102E}
+.title-input{width:100%;font-size:1.9rem;font-weight:700;color:#0a0a0a;border:none;outline:none;border-bottom:2px solid #f0f0f0;padding-bottom:.5rem;margin-bottom:.8rem;font-family:'DM Sans',sans-serif;transition:border-color .2s;background:transparent}
+.title-input:focus{border-bottom-color:#C8102E}
+.slug-row{display:flex;align-items:center;gap:.5rem;margin-bottom:1rem;flex-wrap:wrap}
+.slug-label{font-size:.72rem;color:#aaa}
+.slug-val{font-size:.72rem;color:#666;font-family:monospace}
+.slug-edit{font-size:.68rem;color:#C8102E;background:none;border:none;cursor:pointer;text-decoration:underline}
+.excerpt-input{width:100%;padding:.7rem .8rem;border:1px solid #f0f0f0;border-radius:6px;font-size:.85rem;color:#555;font-family:'DM Sans',sans-serif;resize:vertical;outline:none;margin-bottom:1.2rem;transition:border-color .2s}
+.excerpt-input:focus{border-color:#C8102E}
+
+/* BlockNote mock */
+.editor-box{border:1px solid #f0f0f0;border-radius:8px;padding:1.5rem;min-height:460px;background:#fff}
+.editor-toolbar{display:flex;gap:.4rem;flex-wrap:wrap;margin-bottom:1rem;padding-bottom:.8rem;border-bottom:1px solid #f5f5f5}
+.tb-btn{padding:.25rem .55rem;border:1px solid #e5e5e5;border-radius:4px;font-size:.78rem;cursor:pointer;background:#fff;color:#555;font-family:'DM Sans',sans-serif;transition:all .15s}
+.tb-btn:hover{border-color:#C8102E;color:#C8102E}
+.tb-btn.sep{border:none;color:#ddd;cursor:default;padding:0 .2rem}
+.editor-content{outline:none;min-height:380px;font-size:.92rem;line-height:1.9;color:#333}
+.editor-content p{margin-bottom:.8rem}
+.editor-content h2{font-family:'Bebas Neue',sans-serif;font-size:1.6rem;letter-spacing:.04em;margin-bottom:.6rem;color:#0a0a0a}
+.editor-placeholder{color:#ccc;font-style:italic}
+
+/* Sidebar */
+.side-section{margin-bottom:1.2rem}
+.side-label{font-size:.65rem;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:#aaa;margin-bottom:.5rem}
+.side-select,.side-input{width:100%;padding:.55rem .75rem;border:1px solid #e5e5e5;border-radius:6px;font-size:.82rem;color:#333;font-family:'DM Sans',sans-serif;outline:none;transition:border-color .2s;background:#fff}
+.side-select:focus,.side-input:focus{border-color:#C8102E}
+.side-textarea{width:100%;padding:.55rem .75rem;border:1px solid #e5e5e5;border-radius:6px;font-size:.82rem;color:#333;font-family:'DM Sans',sans-serif;outline:none;resize:vertical;transition:border-color .2s;background:#fff}
+.side-textarea:focus{border-color:#C8102E}
+.side-divider{height:1px;background:#e5e5e5;margin:1.2rem 0}
+.char-count{font-size:.68rem;color:#aaa;text-align:right;margin-top:.3rem}
+</style>
+</head>
+<body>
+
+<!-- Sidebar -->
+<aside class="sidebar">
+  <div class="logo">
+    <span class="logo-acc">AQ</span>
+    <span class="logo-text">Admin</span>
+  </div>
+  <div class="group">
+    <div class="group-label">Content</div>
+    <a href="admin-dashboard.html" class="nav-item"><span class="nav-icon">▣</span>Dashboard</a>
+    <a href="admin-blogs.html" class="nav-item active"><span class="nav-icon">✎</span>Blog Posts</a>
+    <a href="#" class="nav-item"><span class="nav-icon">♪</span>Artists</a>
+    <a href="admin-gallery.html" class="nav-item"><span class="nav-icon">⊡</span>Gallery</a>
+    <a href="#" class="nav-item"><span class="nav-icon">◉</span>Episodes</a>
+  </div>
+  <div class="group">
+    <div class="group-label">Community</div>
+    <a href="#" class="nav-item"><span class="nav-icon">◻</span>Comments</a>
+    <a href="#" class="nav-item"><span class="nav-icon">✉</span>Newsletter</a>
+    <a href="#" class="nav-item"><span class="nav-icon">⊠</span>Inbox</a>
+  </div>
+  <div class="group">
+    <div class="group-label">Site</div>
+    <a href="#" class="nav-item"><span class="nav-icon">⊞</span>Widget Panel</a>
+    <a href="#" class="nav-item"><span class="nav-icon">◐</span>Theme & Design</a>
+    <a href="#" class="nav-item"><span class="nav-icon">⚙</span>General</a>
+  </div>
+  <div class="sidebar-bottom"><a href="#" class="signout">← Sign Out</a></div>
+</aside>
+
+<!-- Main -->
+<div class="main">
+  <header class="topbar">
+    <div class="topbar-left"><span class="greeting">Welcome back, Admin</span></div>
+    <div class="topbar-right">
+      <div class="switcher-group">
+        <span class="switch-label">Live Theme</span>
+        <div class="pills"><button class="pill active">◑ Dark</button><button class="pill">◯ Light</button></div>
+      </div>
+      <div class="topbar-divider"></div>
+      <div class="switcher-group">
+        <span class="switch-label">Design</span>
+        <div class="pills"><button class="pill active">D1</button><button class="pill">D2</button></div>
+      </div>
+      <a href="#" class="view-site">View Site ↗</a>
+    </div>
+  </header>
+
+  <!-- Editor topbar -->
+  <div class="editor-topbar">
+    <div class="editor-top-left">
+      <a href="admin-blogs.html" class="back-btn">← Back</a>
+      <span class="editor-page-title">Edit Post</span>
+    </div>
+    <div class="editor-top-right">
+      <label class="feat-check">
+        <input type="checkbox" checked /> Featured
+      </label>
+      <button class="draft-btn">Save Draft</button>
+      <button class="publish-btn">Publish</button>
+    </div>
+  </div>
+
+  <!-- Editor layout -->
+  <div class="editor-layout">
+    <!-- Main editor -->
+    <div class="editor-main">
+      <!-- Cover image preview -->
+      <div class="cover-preview">
+        <div class="cover-img">Cover Image Preview</div>
+        <button class="remove-cover">✕</button>
+      </div>
+      <input class="cover-input" placeholder="Cover image URL (paste Cloudinary URL or upload below)" value="https://res.cloudinary.com/afroqueens/image/upload/cover.jpg" />
+
+      <!-- Title -->
+      <input class="title-input" value="How Afrobeats Rewired the Global Music Industry in a Single Decade" />
+
+      <!-- Slug -->
+      <div class="slug-row">
+        <span class="slug-label">Permalink:</span>
+        <span class="slug-val">afroqueens.fm/blog/<strong>how-afrobeats-rewired-global-music-industry</strong></span>
+        <button class="slug-edit">Edit</button>
+      </div>
+
+      <!-- Excerpt -->
+      <textarea class="excerpt-input" rows="2">From Fela Kuti's protest anthems to Burna Boy's Grammy pulpit, the story of African music's global ascent is one of defiance, community, and unstoppable rhythm.</textarea>
+
+      <!-- BlockNote editor mock -->
+      <div class="editor-box">
+        <div class="editor-toolbar">
+          <button class="tb-btn"><b>B</b></button>
+          <button class="tb-btn"><i>I</i></button>
+          <button class="tb-btn"><u>U</u></button>
+          <span class="tb-btn sep">|</span>
+          <button class="tb-btn">H1</button>
+          <button class="tb-btn">H2</button>
+          <button class="tb-btn">H3</button>
+          <span class="tb-btn sep">|</span>
+          <button class="tb-btn">≡ List</button>
+          <button class="tb-btn">1. List</button>
+          <button class="tb-btn">" Quote</button>
+          <span class="tb-btn sep">|</span>
+          <button class="tb-btn">🖼 Image</button>
+          <button class="tb-btn">⌘ Code</button>
+          <button class="tb-btn">🔗 Link</button>
+        </div>
+        <div class="editor-content">
+          <h2>The Sound That Conquered the World</h2>
+          <p>A decade ago, Afrobeats was a regional phenomenon known primarily to diaspora communities and a handful of adventurous music journalists. Today, it is inescapable — on Spotify editorial playlists, in Hollywood film scores, at global fashion weeks, and on stadium stages from London to Los Angeles.</p>
+          <p>The question that fascinates us is not <em>whether</em> Afrobeats conquered the world, but <em>how</em> — and more importantly, on whose terms.</p>
+          <p>Click to edit content…</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Sidebar -->
+    <div class="editor-sidebar">
+      <div class="side-section">
+        <div class="side-label">Category</div>
+        <select class="side-select">
+          <option>Cover Story</option>
+          <option>Artist Profile</option>
+          <option>Event Review</option>
+          <option>Opinion</option>
+          <option>Tech & Music</option>
+          <option>Culture</option>
+          <option>Festival Guide</option>
+        </select>
+      </div>
+
+      <div class="side-section">
+        <div class="side-label">Author</div>
+        <input class="side-input" value="Afroqueens Editorial" />
+      </div>
+
+      <div class="side-divider"></div>
+
+      <div class="side-section">
+        <div class="side-label">SEO Title</div>
+        <input class="side-input" placeholder="Defaults to post title" value="How Afrobeats Rewired the Global Music Industry" />
+      </div>
+
+      <div class="side-section">
+        <div class="side-label">SEO Description</div>
+        <textarea class="side-textarea" rows="3">From Fela Kuti's protest anthems to Burna Boy's Grammy pulpit — the story of African music's global ascent.</textarea>
+        <div class="char-count">118/160</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+</body>
+</html>

@@ -1,0 +1,24 @@
+/* app/(admin)/admin/settings/theme/theme.module.css */
+.formWrap { max-width: 600px; display: flex; flex-direction: column; gap: 2rem; }
+.section { background: #fff; border: 1px solid #f0f0f0; border-radius: 10px; padding: 1.8rem; }
+.sectionTitle {
+  font-family: 'DM Sans', sans-serif; font-size: 0.78rem;
+  font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase;
+  color: #888; margin: 0 0 1.4rem;
+}
+.optionGrid { display: flex; gap: 1rem; flex-wrap: wrap; }
+.optionCard {
+  flex: 1; min-width: 120px; padding: 1.2rem;
+  border: 2px solid #e5e5e5; border-radius: 8px;
+  background: #fafafa; font-size: 0.88rem; font-weight: 500;
+  color: #444; cursor: pointer; font-family: 'DM Sans', sans-serif;
+  transition: all 0.2s; display: flex; flex-direction: column;
+  align-items: center; gap: 0.8rem;
+}
+.optionCard:hover { border-color: #C8102E; }
+.optionActive { border-color: #C8102E !important; background: rgba(200,16,46,0.05) !important; color: #C8102E !important; }
+.swatch { width: 48px; height: 32px; border-radius: 6px; border: 1px solid #e5e5e5; }
+.swatchDark  { background: #0a0a0a; }
+.swatchLight { background: #f8f8f8; }
+.saveBar { display: flex; align-items: center; justify-content: flex-end; gap: 1rem; }
+.savedMsg { font-size: 0.82rem; color: #16a34a; font-family: 'DM Sans', sans-serif; font-weight: 500; }

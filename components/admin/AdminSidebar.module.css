@@ -1,0 +1,105 @@
+/* components/admin/AdminSidebar.module.css */
+.sidebar {
+  width: 240px;
+  min-height: 100vh;
+  background: #0a0a0a;
+  display: flex;
+  flex-direction: column;
+  padding: 0;
+  border-right: 1px solid rgba(255,255,255,.06);
+  flex-shrink: 0;
+  position: fixed;
+  top: 0; left: 0; bottom: 0;
+}
+
+.logo {
+  display: flex;
+  align-items: center;
+  gap: .8rem;
+  padding: 1.6rem 1.5rem;
+  border-bottom: 1px solid rgba(255,255,255,.06);
+  margin-bottom: .5rem;
+}
+
+.logoAcc {
+  background: #C8102E;
+  color: #fff;
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 1.1rem;
+  letter-spacing: .1em;
+  padding: .3rem .6rem;
+  border-radius: 4px;
+}
+
+.logoText {
+  font-size: .75rem;
+  font-weight: 600;
+  letter-spacing: .12em;
+  text-transform: uppercase;
+  color: rgba(255,255,255,.45);
+  font-family: 'DM Sans', sans-serif;
+}
+
+.group {
+  padding: 1rem 0 .5rem;
+}
+
+.groupLabel {
+  font-size: .6rem;
+  font-weight: 600;
+  letter-spacing: .2em;
+  text-transform: uppercase;
+  color: rgba(255,255,255,.25);
+  padding: 0 1.5rem .6rem;
+  font-family: 'DM Sans', sans-serif;
+}
+
+.navItem {
+  display: flex;
+  align-items: center;
+  gap: .75rem;
+  padding: .7rem 1.5rem;
+  font-size: .8rem;
+  font-weight: 500;
+  letter-spacing: .04em;
+  color: rgba(255,255,255,.45);
+  text-decoration: none;
+  font-family: 'DM Sans', sans-serif;
+  transition: color .2s, background .2s;
+  border-left: 2px solid transparent;
+}
+
+.navItem:hover {
+  color: rgba(255,255,255,.85);
+  background: rgba(255,255,255,.04);
+}
+
+.navItem.active {
+  color: #fff;
+  background: rgba(200,16,46,.12);
+  border-left-color: #C8102E;
+}
+
+.icon {
+  font-size: .85rem;
+  width: 18px;
+  text-align: center;
+  opacity: .7;
+}
+
+.bottom {
+  margin-top: auto;
+  padding: 1.2rem 1.5rem;
+  border-top: 1px solid rgba(255,255,255,.06);
+}
+
+.signout {
+  font-size: .74rem;
+  font-weight: 500;
+  letter-spacing: .06em;
+  color: rgba(255,255,255,.3);
+  text-decoration: none;
+  font-family: 'DM Sans', sans-serif;
+  transition: color .2s;
+}
+.signout:hover { color: #C8102E; }

@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Gallery — Afroqueens Admin</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet" />
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'DM Sans',sans-serif;background:#f8f8f8;color:#0a0a0a;display:flex;min-height:100vh}
+
+.sidebar{width:240px;min-height:100vh;background:#0a0a0a;display:flex;flex-direction:column;position:fixed;top:0;left:0;bottom:0;border-right:1px solid rgba(255,255,255,.06)}
+.logo{display:flex;align-items:center;gap:.8rem;padding:1.6rem 1.5rem;border-bottom:1px solid rgba(255,255,255,.06);margin-bottom:.5rem}
+.logo-acc{background:#C8102E;color:#fff;font-family:'Bebas Neue',sans-serif;font-size:1.1rem;letter-spacing:.1em;padding:.3rem .6rem;border-radius:4px}
+.logo-text{font-size:.75rem;font-weight:600;letter-spacing:.12em;text-transform:uppercase;color:rgba(255,255,255,.45)}
+.group{padding:1rem 0 .5rem}
+.group-label{font-size:.6rem;font-weight:600;letter-spacing:.2em;text-transform:uppercase;color:rgba(255,255,255,.25);padding:0 1.5rem .6rem}
+.nav-item{display:flex;align-items:center;gap:.75rem;padding:.7rem 1.5rem;font-size:.8rem;font-weight:500;color:rgba(255,255,255,.45);text-decoration:none;transition:color .2s,background .2s;border-left:2px solid transparent}
+.nav-item:hover{color:rgba(255,255,255,.85);background:rgba(255,255,255,.04)}
+.nav-item.active{color:#fff;background:rgba(200,16,46,.12);border-left-color:#C8102E}
+.nav-icon{font-size:.85rem;width:18px;text-align:center;opacity:.7}
+.sidebar-bottom{margin-top:auto;padding:1.2rem 1.5rem;border-top:1px solid rgba(255,255,255,.06)}
+.signout{font-size:.74rem;font-weight:500;color:rgba(255,255,255,.3);text-decoration:none}
+.signout:hover{color:#C8102E}
+
+.main{flex:1;margin-left:240px;display:flex;flex-direction:column;min-height:100vh}
+
+.topbar{display:flex;align-items:center;justify-content:space-between;padding:.85rem 2rem;background:#fff;border-bottom:1px solid #f0f0f0;position:sticky;top:0;z-index:50}
+.topbar-left .greeting{font-size:.82rem;color:#888;font-weight:500}
+.topbar-right{display:flex;align-items:center;gap:1rem}
+.switcher-group{display:flex;align-items:center;gap:.5rem}
+.switch-label{font-size:.65rem;text-transform:uppercase;letter-spacing:.12em;color:#bbb;font-weight:600}
+.pills{display:flex;gap:.3rem}
+.pill{padding:.25rem .65rem;border:1px solid #e5e5e5;border-radius:20px;font-size:.68rem;font-weight:600;background:#fff;color:#888;cursor:pointer}
+.pill.active{background:#0a0a0a;color:#fff;border-color:#0a0a0a}
+.topbar-divider{width:1px;height:20px;background:#f0f0f0}
+.view-site{font-size:.72rem;font-weight:600;color:#C8102E;text-decoration:none;padding:.3rem .7rem;border:1px solid rgba(200,16,46,.3);border-radius:5px}
+
+.content{flex:1}
+.page{padding:2rem;max-width:1200px}
+.header{display:flex;align-items:center;justify-content:space-between;margin-bottom:2rem;flex-wrap:wrap;gap:1rem}
+.page-title{font-family:'Bebas Neue',sans-serif;font-size:2.2rem;letter-spacing:.06em;color:#0a0a0a}
+.page-sub{font-size:.82rem;color:#aaa;margin-top:.2rem}
+
+/* Dropzone */
+.dropzone{width:100%;min-height:140px;border:2px dashed #e0e0e0;border-radius:8px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:.5rem;cursor:pointer;transition:border-color .2s,background .2s;padding:2rem;text-align:center;background:#fafafa;margin-bottom:2rem}
+.dropzone:hover{border-color:#C8102E;background:rgba(200,16,46,.03)}
+.upload-icon{font-size:2rem;color:#C8102E}
+.upload-text{font-size:.88rem;font-weight:500;color:#444}
+.upload-sub{font-size:.74rem;color:#aaa}
+.upload-sub span{color:#C8102E;font-weight:600}
+
+/* Filter bar */
+.filter-bar{display:flex;gap:.5rem;margin-bottom:1.5rem;flex-wrap:wrap}
+.filter-btn{padding:.35rem .9rem;border:1px solid #e5e5e5;border-radius:6px;font-size:.72rem;font-weight:600;letter-spacing:.08em;text-transform:uppercase;cursor:pointer;background:#fff;color:#888;transition:all .2s}
+.filter-btn.active{background:#C8102E;color:#fff;border-color:#C8102E}
+
+/* Grid */
+.gallery-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:1rem}
+.gallery-item{background:#fff;border:1px solid #f0f0f0;border-radius:8px;overflow:hidden}
+.gallery-thumb{width:100%;aspect-ratio:4/3;object-fit:cover;display:block}
+.gallery-img-placeholder{width:100%;aspect-ratio:4/3;display:flex;align-items:center;justify-content:center;font-size:.75rem;color:#aaa;font-weight:500}
+.item-meta{padding:.8rem;display:flex;flex-direction:column;gap:.5rem}
+.label-input{width:100%;padding:.4rem .6rem;border:1px solid #e5e5e5;border-radius:5px;font-size:.78rem;font-family:'DM Sans',sans-serif;outline:none;color:#333;transition:border-color .2s}
+.label-input:focus{border-color:#C8102E}
+.cat-select{width:100%;padding:.4rem .6rem;border:1px solid #e5e5e5;border-radius:5px;font-size:.76rem;font-family:'DM Sans',sans-serif;background:#fff;color:#555;outline:none;appearance:none;cursor:pointer}
+.item-actions{display:flex;gap:.5rem;padding:0 .8rem .8rem}
+.feat-btn{padding:.3rem .6rem;border:1px solid #e5e5e5;border-radius:5px;background:#fff;color:#aaa;cursor:pointer;font-size:.85rem;transition:all .2s;flex:1}
+.feat-btn.active{background:rgba(200,16,46,.1);color:#C8102E;border-color:rgba(200,16,46,.3)}
+.del-btn{padding:.3rem .6rem;border:1px solid #fee2e2;border-radius:5px;background:#fff;color:#dc2626;cursor:pointer;font-size:.78rem;transition:all .2s}
+.del-btn:hover{background:#fee2e2}
+</style>
+</head>
+<body>
+
+<aside class="sidebar">
+  <div class="logo"><span class="logo-acc">AQ</span><span class="logo-text">Admin</span></div>
+  <div class="group">
+    <div class="group-label">Content</div>
+    <a href="admin-dashboard.html" class="nav-item"><span class="nav-icon">▣</span>Dashboard</a>
+    <a href="admin-blogs.html" class="nav-item"><span class="nav-icon">✎</span>Blog Posts</a>
+    <a href="#" class="nav-item"><span class="nav-icon">♪</span>Artists</a>
+    <a href="admin-gallery.html" class="nav-item active"><span class="nav-icon">⊡</span>Gallery</a>
+    <a href="#" class="nav-item"><span class="nav-icon">◉</span>Episodes</a>
+  </div>
+  <div class="group">
+    <div class="group-label">Community</div>
+    <a href="#" class="nav-item"><span class="nav-icon">◻</span>Comments</a>
+    <a href="#" class="nav-item"><span class="nav-icon">✉</span>Newsletter</a>
+    <a href="#" class="nav-item"><span class="nav-icon">⊠</span>Inbox</a>
+  </div>
+  <div class="group">
+    <div class="group-label">Site</div>
+    <a href="#" class="nav-item"><span class="nav-icon">⊞</span>Widget Panel</a>
+    <a href="#" class="nav-item"><span class="nav-icon">◐</span>Theme & Design</a>
+    <a href="#" class="nav-item"><span class="nav-icon">⚙</span>General</a>
+  </div>
+  <div class="sidebar-bottom"><a href="#" class="signout">← Sign Out</a></div>
+</aside>
+
+<div class="main">
+  <header class="topbar">
+    <div class="topbar-left"><span class="greeting">Welcome back, Admin</span></div>
+    <div class="topbar-right">
+      <div class="switcher-group"><span class="switch-label">Live Theme</span><div class="pills"><button class="pill active">◑ Dark</button><button class="pill">◯ Light</button></div></div>
+      <div class="topbar-divider"></div>
+      <div class="switcher-group"><span class="switch-label">Design</span><div class="pills"><button class="pill active">D1</button><button class="pill">D2</button></div></div>
+      <a href="#" class="view-site">View Site ↗</a>
+    </div>
+  </header>
+
+  <div class="content">
+    <div class="page">
+      <div class="header">
+        <div>
+          <div class="page-title">Gallery</div>
+          <div class="page-sub">7 items · drag to reorder</div>
+        </div>
+      </div>
+
+      <!-- Dropzone -->
+      <div class="dropzone">
+        <div class="upload-icon">⊕</div>
+        <div class="upload-text">Drop images here or click to upload</div>
+        <div class="upload-sub">PNG, JPG, WEBP up to 10MB each · <span>Uploads to Cloudinary</span></div>
+      </div>
+
+      <!-- Filter -->
+      <div class="filter-bar">
+        <button class="filter-btn active">All (7)</button>
+        <button class="filter-btn">Live Sessions</button>
+        <button class="filter-btn">Studio</button>
+        <button class="filter-btn">Festivals</button>
+        <button class="filter-btn">Portraits</button>
+        <button class="filter-btn">Behind the Scenes</button>
+        <button class="filter-btn">On the Road</button>
+      </div>
+
+      <!-- Gallery grid -->
+      <div class="gallery-grid">
+
+        <!-- Item 1 — featured -->
+        <div class="gallery-item">
+          <div class="gallery-img-placeholder" style="background:linear-gradient(135deg,#C8102E22,#C8102E44);color:#C8102E">★ Featured</div>
+          <div class="item-meta">
+            <input class="label-input" value="Lagos Sessions" />
+            <select class="cat-select"><option selected>Live Sessions</option><option>Studio</option><option>Festivals</option><option>Portraits</option><option>Behind the Scenes</option><option>On the Road</option></select>
+          </div>
+          <div class="item-actions">
+            <button class="feat-btn active">★ Featured</button>
+            <button class="del-btn">✕</button>
+          </div>
+        </div>
+
+        <!-- Item 2 -->
+        <div class="gallery-item">
+          <div class="gallery-img-placeholder" style="background:#f5f5f5">Studio</div>
+          <div class="item-meta">
+            <input class="label-input" value="Studio Chronicles" />
+            <select class="cat-select"><option>Live Sessions</option><option selected>Studio</option><option>Festivals</option><option>Portraits</option><option>Behind the Scenes</option><option>On the Road</option></select>
+          </div>
+          <div class="item-actions">
+            <button class="feat-btn">☆ Feature</button>
+            <button class="del-btn">✕</button>
+          </div>
+        </div>
+
+        <!-- Item 3 -->
+        <div class="gallery-item">
+          <div class="gallery-img-placeholder" style="background:#f5f5f5">Festival</div>
+          <div class="item-meta">
+            <input class="label-input" value="Festival Lights" />
+            <select class="cat-select"><option>Live Sessions</option><option>Studio</option><option selected>Festivals</option><option>Portraits</option><option>Behind the Scenes</option><option>On the Road</option></select>
+          </div>
+          <div class="item-actions">
+            <button class="feat-btn">☆ Feature</button>
+            <button class="del-btn">✕</button>
+          </div>
+        </div>
+
+        <!-- Item 4 -->
+        <div class="gallery-item">
+          <div class="gallery-img-placeholder" style="background:#f5f5f5">Backstage</div>
+          <div class="item-meta">
+            <input class="label-input" value="Backstage" />
+            <select class="cat-select"><option>Live Sessions</option><option>Studio</option><option>Festivals</option><option>Portraits</option><option selected>Behind the Scenes</option><option>On the Road</option></select>
+          </div>
+          <div class="item-actions">
+            <button class="feat-btn">☆ Feature</button>
+            <button class="del-btn">✕</button>
+          </div>
+        </div>
+
+        <!-- Item 5 -->
+        <div class="gallery-item">
+          <div class="gallery-img-placeholder" style="background:#f5f5f5">Portrait</div>
+          <div class="item-meta">
+            <input class="label-input" value="Portrait Series" />
+            <select class="cat-select"><option>Live Sessions</option><option>Studio</option><option>Festivals</option><option selected>Portraits</option><option>Behind the Scenes</option><option>On the Road</option></select>
+          </div>
+          <div class="item-actions">
+            <button class="feat-btn">☆ Feature</button>
+            <button class="del-btn">✕</button>
+          </div>
+        </div>
+
+        <!-- Item 6 -->
+        <div class="gallery-item">
+          <div class="gallery-img-placeholder" style="background:#f5f5f5">Road</div>
+          <div class="item-meta">
+            <input class="label-input" value="On the Road" />
+            <select class="cat-select"><option>Live Sessions</option><option>Studio</option><option>Festivals</option><option>Portraits</option><option>Behind the Scenes</option><option selected>On the Road</option></select>
+          </div>
+          <div class="item-actions">
+            <button class="feat-btn">☆ Feature</button>
+            <button class="del-btn">✕</button>
+          </div>
+        </div>
+
+        <!-- Item 7 -->
+        <div class="gallery-item">
+          <div class="gallery-img-placeholder" style="background:#f5f5f5">Sound Check</div>
+          <div class="item-meta">
+            <input class="label-input" value="Sound Check" />
+            <select class="cat-select"><option>Live Sessions</option><option selected>Studio</option><option>Festivals</option><option>Portraits</option><option>Behind the Scenes</option><option>On the Road</option></select>
+          </div>
+          <div class="item-actions">
+            <button class="feat-btn">☆ Feature</button>
+            <button class="del-btn">✕</button>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+</div>
+
+</body>
+</html>

@@ -1,0 +1,50 @@
+/* components/public/Footer.module.css */
+.footer {
+  padding: 3rem 0;
+  border-top: 1px solid var(--bdr);
+  background: var(--bg);
+  transition: background .5s, border-color .5s;
+}
+
+.inner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.logo {
+  font-family: var(--fd);
+  font-size: 1.5rem;
+  letter-spacing: .12em;
+  color: var(--fg);
+  transition: font-family .5s, color .5s;
+}
+[data-design="2"] .logo { font-weight: 800; letter-spacing: .04em; font-size: 1.3rem; }
+.logo span { color: var(--acc); }
+
+.copy {
+  font-size: .73rem;
+  color: var(--fg-dim);
+  letter-spacing: .08em;
+  font-family: var(--fb);
+  transition: color .5s;
+}
+
+.socials { display: flex; gap: 1rem; }
+
+.socialBtn {
+  width: 36px; height: 36px;
+  border: 1px solid var(--bdr);
+  display: flex; align-items: center; justify-content: center;
+  color: var(--fg-dim);
+  font-size: .72rem;
+  text-decoration: none;
+  font-family: var(--fb);
+  transition: all .3s;
+}
+[data-design="2"] .socialBtn { border-radius: 50%; }
+.socialBtn:hover { border-color: var(--acc); color: var(--acc); }
+
+@media (max-width: 640px) {
+  .inner { flex-direction: column; gap: 1.5rem; text-align: center; }
+}

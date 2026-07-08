@@ -1,0 +1,256 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Dashboard — Afroqueens Admin</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet" />
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'DM Sans',sans-serif;background:#f8f8f8;color:#0a0a0a;display:flex;min-height:100vh}
+
+.sidebar{width:240px;min-height:100vh;background:#0a0a0a;display:flex;flex-direction:column;position:fixed;top:0;left:0;bottom:0;border-right:1px solid rgba(255,255,255,.06)}
+.logo{display:flex;align-items:center;gap:.8rem;padding:1.6rem 1.5rem;border-bottom:1px solid rgba(255,255,255,.06);margin-bottom:.5rem}
+.logo-acc{background:#C8102E;color:#fff;font-family:'Bebas Neue',sans-serif;font-size:1.1rem;letter-spacing:.1em;padding:.3rem .6rem;border-radius:4px}
+.logo-text{font-size:.75rem;font-weight:600;letter-spacing:.12em;text-transform:uppercase;color:rgba(255,255,255,.45)}
+.group{padding:1rem 0 .5rem}
+.group-label{font-size:.6rem;font-weight:600;letter-spacing:.2em;text-transform:uppercase;color:rgba(255,255,255,.25);padding:0 1.5rem .6rem}
+.nav-item{display:flex;align-items:center;gap:.75rem;padding:.7rem 1.5rem;font-size:.8rem;font-weight:500;color:rgba(255,255,255,.45);text-decoration:none;transition:color .2s,background .2s;border-left:2px solid transparent}
+.nav-item:hover{color:rgba(255,255,255,.85);background:rgba(255,255,255,.04)}
+.nav-item.active{color:#fff;background:rgba(200,16,46,.12);border-left-color:#C8102E}
+.nav-icon{font-size:.85rem;width:18px;text-align:center;opacity:.7}
+.sidebar-bottom{margin-top:auto;padding:1.2rem 1.5rem;border-top:1px solid rgba(255,255,255,.06)}
+.signout{font-size:.74rem;font-weight:500;color:rgba(255,255,255,.3);text-decoration:none}
+.signout:hover{color:#C8102E}
+
+.main{flex:1;margin-left:240px;display:flex;flex-direction:column;min-height:100vh}
+
+.topbar{display:flex;align-items:center;justify-content:space-between;padding:.85rem 2rem;background:#fff;border-bottom:1px solid #f0f0f0;position:sticky;top:0;z-index:50;gap:1rem}
+.topbar-left .greeting{font-size:.82rem;color:#888;font-weight:500}
+.topbar-right{display:flex;align-items:center;gap:1rem}
+.switcher-group{display:flex;align-items:center;gap:.5rem}
+.switch-label{font-size:.65rem;text-transform:uppercase;letter-spacing:.12em;color:#bbb;font-weight:600}
+.pills{display:flex;gap:.3rem}
+.pill{padding:.25rem .65rem;border:1px solid #e5e5e5;border-radius:20px;font-size:.68rem;font-weight:600;background:#fff;color:#888;cursor:pointer}
+.pill.active{background:#0a0a0a;color:#fff;border-color:#0a0a0a}
+.topbar-divider{width:1px;height:20px;background:#f0f0f0}
+.view-site{font-size:.72rem;font-weight:600;color:#C8102E;text-decoration:none;padding:.3rem .7rem;border:1px solid rgba(200,16,46,.3);border-radius:5px}
+
+.content{flex:1}
+.page{padding:2rem;max-width:1200px}
+.page-title{font-family:'Bebas Neue',sans-serif;font-size:2.2rem;letter-spacing:.06em;color:#0a0a0a}
+.page-sub{font-size:.82rem;color:#aaa;margin-top:.2rem;margin-bottom:2rem}
+
+/* Stats grid */
+.stats-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:1rem;margin-bottom:2rem}
+.stat-card{background:#fff;border:1px solid #f0f0f0;border-radius:10px;padding:1.4rem;text-decoration:none;display:flex;flex-direction:column;gap:.5rem;transition:box-shadow .2s,transform .2s}
+.stat-card:hover{box-shadow:0 4px 16px rgba(0,0,0,.06);transform:translateY(-1px)}
+.stat-icon{width:40px;height:40px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:1.1rem;margin-bottom:.3rem}
+.stat-val{font-family:'Bebas Neue',sans-serif;font-size:2rem;letter-spacing:.04em;color:#0a0a0a}
+.stat-label{font-size:.72rem;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:#aaa}
+
+/* Quick actions */
+.section-title{font-size:.72rem;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:#888;margin-bottom:1rem}
+.quick-actions{background:#fff;border:1px solid #f0f0f0;border-radius:10px;padding:1.4rem;margin-bottom:2rem}
+.action-row{display:flex;gap:.7rem;flex-wrap:wrap}
+.action-btn{padding:.55rem 1.1rem;border:1px solid #e5e5e5;border-radius:6px;font-size:.78rem;font-weight:500;color:#444;text-decoration:none;background:#fff;cursor:pointer;transition:all .2s;font-family:'DM Sans',sans-serif}
+.action-btn:hover{border-color:#C8102E;color:#C8102E}
+.action-btn.accent{background:#C8102E;color:#fff;border-color:#C8102E}
+.action-btn.accent:hover{opacity:.88}
+
+/* Two col */
+.two-col{display:grid;grid-template-columns:1fr 1fr;gap:1.5rem}
+.table-card{background:#fff;border:1px solid #f0f0f0;border-radius:10px;overflow:hidden}
+.table-header{display:flex;align-items:center;justify-content:space-between;padding:1.2rem 1.4rem;border-bottom:1px solid #f5f5f5}
+.view-all{font-size:.72rem;color:#C8102E;text-decoration:none;font-weight:600}
+table{width:100%;border-collapse:collapse;font-family:'DM Sans',sans-serif}
+th{font-size:.62rem;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:#bbb;text-align:left;padding:.8rem 1.4rem;border-bottom:1px solid #f5f5f5}
+td{font-size:.8rem;color:#333;padding:.75rem 1.4rem;border-bottom:1px solid #f9f9f9}
+tr:last-child td{border-bottom:none}
+.table-link{color:#0a0a0a;text-decoration:none;font-weight:500;transition:color .2s}
+.table-link:hover{color:#C8102E}
+.cat{font-size:.66rem;font-weight:600;color:#888;letter-spacing:.06em;text-transform:uppercase}
+.badge{display:inline-block;padding:.15rem .5rem;border-radius:20px;font-size:.62rem;font-weight:600;letter-spacing:.06em;text-transform:uppercase}
+.pub{background:rgba(22,163,74,.1);color:#16a34a}
+.draft{background:rgba(217,119,6,.1);color:#d97706}
+.featured{background:rgba(200,16,46,.1);color:#C8102E}
+.dim-text{font-size:.78rem;color:#aaa}
+</style>
+</head>
+<body>
+
+<aside class="sidebar">
+  <div class="logo"><span class="logo-acc">AQ</span><span class="logo-text">Admin</span></div>
+  <div class="group">
+    <div class="group-label">Content</div>
+    <a href="admin-dashboard.html" class="nav-item active"><span class="nav-icon">▣</span>Dashboard</a>
+    <a href="admin-blogs.html" class="nav-item"><span class="nav-icon">✎</span>Blog Posts</a>
+    <a href="#" class="nav-item"><span class="nav-icon">♪</span>Artists</a>
+    <a href="admin-gallery.html" class="nav-item"><span class="nav-icon">⊡</span>Gallery</a>
+    <a href="#" class="nav-item"><span class="nav-icon">◉</span>Episodes</a>
+  </div>
+  <div class="group">
+    <div class="group-label">Community</div>
+    <a href="#" class="nav-item"><span class="nav-icon">◻</span>Comments</a>
+    <a href="#" class="nav-item"><span class="nav-icon">✉</span>Newsletter</a>
+    <a href="#" class="nav-item"><span class="nav-icon">⊠</span>Inbox</a>
+  </div>
+  <div class="group">
+    <div class="group-label">Site</div>
+    <a href="#" class="nav-item"><span class="nav-icon">⊞</span>Widget Panel</a>
+    <a href="#" class="nav-item"><span class="nav-icon">◐</span>Theme & Design</a>
+    <a href="#" class="nav-item"><span class="nav-icon">⚙</span>General</a>
+  </div>
+  <div class="sidebar-bottom"><a href="#" class="signout">← Sign Out</a></div>
+</aside>
+
+<div class="main">
+  <header class="topbar">
+    <div class="topbar-left"><span class="greeting">Welcome back, Admin</span></div>
+    <div class="topbar-right">
+      <div class="switcher-group"><span class="switch-label">Live Theme</span><div class="pills"><button class="pill active">◑ Dark</button><button class="pill">◯ Light</button></div></div>
+      <div class="topbar-divider"></div>
+      <div class="switcher-group"><span class="switch-label">Design</span><div class="pills"><button class="pill active">D1</button><button class="pill">D2</button></div></div>
+      <a href="#" class="view-site">View Site ↗</a>
+    </div>
+  </header>
+
+  <div class="content">
+    <div class="page">
+      <div class="page-title">Dashboard</div>
+      <div class="page-sub">Your Afroqueens content overview</div>
+
+      <!-- Stats -->
+      <div class="stats-grid">
+        <a href="#" class="stat-card">
+          <div class="stat-icon" style="background:#C8102E18;color:#C8102E">♪</div>
+          <div class="stat-val">4</div>
+          <div class="stat-label">Artists</div>
+        </a>
+        <a href="admin-blogs.html" class="stat-card">
+          <div class="stat-icon" style="background:#2563eb18;color:#2563eb">✎</div>
+          <div class="stat-val">4</div>
+          <div class="stat-label">Blog Posts</div>
+        </a>
+        <a href="admin-blogs.html" class="stat-card">
+          <div class="stat-icon" style="background:#16a34a18;color:#16a34a">✓</div>
+          <div class="stat-val">3</div>
+          <div class="stat-label">Published Posts</div>
+        </a>
+        <a href="admin-blogs.html" class="stat-card">
+          <div class="stat-icon" style="background:#d9770618;color:#d97706">◌</div>
+          <div class="stat-val">1</div>
+          <div class="stat-label">Drafts</div>
+        </a>
+        <a href="#" class="stat-card">
+          <div class="stat-icon" style="background:#7c3aed18;color:#7c3aed">◉</div>
+          <div class="stat-val">4</div>
+          <div class="stat-label">Episodes</div>
+        </a>
+        <a href="admin-gallery.html" class="stat-card">
+          <div class="stat-icon" style="background:#0891b218;color:#0891b2">⊡</div>
+          <div class="stat-val">7</div>
+          <div class="stat-label">Gallery Items</div>
+        </a>
+        <a href="#" class="stat-card">
+          <div class="stat-icon" style="background:#ea580c18;color:#ea580c">💬</div>
+          <div class="stat-val">1</div>
+          <div class="stat-label">Pending Comments</div>
+        </a>
+        <a href="#" class="stat-card">
+          <div class="stat-icon" style="background:#9333ea18;color:#9333ea">✉</div>
+          <div class="stat-val">2</div>
+          <div class="stat-label">Unread Messages</div>
+        </a>
+        <a href="#" class="stat-card">
+          <div class="stat-icon" style="background:#0d948818;color:#0d9488">◎</div>
+          <div class="stat-val">5</div>
+          <div class="stat-label">Subscribers</div>
+        </a>
+      </div>
+
+      <!-- Quick Actions -->
+      <div class="quick-actions">
+        <div class="section-title">Quick Actions</div>
+        <div class="action-row">
+          <a href="admin-blog-edit.html" class="action-btn">✎ New Blog Post</a>
+          <a href="#" class="action-btn">♪ Add Artist</a>
+          <a href="#" class="action-btn">◉ New Episode</a>
+          <a href="admin-gallery.html" class="action-btn">⊡ Upload to Gallery</a>
+          <a href="#" class="action-btn accent">◐ Change Theme</a>
+        </div>
+      </div>
+
+      <!-- Two col tables -->
+      <div class="two-col">
+        <div class="table-card">
+          <div class="table-header">
+            <span class="section-title">Recent Posts</span>
+            <a href="admin-blogs.html" class="view-all">View all →</a>
+          </div>
+          <table>
+            <thead><tr><th>Title</th><th>Category</th><th>Status</th></tr></thead>
+            <tbody>
+              <tr>
+                <td><a href="admin-blog-edit.html" class="table-link">How Afrobeats Rewired the Global…</a></td>
+                <td><span class="cat">Cover Story</span></td>
+                <td><span class="badge pub">Live</span></td>
+              </tr>
+              <tr>
+                <td><a href="admin-blog-edit.html" class="table-link">Adaeze: Silence as an Instrument</a></td>
+                <td><span class="cat">Artist Profile</span></td>
+                <td><span class="badge pub">Live</span></td>
+              </tr>
+              <tr>
+                <td><a href="admin-blog-edit.html" class="table-link">Lagos Electronic: 40,000 Souls…</a></td>
+                <td><span class="cat">Event Review</span></td>
+                <td><span class="badge pub">Live</span></td>
+              </tr>
+              <tr>
+                <td><a href="admin-blog-edit.html" class="table-link">The New Wave: 10 Nigerian Women…</a></td>
+                <td><span class="cat">Cover Story</span></td>
+                <td><span class="badge draft">Draft</span></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div class="table-card">
+          <div class="table-header">
+            <span class="section-title">Recent Artists</span>
+            <a href="#" class="view-all">View all →</a>
+          </div>
+          <table>
+            <thead><tr><th>Name</th><th>Genre</th><th>Featured</th></tr></thead>
+            <tbody>
+              <tr>
+                <td><a href="#" class="table-link">Zara Echo</a></td>
+                <td class="dim-text">Afropop · R&B</td>
+                <td><span class="badge featured">★ Featured</span></td>
+              </tr>
+              <tr>
+                <td><a href="#" class="table-link">Kola Waves</a></td>
+                <td class="dim-text">Afrobeats</td>
+                <td></td>
+              </tr>
+              <tr>
+                <td><a href="#" class="table-link">Adaeze</a></td>
+                <td class="dim-text">Electronic · Soul</td>
+                <td></td>
+              </tr>
+              <tr>
+                <td><a href="#" class="table-link">Emeka Duo</a></td>
+                <td class="dim-text">Highlife · Jazz</td>
+                <td></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+</body>
+</html>

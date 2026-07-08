@@ -1,0 +1,192 @@
+/* components/public/nav/Navbar.module.css */
+
+.nav {
+  position: fixed;
+  top: 32px; left: 0; right: 0;
+  z-index: 900;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 4rem;
+  height: 68px;
+  border-bottom: 1px solid var(--bdr);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  transition: background .5s, border-color .5s;
+}
+
+[data-design="1"][data-theme="dark"]  .nav { background: rgba(10,10,10,.9); }
+[data-design="1"][data-theme="light"] .nav { background: rgba(244,239,233,.92); }
+[data-design="2"][data-theme="dark"]  .nav { background: rgba(6,6,14,.92); }
+[data-design="2"][data-theme="light"] .nav { background: rgba(248,246,255,.92); }
+
+/* Logos */
+[data-design="1"] .logoD1 { display: flex; }
+[data-design="1"] .logoD2 { display: none; }
+[data-design="2"] .logoD1 { display: none; }
+[data-design="2"] .logoD2 { display: flex; }
+
+.logoD1 {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 1.9rem; letter-spacing: .14em;
+  color: var(--fg); text-decoration: none;
+  align-items: center; transition: color .5s;
+}
+.logoD1 span { color: var(--acc); }
+
+.logoD2 {
+  font-family: 'Syne', sans-serif;
+  font-size: 1.3rem; font-weight: 800; letter-spacing: .04em;
+  color: var(--fg); text-decoration: none;
+  align-items: center; gap: .5rem; transition: color .5s;
+}
+
+.lpill {
+  background: var(--acc); color: #fff;
+  padding: .2rem .6rem; font-size: .75rem;
+  font-weight: 700; border-radius: 20px;
+}
+
+/* Desktop links */
+.links {
+  display: flex; align-items: center;
+  gap: 2rem; list-style: none;
+}
+
+.link {
+  font-family: var(--fb); font-size: .72rem; font-weight: 500;
+  letter-spacing: .16em; text-transform: uppercase;
+  color: var(--fg-dim); text-decoration: none;
+  position: relative; transition: color .3s;
+}
+[data-design="2"] .link { letter-spacing: .08em; font-weight: 600; }
+
+.link::after {
+  content: ''; position: absolute;
+  left: 0; bottom: -3px;
+  width: 0; height: 1px;
+  background: var(--acc);
+  transition: width .35s cubic-bezier(.4,0,.2,1);
+}
+[data-design="2"] .link::after { height: 2px; border-radius: 1px; }
+.link:hover { color: var(--fg); }
+.link:hover::after { width: 100%; }
+
+/* CTA switching */
+[data-design="1"] .cta1 { display: inline-flex; }
+[data-design="1"] .cta2 { display: none; }
+[data-design="2"] .cta1 { display: none; }
+[data-design="2"] .cta2 { display: inline-flex; }
+
+.cta1 {
+  padding: .42rem 1.3rem;
+  border: 1px solid var(--acc) !important;
+  color: var(--acc) !important;
+  transition: background .3s, color .3s !important;
+}
+.cta1::after { display: none !important; }
+.cta1:hover { background: var(--acc) !important; color: #fff !important; }
+
+.cta2 {
+  padding: .42rem 1.4rem;
+  background: var(--acc) !important;
+  color: #fff !important;
+  border-radius: 20px;
+  font-weight: 600 !important;
+  transition: opacity .3s !important;
+}
+.cta2::after { display: none !important; }
+.cta2:hover { opacity: .85 !important; }
+
+/* Hamburger */
+.hamburger {
+  display: none;
+  flex-direction: column;
+  justify-content: center;
+  gap: 5px; width: 40px; height: 40px;
+  background: none; border: none; padding: 4px;
+  cursor: pointer; z-index: 1001;
+}
+.hamburger span {
+  display: block; width: 28px; height: 2px;
+  background: var(--fg); border-radius: 2px;
+  transition: all .4s cubic-bezier(.4,0,.2,1), background .5s;
+  transform-origin: center;
+}
+.hamburger.open span:nth-child(1) { transform: translateY(7px) rotate(45deg); }
+.hamburger.open span:nth-child(2) { opacity: 0; transform: scaleX(0); }
+.hamburger.open span:nth-child(3) { transform: translateY(-7px) rotate(-45deg); }
+
+/* Mobile menu */
+.mobileMenu {
+  position: fixed; inset: 0; z-index: 800;
+  background: var(--bg);
+  display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+  gap: 1.6rem;
+  opacity: 0; pointer-events: none;
+  transition: opacity .4s, background .5s;
+}
+.mobileMenu.menuOpen { opacity: 1; pointer-events: all; }
+
+.mobLink {
+  font-family: var(--fd);
+  font-size: clamp(2rem, 8vw, 3.6rem);
+  letter-spacing: .08em;
+  text-decoration: none; color: var(--fg);
+  opacity: 0; transform: translateY(20px);
+  transition: color .3s, transform .3s, opacity .3s;
+}
+[data-design="2"] .mobLink { font-weight: 800; font-size: clamp(1.8rem, 7vw, 3rem); }
+.mobileMenu.menuOpen .mobLink { opacity: 1; transform: translateY(0); }
+.mobLink:hover { color: var(--acc); }
+
+.mobDiv { width: 50px; height: 1px; background: var(--acc-bdr); }
+
+/* Responsive */
+@media (max-width: 1024px) {
+  .nav { padding: 0 2rem; }
+  .links { display: none; }
+  .hamburger { display: flex; }
+}
+@media (max-width: 640px) {
+  .nav { padding: 0 1.5rem; }
+}
+
+/* ── Search ────────────────────────────────────────────── */
+.searchBtn {
+  background: none; border: none; cursor: pointer;
+  color: var(--fg); font-size: 1.35rem; line-height: 1;
+  padding: .3rem .5rem; margin-right: .25rem;
+  transition: color .2s;
+  display: flex; align-items: center;
+}
+.searchBtn:hover { color: var(--acc); }
+
+.searchBar {
+  position: fixed; top: 64px; left: 0; right: 0; z-index: 999;
+  display: flex; align-items: center; gap: .6rem;
+  background: var(--bg-card); border-bottom: 1px solid var(--bdr);
+  padding: .9rem 2rem; box-shadow: 0 4px 24px rgba(0,0,0,.12);
+}
+.searchInput {
+  flex: 1; padding: .75rem 1rem;
+  background: var(--bg); border: 1.5px solid var(--bdr);
+  border-radius: 8px; color: var(--fg);
+  font-family: var(--fb); font-size: .95rem; outline: none;
+  transition: border-color .2s;
+}
+.searchInput:focus { border-color: var(--acc); }
+.searchGo {
+  padding: .75rem 1.6rem; background: var(--acc); color: #fff;
+  border: none; border-radius: 8px; cursor: pointer;
+  font-size: .82rem; font-weight: 700; letter-spacing: .06em;
+  text-transform: uppercase; font-family: var(--fb); transition: opacity .2s;
+}
+.searchGo:hover { opacity: .88; }
+.searchClose {
+  background: none; border: none; color: var(--fg-dim);
+  font-size: 1.1rem; cursor: pointer; padding: .4rem;
+  transition: color .2s;
+}
+.searchClose:hover { color: var(--fg); }
