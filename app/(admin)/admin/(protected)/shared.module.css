@@ -543,10 +543,15 @@
   .editorLayout { grid-template-columns: 1fr; }
   .editorSidebar { border-top: 1px solid #f0f0f0; }
   .grid { grid-template-columns: repeat(2, 1fr); }
+  .page { padding: 1.25rem 1rem 2rem; }
+  .pageTitle,
+  .title { font-size: 1.85rem; }
 }
 
 @media (max-width: 767px) {
+  .page { padding: 1rem .85rem 1.75rem; }
   .pageHeader { flex-wrap: wrap; gap: 0.75rem; }
   .tableWrap { overflow-x: auto; }
   .table { min-width: 600px; }
+  .grid { grid-template-columns: 1fr; }
 }

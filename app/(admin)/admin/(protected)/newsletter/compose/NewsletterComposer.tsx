@@ -5,6 +5,14 @@ import Link from 'next/link'
 import styles from './newsletter-compose.module.css'
 
 const DRAFT_KEY = 'afroqueens-newsletter-draft'
+const SELECTED_KEY = 'afroqueens-newsletter-selected'
+
+type Audience = 'all' | 'selected' | 'tag'
+
+interface Tag {
+  id: string
+  name: string
+}
 
 interface Draft {
   subject: string
@@ -51,12 +59,26 @@ const ARTICLE_BLOCKS = [
   },
 ]
 
-export default function NewsletterComposer({ activeCount }: { activeCount: number }) {
+export default function NewsletterComposer({
+  eligibleCount,
+  tags,
+  initialAudience = 'all',
+}: {
+  eligibleCount: number
+  tags: Tag[]
+  initialAudience?: Audience
+}) {
   const [draft, setDraft] = useState<Draft>(DEFAULT)
   const [schedule, setSchedule] = useState<'now' | 'later'>('now')
+  const [scheduledFor, setScheduledFor] = useState('')
+  const [audience, setAudience] = useState<Audience>(initialAudience)
+  const [selectedIds, setSelectedIds] = useState<string[]>([])
+  const [tagIds, setTagIds] = useState<string[]>([])
+  const [recipientCount, setRecipientCount] = useState(eligibleCount)
   const [toast, setToast] = useState<string | null>(null)
   const [previewOpen, setPreviewOpen] = useState(false)
   const [sending, setSending] = useState(false)
+  const [testEmail, setTestEmail] = useState('')
 
   useEffect(() => {
     try {
@@ -65,9 +87,40 @@ export default function NewsletterComposer({ activeCount }: { activeCount: numbe
     } catch { /* ignore */ }
   }, [])
 
+  useEffect(() => {
+    try {
+      const raw = localStorage.getItem(SELECTED_KEY)
+      if (raw) setSelectedIds(JSON.parse(raw))
+    } catch { /* ignore */ }
+  }, [])
+
+  useEffect(() => {
+    let cancelled = false
+    const loadCount = async () => {
+      const params = new URLSearchParams({ audience })
+      if (audience === 'selected' && selectedIds.length) {
+        params.set('ids', selectedIds.join(','))
+      }
+      if (audience === 'tag' && tagIds.length) {
+        params.set('tagIds', tagIds.join(','))
+      }
+      try {
+        const res = await fetch(`/api/newsletter/send?${params}`)
+        const data = await res.json()
+        if (!cancelled && typeof data.count === 'number') {
+          setRecipientCount(data.count)
+        }
+      } catch {
+        if (!cancelled) setRecipientCount(0)
+      }
+    }
+    loadCount()
+    return () => { cancelled = true }
+  }, [audience, selectedIds, tagIds])
+
   const showToast = (msg: string) => {
     setToast(msg)
-    setTimeout(() => setToast(null), 3500)
+    setTimeout(() => setToast(null), 4500)
   }
 
   const update = <K extends keyof Draft>(key: K, val: Draft[K]) => {
@@ -79,32 +132,89 @@ export default function NewsletterComposer({ activeCount }: { activeCount: numbe
     showToast('Draft saved locally')
   }
 
+  const payload = (extra: Record<string, unknown> = {}) => ({
+    subject: draft.subject,
+    previewText: draft.previewText,
+    heroTitle: draft.heroTitle,
+    heroSub: draft.heroSub,
+    intro: draft.intro,
+    articles: ARTICLE_BLOCKS,
+    signOff: draft.signOff,
+    ctaText: draft.ctaText,
+    ctaUrl: '/',
+    senderName: draft.senderName,
+    senderEmail: draft.senderEmail,
+    replyTo: draft.replyTo,
+    schedule,
+    scheduledFor: schedule === 'later' && scheduledFor ? new Date(scheduledFor).toISOString() : undefined,
+    audience,
+    recipientIds: audience === 'selected' ? selectedIds : undefined,
+    tagIds: audience === 'tag' ? tagIds : undefined,
+    ...extra,
+  })
+
+  const audienceLabel = () => {
+    if (audience === 'selected') return `Selected (${selectedIds.length} picked)`
+    if (audience === 'tag') return 'By tag'
+    return 'All confirmed subscribers'
+  }
+
   const handleSend = async () => {
-    if (activeCount === 0) {
-      showToast('No active subscribers to send to')
+    if (recipientCount === 0) {
+      showToast('No eligible recipients for this audience')
       return
     }
-    if (!confirm(`Send this newsletter to ${activeCount} active subscriber${activeCount === 1 ? '' : 's'}?`)) return
+    if (audience === 'selected' && !selectedIds.length) {
+      showToast('No subscribers selected — pick some on the subscriber list first')
+      return
+    }
+    if (audience === 'tag' && !tagIds.length) {
+      showToast('Select at least one tag')
+      return
+    }
+    if (schedule === 'later' && !scheduledFor) {
+      showToast('Choose a schedule date and time')
+      return
+    }
+
+    const verb = schedule === 'later' ? 'Schedule' : 'Send'
+    if (!confirm(`${verb} this newsletter to ${recipientCount} recipient${recipientCount === 1 ? '' : 's'}?`)) return
 
     setSending(true)
     try {
       const res = await fetch('/api/newsletter/send', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          subject: draft.subject,
-          previewText: draft.previewText,
-          senderName: draft.senderName,
-          senderEmail: draft.senderEmail,
-          replyTo: draft.replyTo,
-          schedule,
-        }),
+        body: JSON.stringify(payload()),
       })
       const data = await res.json()
       if (!res.ok) throw new Error(data.error || 'Send failed')
-      showToast(data.message || 'Newsletter queued')
+      showToast(data.message || (data.scheduled ? 'Campaign scheduled' : 'Newsletter sent'))
+      if (data.sent || data.scheduled) localStorage.removeItem(DRAFT_KEY)
     } catch (err) {
       showToast(err instanceof Error ? err.message : 'Could not send newsletter')
+    } finally {
+      setSending(false)
+    }
+  }
+
+  const handleTestSend = async () => {
+    if (!testEmail.trim()) {
+      showToast('Enter your email for a test send')
+      return
+    }
+    setSending(true)
+    try {
+      const res = await fetch('/api/newsletter/send', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload({ testEmail: testEmail.trim(), schedule: 'now' })),
+      })
+      const data = await res.json()
+      if (!res.ok) throw new Error(data.error || 'Test send failed')
+      showToast(data.message || 'Test email sent')
+    } catch (err) {
+      showToast(err instanceof Error ? err.message : 'Could not send test email')
     } finally {
       setSending(false)
     }
@@ -115,7 +225,7 @@ export default function NewsletterComposer({ activeCount }: { activeCount: numbe
   }
 
   const heroLines = draft.heroTitle.split('\n')
-  const activePct = activeCount > 0 ? '100%' : '0%'
+  const sendLabel = schedule === 'later' ? (sending ? 'Scheduling…' : 'Schedule send') : (sending ? 'Sending…' : 'Send now')
 
   return (
     <div className={styles.composerPage}>
@@ -133,9 +243,9 @@ export default function NewsletterComposer({ activeCount }: { activeCount: numbe
             type="button"
             className={styles.sendBtn}
             onClick={handleSend}
-            disabled={sending || activeCount === 0}
+            disabled={sending || recipientCount === 0}
           >
-            ✉ {sending ? 'Sending…' : 'Send Now'}
+            ✉ {sendLabel}
           </button>
         </div>
       </div>
@@ -166,9 +276,9 @@ export default function NewsletterComposer({ activeCount }: { activeCount: numbe
           <div className={styles.fieldGroup}>
             <div className={styles.fieldLabel}>To</div>
             <div className={styles.recipientRow}>
-              <div className={styles.recipPill}>✉ All Active Subscribers</div>
+              <div className={styles.recipPill}>✉ {audienceLabel()}</div>
               <span className={styles.recipCount}>
-                {activeCount} recipient{activeCount === 1 ? '' : 's'}
+                {recipientCount} recipient{recipientCount === 1 ? '' : 's'}
               </span>
             </div>
           </div>
@@ -303,19 +413,58 @@ export default function NewsletterComposer({ activeCount }: { activeCount: numbe
         <div className={styles.composerSidebar}>
           <div className={styles.sideCard}>
             <div className={styles.sideTitle}>Audience</div>
+            <div className={styles.scheduleToggle} style={{ marginBottom: '.75rem' }}>
+              {(['all', 'selected', 'tag'] as const).map(mode => (
+                <button
+                  key={mode}
+                  type="button"
+                  className={`${styles.schedBtn} ${audience === mode ? styles.schedActive : ''}`}
+                  onClick={() => setAudience(mode)}
+                >
+                  {mode === 'all' ? 'All' : mode === 'selected' ? 'Selected' : 'Tag'}
+                </button>
+              ))}
+            </div>
+            {audience === 'selected' && (
+              <div className={styles.audienceNote} style={{ marginBottom: '.6rem' }}>
+                {selectedIds.length
+                  ? `${selectedIds.length} subscriber(s) from your last selection.`
+                  : 'No selection saved — use checkboxes on the subscriber list.'}{' '}
+                <Link href="/admin/newsletter">Manage list →</Link>
+              </div>
+            )}
+            {audience === 'tag' && (
+              <div className={styles.sideField}>
+                <div className={styles.sideLabel}>Tags (any match)</div>
+                <select
+                  multiple
+                  className={styles.sideSelect}
+                  style={{ minHeight: 88 }}
+                  value={tagIds}
+                  onChange={e => setTagIds(Array.from(e.target.selectedOptions, o => o.value))}
+                >
+                  {tags.map(t => (
+                    <option key={t.id} value={t.id}>{t.name}</option>
+                  ))}
+                </select>
+                {!tags.length && (
+                  <div className={styles.scheduleNote}>Create tags on the subscriber page first.</div>
+                )}
+              </div>
+            )}
             <div className={styles.statRow}>
               <div className={styles.miniStat}>
-                <div className={styles.miniStatVal}>{activeCount}</div>
+                <div className={styles.miniStatVal}>{recipientCount}</div>
                 <div className={styles.miniStatLabel}>Recipients</div>
               </div>
               <div className={styles.miniStat}>
-                <div className={styles.miniStatVal}>{activePct}</div>
-                <div className={styles.miniStatLabel}>Active</div>
+                <div className={styles.miniStatVal}>{eligibleCount}</div>
+                <div className={styles.miniStatLabel}>List total</div>
               </div>
             </div>
             <div className={styles.audienceNote}>
-              Sending to all active subscribers.{' '}
-              <Link href="/admin/newsletter">Manage list →</Link>
+              Only <strong>active + confirmed</strong> subscribers receive mail.{' '}
+              <Link href="/admin/newsletter/campaigns">Campaign history →</Link>
             </div>
           </div>
 
@@ -339,30 +488,62 @@ export default function NewsletterComposer({ activeCount }: { activeCount: numbe
             </div>
             <div className={styles.scheduleNote}>
               {schedule === 'now' ? (
-                <>Email will be sent immediately to all active subscribers once you click <strong style={{ color: '#0a0a0a' }}>Send Now</strong>.</>
+                <>Email sends immediately (large lists continue in the background via cron).</>
               ) : (
-                <>Scheduled sending requires an email provider. Use Send Now for immediate delivery once configured.</>
+                <>Pick a date/time below. Vercel Hobby runs the send cron once daily — use an external cron every 5 min for tighter schedules.</>
               )}
+            </div>
+            {schedule === 'later' && (
+              <div className={styles.sideField} style={{ marginTop: '.75rem' }}>
+                <div className={styles.sideLabel}>Send at</div>
+                <input
+                  type="datetime-local"
+                  className={styles.sideInput}
+                  value={scheduledFor}
+                  onChange={e => setScheduledFor(e.target.value)}
+                />
+              </div>
+            )}
+          </div>
+
+          <div className={styles.sideCard}>
+            <div className={styles.sideTitle}>Test Send</div>
+            <div className={styles.sideField}>
+              <div className={styles.sideLabel}>Your email</div>
+              <input
+                className={styles.sideInput}
+                type="email"
+                placeholder="you@domain.com"
+                value={testEmail}
+                onChange={e => setTestEmail(e.target.value)}
+              />
+            </div>
+            <button
+              type="button"
+              className={styles.draftBtn}
+              style={{ width: '100%', marginTop: '0.4rem' }}
+              onClick={handleTestSend}
+              disabled={sending}
+            >
+              {sending ? 'Sending…' : 'Send test to me'}
+            </button>
+            <div className={styles.scheduleNote} style={{ marginTop: '0.7rem' }}>
+              Sends only to this address. Use this before blasting the full list.
             </div>
           </div>
 
           <div className={styles.sideCard}>
             <div className={styles.sideTitle}>From</div>
+            <div className={styles.audienceNote} style={{ marginBottom: '0.85rem' }}>
+              Delivery uses <code>EMAIL_FROM</code> from env (must be a verified Resend domain).
+              Reply-To can be set below.
+            </div>
             <div className={styles.sideField}>
-              <div className={styles.sideLabel}>Sender Name</div>
+              <div className={styles.sideLabel}>Sender Name (display)</div>
               <input
                 className={styles.sideInput}
                 value={draft.senderName}
                 onChange={e => update('senderName', e.target.value)}
-              />
-            </div>
-            <div className={styles.sideField}>
-              <div className={styles.sideLabel}>Sender Email</div>
-              <input
-                className={styles.sideInput}
-                type="email"
-                value={draft.senderEmail}
-                onChange={e => update('senderEmail', e.target.value)}
               />
             </div>
             <div className={styles.sideField}>
@@ -394,16 +575,16 @@ export default function NewsletterComposer({ activeCount }: { activeCount: numbe
           </div>
 
           <div className={styles.sendConfirm}>
-            Ready to send? This email will go to{' '}
-            <strong>{activeCount} active subscriber{activeCount === 1 ? '' : 's'}</strong>.
-            This action cannot be undone.
+            Ready to {schedule === 'later' ? 'schedule' : 'send'}? This email will go to{' '}
+            <strong>{recipientCount} recipient{recipientCount === 1 ? '' : 's'}</strong>.
+            {schedule === 'now' && ' Large blasts may take a few minutes to finish.'}
             <button
               type="button"
               className={styles.sendConfirmBtn}
               onClick={handleSend}
-              disabled={sending || activeCount === 0}
+              disabled={sending || recipientCount === 0}
             >
-              ✉ {sending ? 'Sending…' : 'Send Now'}
+              ✉ {sendLabel}
             </button>
           </div>
         </div>

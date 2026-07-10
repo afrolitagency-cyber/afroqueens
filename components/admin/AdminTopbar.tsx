@@ -6,9 +6,11 @@ import styles from './AdminTopbar.module.css'
 
 interface Props {
   user?: { name?: string | null; email?: string | null } | null
+  onMenuToggle?: () => void
+  menuOpen?: boolean
 }
 
-export default function AdminTopbar({ user }: Props) {
+export default function AdminTopbar({ user, onMenuToggle, menuOpen }: Props) {
   const [theme, setTheme] = useState<'DARK' | 'LIGHT'>('DARK')
   const [design, setDesign] = useState<'ONE' | 'TWO'>('ONE')
   const [isPending, startTransition] = useTransition()
@@ -30,14 +32,22 @@ export default function AdminTopbar({ user }: Props) {
   return (
     <header className={styles.topbar}>
       <div className={styles.left}>
+        <button
+          type="button"
+          className={`${styles.menuBtn} ${menuOpen ? styles.menuBtnOpen : ''}`}
+          onClick={onMenuToggle}
+          aria-label={menuOpen ? 'Close menu' : 'Open menu'}
+          aria-expanded={menuOpen}
+        >
+          <span /><span /><span />
+        </button>
         <span className={styles.greeting}>
           Welcome back, {user?.name?.split(' ')[0] ?? 'Admin'}
         </span>
       </div>
 
       <div className={styles.right}>
-        {/* Live Site Theme Switcher */}
-        <div className={styles.switcherGroup}>
+        <div className={`${styles.switcherGroup} ${styles.hideOnNarrow}`}>
           <span className={styles.switchLabel}>Live Theme</span>
           <div className={styles.pills}>
             <button
@@ -57,9 +67,9 @@ export default function AdminTopbar({ user }: Props) {
           </div>
         </div>
 
-        <div className={styles.divider} />
+        <div className={`${styles.divider} ${styles.hideOnNarrow}`} />
 
-        <div className={styles.switcherGroup}>
+        <div className={`${styles.switcherGroup} ${styles.hideOnNarrow}`}>
           <span className={styles.switchLabel}>Design</span>
           <div className={styles.pills}>
             <button
@@ -89,7 +99,8 @@ export default function AdminTopbar({ user }: Props) {
           rel="noopener"
           className={styles.viewSite}
         >
-          View Site ↗
+          <span className={styles.viewSiteFull}>View Site ↗</span>
+          <span className={styles.viewSiteShort}>Site ↗</span>
         </a>
       </div>
     </header>

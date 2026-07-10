@@ -2,6 +2,7 @@
 // app/(admin)/admin/inbox/InboxAdmin.tsx
 import { useState, useTransition } from 'react'
 import { markRead, deleteSubmission } from './actions'
+import { addSubscriberFromInbox } from '../newsletter/actions'
 import styles from '@/app/(admin)/admin/(protected)/shared.module.css'
 import inbox from './inbox.module.css'
 
@@ -11,6 +12,20 @@ export default function InboxAdmin({ initial }: { initial: Sub[] }) {
   const [items, setItems]         = useState(initial)
   const [selected, setSelected]   = useState<Sub | null>(null)
   const [isPending, startTransition] = useTransition()
+  const [newsletterMsg, setNewsletterMsg] = useState<string | null>(null)
+
+  const addToNewsletter = () => {
+    if (!selected) return
+    startTransition(async () => {
+      try {
+        await addSubscriberFromInbox(selected.email, selected.name)
+        setNewsletterMsg(`Added ${selected.email} — confirmation email sent if needed.`)
+        setTimeout(() => setNewsletterMsg(null), 4000)
+      } catch (e) {
+        setNewsletterMsg(e instanceof Error ? e.message : 'Could not add subscriber')
+      }
+    })
+  }
 
   const open = (item: Sub) => {
     setSelected(item)
@@ -67,7 +82,15 @@ export default function InboxAdmin({ initial }: { initial: Sub[] }) {
                   {new Date(selected.createdAt).toLocaleString('en-GB')}
                 </div>
               </div>
-              <div style={{ display: 'flex', gap: '.6rem' }}>
+              <div style={{ display: 'flex', gap: '.6rem', flexWrap: 'wrap' }}>
+                <button
+                  type="button"
+                  disabled={isPending}
+                  onClick={addToNewsletter}
+                  className={styles.actionBtn}
+                >
+                  Add to newsletter
+                </button>
                 <a
                   href={`mailto:${selected.email}?subject=Re: ${encodeURIComponent(selected.subject)}`}
                   className={styles.actionBtn}
@@ -83,6 +106,11 @@ export default function InboxAdmin({ initial }: { initial: Sub[] }) {
                 </button>
               </div>
             </div>
+            {newsletterMsg && (
+              <div style={{ padding: '.6rem 1rem', fontSize: '.8rem', color: '#0a6b3a', background: '#f0faf4', borderBottom: '1px solid #e5e5e5' }}>
+                {newsletterMsg}
+              </div>
+            )}
             <div className={inbox.detailBody}>{selected.message}</div>
           </>
         )}

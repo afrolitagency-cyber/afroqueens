@@ -39,40 +39,61 @@ const NAV = [
   },
 ]
 
-export default function AdminSidebar() {
+interface Props {
+  open?: boolean
+  onClose?: () => void
+}
+
+export default function AdminSidebar({ open = false, onClose }: Props) {
   const pathname = usePathname()
 
   return (
-    <aside className={styles.sidebar}>
-      {/* Logo */}
-      <div className={styles.logo}>
-        <span className={styles.logoAcc}>AQ</span>
-        <span className={styles.logoText}>Admin</span>
-      </div>
+    <>
+      <div
+        className={`${styles.backdrop} ${open ? styles.backdropOpen : ''}`}
+        onClick={onClose}
+        aria-hidden={!open}
+      />
 
-      {/* Nav groups */}
-      {NAV.map(group => (
-        <div key={group.label} className={styles.group}>
-          <div className={styles.groupLabel}>{group.label}</div>
-          {group.items.map(item => (
-            <Link
-              key={item.href}
-              href={item.href}
-              className={`${styles.navItem} ${pathname.startsWith(item.href) ? styles.active : ''}`}
-            >
-              <span className={styles.icon}>{item.icon}</span>
-              {item.label}
-            </Link>
-          ))}
+      <aside className={`${styles.sidebar} ${open ? styles.sidebarOpen : ''}`}>
+        <div className={styles.logo}>
+          <span className={styles.logoAcc}>AQ</span>
+          <span className={styles.logoText}>Admin</span>
+          <button
+            type="button"
+            className={styles.closeBtn}
+            onClick={onClose}
+            aria-label="Close menu"
+          >
+            ×
+          </button>
         </div>
-      ))}
 
-      {/* Sign out */}
-      <div className={styles.bottom}>
-        <Link href="/api/auth/signout" className={styles.signout}>
-          ← Sign Out
-        </Link>
-      </div>
-    </aside>
+        <nav className={styles.nav}>
+          {NAV.map(group => (
+            <div key={group.label} className={styles.group}>
+              <div className={styles.groupLabel}>{group.label}</div>
+              {group.items.map(item => (
+                <Link
+                  key={item.href}
+                  href={item.href}
+                  className={`${styles.navItem} ${pathname.startsWith(item.href) ? styles.active : ''}`}
+                  onClick={onClose}
+                >
+                  <span className={styles.icon}>{item.icon}</span>
+                  {item.label}
+                </Link>
+              ))}
+            </div>
+          ))}
+        </nav>
+
+        <div className={styles.bottom}>
+          <Link href="/api/auth/signout" className={styles.signout} onClick={onClose}>
+            ← Sign Out
+          </Link>
+        </div>
+      </aside>
+    </>
   )
 }

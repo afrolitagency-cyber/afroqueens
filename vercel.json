@@ -3,6 +3,10 @@
     {
       "path": "/api/cron/keep-alive",
       "schedule": "0 12 * * *"
+    },
+    {
+      "path": "/api/cron/newsletter-send",
+      "schedule": "0 12 * * *"
     }
   ]
 }

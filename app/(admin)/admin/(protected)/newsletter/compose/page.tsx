@@ -1,10 +1,28 @@
 import { prisma } from '@/lib/prisma'
+import { eligibleSubscriberWhere } from '@/lib/newsletter'
 import NewsletterComposer from './NewsletterComposer'
 
 export const dynamic = 'force-dynamic'
 
-export default async function NewsletterComposePage() {
-  const activeCount = await prisma.newsletterSubscriber.count({ where: { active: true } })
+export default async function NewsletterComposePage({
+  searchParams,
+}: {
+  searchParams: Promise<{ audience?: string }>
+}) {
+  const params = await searchParams
+  const audience =
+    params.audience === 'selected' ? 'selected' : params.audience === 'tag' ? 'tag' : 'all'
 
-  return <NewsletterComposer activeCount={activeCount} />
+  const [eligibleCount, tags] = await Promise.all([
+    prisma.newsletterSubscriber.count({ where: eligibleSubscriberWhere() }),
+    prisma.newsletterTag.findMany({ orderBy: { name: 'asc' }, select: { id: true, name: true } }),
+  ])
+
+  return (
+    <NewsletterComposer
+      eligibleCount={eligibleCount}
+      tags={tags}
+      initialAudience={audience}
+    />
+  )
 }

@@ -223,19 +223,20 @@ async function main() {
 
   // ── 6. Newsletter subscribers ────────────────────────────
   const subscribers = [
-    { email: 'chisom@example.com',  name: 'Chisom Okafor',  active: true },
-    { email: 'fatima@example.com',  name: 'Fatima Aliyu',   active: true },
-    { email: 'david@example.com',   name: 'David Mensah',   active: true },
-    { email: 'amaka@example.com',   name: 'Amaka Eze',      active: true },
-    { email: 'ibrahim@example.com', name: 'Ibrahim Lawal',  active: true },
-    { email: 'grace@example.com',   name: 'Grace Adeyemi',  active: false }, // unsubscribed
+    { email: 'chisom@example.com',  name: 'Chisom Okafor',  active: true, source: 'footer' },
+    { email: 'fatima@example.com',  name: 'Fatima Aliyu',   active: true, source: 'footer' },
+    { email: 'david@example.com',   name: 'David Mensah',   active: true, source: 'blog' },
+    { email: 'amaka@example.com',   name: 'Amaka Eze',      active: true, source: 'manual' },
+    { email: 'ibrahim@example.com', name: 'Ibrahim Lawal',  active: true, source: 'footer' },
+    { email: 'grace@example.com',   name: 'Grace Adeyemi',  active: false, source: 'footer' },
   ]
 
+  const now = new Date()
   for (const sub of subscribers) {
     await prisma.newsletterSubscriber.upsert({
       where:  { email: sub.email },
-      create: sub,
-      update: {},
+      create: { ...sub, confirmedAt: sub.active ? now : null },
+      update: { source: sub.source, confirmedAt: sub.active ? now : null },
     })
   }
   console.log(`✓ ${subscribers.length} newsletter subscribers (${subscribers.filter(s => s.active).length} active)`)

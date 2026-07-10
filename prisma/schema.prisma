@@ -181,8 +181,53 @@ model NewsletterSubscriber {
   id          String   @id @default(cuid())
   email       String   @unique
   name        String?
+  source      String   @default("footer") // footer, blog, csv_import, inbox, manual
   active      Boolean  @default(true)
+  confirmedAt DateTime?
+  unsubToken  String   @unique @default(cuid())
+  tags        NewsletterTag[]
+  sendLogs    NewsletterSendLog[]
   createdAt   DateTime @default(now())
+}
+
+model NewsletterTag {
+  id          String                 @id @default(cuid())
+  name        String                 @unique
+  subscribers NewsletterSubscriber[]
+}
+
+model NewsletterCampaign {
+  id              String    @id @default(cuid())
+  subject         String
+  previewText     String?
+  html            String    @db.Text
+  contentPayload  Json?
+  status          String    @default("DRAFT") // DRAFT, SCHEDULED, SENDING, SENT, FAILED
+  recipientMode   String    @default("all") // all | selected | tag
+  recipientFilter Json?
+  recipientCount  Int       @default(0)
+  sentCount       Int       @default(0)
+  failedCount     Int       @default(0)
+  errorMessage    String?   @db.Text
+  scheduledFor    DateTime?
+  sentAt          DateTime?
+  createdAt       DateTime  @default(now())
+  sendLogs        NewsletterSendLog[]
+}
+
+model NewsletterSendLog {
+  id           String               @id @default(cuid())
+  campaignId   String
+  campaign     NewsletterCampaign   @relation(fields: [campaignId], references: [id], onDelete: Cascade)
+  subscriberId String
+  subscriber   NewsletterSubscriber @relation(fields: [subscriberId], references: [id], onDelete: Cascade)
+  status       String               @default("pending") // pending, sent, failed
+  errorMessage String?
+  sentAt       DateTime?
+
+  @@index([campaignId])
+  @@index([subscriberId])
+  @@index([campaignId, status])
 }
 
 // ─── CONTACT SUBMISSIONS ──────────────────────────────────────────────────────
