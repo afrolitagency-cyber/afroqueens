@@ -9,12 +9,18 @@ export const NEWSLETTER_SOURCES = {
   csv_import: 'csv_import',
   inbox: 'inbox',
   manual: 'manual',
+  event_register: 'event_register',
 } as const
 
 export type NewsletterSource = keyof typeof NEWSLETTER_SOURCES
 
 /** Sources that are confirmed immediately (no double opt-in email). */
-export const AUTO_CONFIRM_SOURCES: NewsletterSource[] = ['footer', 'blog', 'manual']
+export const AUTO_CONFIRM_SOURCES: NewsletterSource[] = [
+  'footer',
+  'blog',
+  'manual',
+  'event_register',
+]
 
 export function sourceRequiresConfirm(source: string): boolean {
   return !AUTO_CONFIRM_SOURCES.includes(source as NewsletterSource)

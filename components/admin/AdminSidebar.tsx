@@ -20,6 +20,7 @@ const NAV = [
     items: [
       { href: '/admin/comments',   icon: '◻', label: 'Comments'   },
       { href: '/admin/newsletter', icon: '✉', label: 'Newsletter' },
+      { href: '/admin/events',     icon: '◷', label: 'Events'     },
       { href: '/admin/inbox',      icon: '⊠', label: 'Inbox'      },
     ],
   },

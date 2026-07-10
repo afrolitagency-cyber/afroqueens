@@ -61,10 +61,12 @@ export async function addSubscriberFromInbox(email: string, name: string) {
 
 export async function importSubscribersCsv(
   rows: { email: string; name?: string; tags?: string }[],
+  options?: { confirmNow?: boolean },
 ) {
   await requireAdmin()
   let imported = 0
   let skipped = 0
+  const confirmNow = options?.confirmNow === true
 
   for (const row of rows) {
     const email = row.email?.trim().toLowerCase()
@@ -81,10 +83,10 @@ export async function importSubscribersCsv(
       name: row.name,
       source: 'csv_import',
       tagNames,
-      confirmNow: false,
+      confirmNow,
     })
 
-    if (!sub.confirmedAt) {
+    if (!confirmNow && !sub.confirmedAt && sub.unsubToken) {
       try {
         await sendSubscriptionConfirmEmail(sub.email, sub.unsubToken)
       } catch {
@@ -94,7 +96,7 @@ export async function importSubscribersCsv(
     imported++
   }
 
-  return { imported, skipped }
+  return { imported, skipped, confirmNow }
 }
 
 export async function createTag(name: string) {
@@ -123,12 +125,43 @@ export async function setSubscriberTags(subscriberId: string, tagIds: string[]) 
   })
 }
 
+export async function updateSubscriber(
+  id: string,
+  data: { name?: string | null; tagIds?: string[] },
+) {
+  await requireAdmin()
+  return withDbRetry(() =>
+    prisma.newsletterSubscriber.update({
+      where: { id },
+      data: {
+        ...(data.name !== undefined ? { name: data.name?.trim() || null } : {}),
+        ...(data.tagIds !== undefined
+          ? { tags: { set: data.tagIds.map(tid => ({ id: tid })) } }
+          : {}),
+      },
+      include: { tags: { select: { id: true, name: true } } },
+    }),
+  )
+}
+
 export async function bulkSetSubscriberTags(subscriberIds: string[], tagIds: string[]) {
   await requireAdmin()
   for (const id of subscriberIds) {
     await prisma.newsletterSubscriber.update({
       where: { id },
       data: { tags: { set: tagIds.map(tid => ({ id: tid })) } },
+    })
+  }
+}
+
+/** Add tags to subscribers without removing existing ones. */
+export async function connectTagsToSubscribers(subscriberIds: string[], tagIds: string[]) {
+  await requireAdmin()
+  if (!subscriberIds.length || !tagIds.length) return
+  for (const id of subscriberIds) {
+    await prisma.newsletterSubscriber.update({
+      where: { id },
+      data: { tags: { connect: tagIds.map(tid => ({ id: tid })) } },
     })
   }
 }

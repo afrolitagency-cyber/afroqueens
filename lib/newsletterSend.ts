@@ -4,18 +4,23 @@ import { getEmailFrom, getResend, getSiteUrl } from './resend'
 import {
   buildNewsletterHtml,
   buildUnsubscribeUrl,
+  type EventDetails,
   type NewsletterArticle,
+  type NewsletterTemplate,
 } from './newsletterEmail'
 import type { RecipientMode } from './newsletter'
 
 const BATCH_SIZE = 50
 
 export interface CampaignContentPayload {
+  template?: NewsletterTemplate
   previewText?: string
   heroTitle: string
   heroSub?: string
   intro: string
   articles?: NewsletterArticle[]
+  includeHighlights?: boolean
+  event?: EventDetails
   signOff: string
   ctaText?: string
   ctaUrl?: string
@@ -80,11 +85,14 @@ export async function processCampaignBatch(campaignId: string, maxBatches = 20) 
       const unsub = buildUnsubscribeUrl(siteUrl, sub.unsubToken, true)
       const html = buildNewsletterHtml({
         subject: campaign.subject,
+        template: payload.template || 'frequency',
         previewText: payload.previewText,
         heroTitle: payload.heroTitle,
         heroSub: payload.heroSub,
         intro: personalize(payload.intro, sub.name),
         articles: payload.articles ?? [],
+        includeHighlights: payload.includeHighlights !== false,
+        event: payload.event,
         signOff: personalize(payload.signOff, sub.name),
         ctaText: payload.ctaText,
         ctaUrl: payload.ctaUrl || siteUrl,

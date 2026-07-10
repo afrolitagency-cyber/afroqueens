@@ -181,12 +181,13 @@ model NewsletterSubscriber {
   id          String   @id @default(cuid())
   email       String   @unique
   name        String?
-  source      String   @default("footer") // footer, blog, csv_import, inbox, manual
+  source      String   @default("footer") // footer, blog, csv_import, inbox, manual, event_register
   active      Boolean  @default(true)
   confirmedAt DateTime?
   unsubToken  String   @unique @default(cuid())
   tags        NewsletterTag[]
   sendLogs    NewsletterSendLog[]
+  eventRegs   EventRegistration[]
   createdAt   DateTime @default(now())
 }
 
@@ -194,6 +195,7 @@ model NewsletterTag {
   id          String                 @id @default(cuid())
   name        String                 @unique
   subscribers NewsletterSubscriber[]
+  events      Event[]
 }
 
 model NewsletterCampaign {
@@ -228,6 +230,38 @@ model NewsletterSendLog {
   @@index([campaignId])
   @@index([subscriberId])
   @@index([campaignId, status])
+}
+
+// ─── EVENTS (registration + notifications via newsletter tags) ───────────────
+model Event {
+  id                  String   @id @default(cuid())
+  title               String
+  slug                String   @unique
+  description         String?  @db.Text
+  location            String?
+  startsAt            DateTime
+  endsAt              DateTime?
+  published           Boolean  @default(true)
+  confirmEmailSubject String?  // optional override; default: You're registered — {title}
+  confirmEmailBody    String?  @db.Text // custom notes in the confirmation email
+  tagId               String?
+  tag                 NewsletterTag? @relation(fields: [tagId], references: [id], onDelete: SetNull)
+  createdAt           DateTime @default(now())
+  updatedAt           DateTime @updatedAt
+  registrations       EventRegistration[]
+}
+
+model EventRegistration {
+  id           String               @id @default(cuid())
+  eventId      String
+  event        Event                @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  subscriberId String
+  subscriber   NewsletterSubscriber @relation(fields: [subscriberId], references: [id], onDelete: Cascade)
+  createdAt    DateTime             @default(now())
+
+  @@unique([eventId, subscriberId])
+  @@index([eventId])
+  @@index([subscriberId])
 }
 
 // ─── CONTACT SUBMISSIONS ──────────────────────────────────────────────────────

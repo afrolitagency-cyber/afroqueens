@@ -5,7 +5,9 @@ import { authOptions } from '@/lib/auth'
 import {
   buildNewsletterHtml,
   buildUnsubscribeUrl,
+  type EventDetails,
   type NewsletterArticle,
+  type NewsletterTemplate,
 } from '@/lib/newsletterEmail'
 import { getEmailFrom, getResend, getSiteUrl } from '@/lib/resend'
 import { countEligibleRecipients, resolveRecipients, type RecipientMode } from '@/lib/newsletter'
@@ -18,6 +20,11 @@ export const maxDuration = 60
 function personalize(text: string, name?: string | null): string {
   const first = name?.trim()?.split(/\s+/)[0] || 'there'
   return text.replace(/\[First Name\]/gi, first)
+}
+
+function normalizeTemplate(value?: string): NewsletterTemplate {
+  if (value === 'event' || value === 'plain') return value
+  return 'frequency'
 }
 
 export async function POST(req: Request) {
@@ -37,10 +44,13 @@ export async function POST(req: Request) {
   const {
     subject,
     previewText,
+    template: rawTemplate,
     heroTitle,
     heroSub,
     intro,
     articles,
+    includeHighlights = true,
+    event,
     signOff,
     ctaText,
     ctaUrl,
@@ -55,10 +65,13 @@ export async function POST(req: Request) {
   } = body as {
     subject?: string
     previewText?: string
+    template?: string
     heroTitle?: string
     heroSub?: string
     intro?: string
     articles?: NewsletterArticle[]
+    includeHighlights?: boolean
+    event?: EventDetails
     signOff?: string
     ctaText?: string
     ctaUrl?: string
@@ -72,32 +85,60 @@ export async function POST(req: Request) {
     tagIds?: string[]
   }
 
+  const template = normalizeTemplate(rawTemplate)
+
   if (!subject?.trim()) {
     return NextResponse.json({ error: 'Subject is required' }, { status: 400 })
   }
   if (!heroTitle?.trim() || !intro?.trim() || !signOff?.trim()) {
     return NextResponse.json(
-      { error: 'Hero title, intro, and sign-off are required' },
+      { error: 'Title, message, and sign-off are required' },
       { status: 400 },
     )
+  }
+  if (template === 'event' && !event?.eventName?.trim()) {
+    return NextResponse.json({ error: 'Event name is required for the event template' }, { status: 400 })
+  }
+  if (template === 'event' && !event?.eventDate?.trim()) {
+    return NextResponse.json({ error: 'Event date is required for the event template' }, { status: 400 })
   }
 
   const siteUrl = getSiteUrl()
   const from = getEmailFrom(senderName)
   const resend = getResend()
 
+  const contentPayload: CampaignContentPayload = {
+    template,
+    previewText: previewText?.trim(),
+    heroTitle: heroTitle.trim(),
+    heroSub: heroSub?.trim(),
+    intro: intro.trim(),
+    articles: template === 'frequency' && includeHighlights && Array.isArray(articles) ? articles : [],
+    includeHighlights: template === 'frequency' ? includeHighlights !== false : false,
+    event:
+      template === 'event'
+        ? {
+            eventName: event!.eventName.trim(),
+            eventDate: event!.eventDate.trim(),
+            eventTime: event?.eventTime?.trim() || undefined,
+            eventLocation: event?.eventLocation?.trim() || undefined,
+            eventNotes: event?.eventNotes?.trim() || undefined,
+          }
+        : undefined,
+    signOff: signOff.trim(),
+    ctaText: ctaText?.trim(),
+    ctaUrl: ctaUrl?.trim() || siteUrl,
+    replyTo: replyTo?.trim(),
+    senderName,
+  }
+
   if (testEmail?.trim()) {
     const to = testEmail.trim().toLowerCase()
     const html = buildNewsletterHtml({
       subject: subject.trim(),
-      previewText: previewText?.trim(),
-      heroTitle: heroTitle.trim(),
-      heroSub: heroSub?.trim(),
-      intro: personalize(intro.trim(), 'Tester'),
-      articles: Array.isArray(articles) ? articles : [],
-      signOff: personalize(signOff.trim(), 'Tester'),
-      ctaText: ctaText?.trim(),
-      ctaUrl: ctaUrl?.trim() || siteUrl,
+      ...contentPayload,
+      intro: personalize(contentPayload.intro, 'Tester'),
+      signOff: personalize(contentPayload.signOff, 'Tester'),
       unsubscribeUrl: buildUnsubscribeUrl(siteUrl, to, false),
       siteUrl,
     })
@@ -141,22 +182,9 @@ export async function POST(req: Request) {
     )
   }
 
-  const payload: CampaignContentPayload = {
-    previewText: previewText?.trim(),
-    heroTitle: heroTitle.trim(),
-    heroSub: heroSub?.trim(),
-    intro: intro.trim(),
-    articles: Array.isArray(articles) ? articles : [],
-    signOff: signOff.trim(),
-    ctaText: ctaText?.trim(),
-    ctaUrl: ctaUrl?.trim() || siteUrl,
-    replyTo: replyTo?.trim(),
-    senderName,
-  }
-
   const templateHtml = buildNewsletterHtml({
     subject: subject.trim(),
-    ...payload,
+    ...contentPayload,
     unsubscribeUrl: `${siteUrl}/api/newsletter/unsubscribe`,
     siteUrl,
   })
@@ -172,7 +200,7 @@ export async function POST(req: Request) {
     subject: subject.trim(),
     previewText: previewText?.trim(),
     html: templateHtml,
-    payload,
+    payload: contentPayload,
     recipientMode: mode,
     recipientFilter: filter,
     subscriberIds: subscribers.map(s => s.id),

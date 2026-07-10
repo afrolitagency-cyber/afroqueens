@@ -8,6 +8,8 @@ import {
   createTag,
   deleteTag,
   addSubscriberManual,
+  connectTagsToSubscribers,
+  updateSubscriber,
 } from './actions'
 import styles from '@/app/(admin)/admin/(protected)/shared.module.css'
 
@@ -42,9 +44,15 @@ export default function NewsletterAdmin({ initial, tags: initialTags }: Props) {
   const [isPending, startTransition] = useTransition()
   const [importOpen, setImportOpen] = useState(false)
   const [csvText, setCsvText] = useState('')
+  const [importAsConfirmed, setImportAsConfirmed] = useState(true)
   const [newTag, setNewTag] = useState('')
   const [manualEmail, setManualEmail] = useState('')
   const [manualName, setManualName] = useState('')
+  const [manualTagIds, setManualTagIds] = useState<string[]>([])
+  const [applyTagId, setApplyTagId] = useState('')
+  const [editing, setEditing] = useState<Sub | null>(null)
+  const [editName, setEditName] = useState('')
+  const [editTagIds, setEditTagIds] = useState<string[]>([])
   const [toast, setToast] = useState<string | null>(null)
 
   const showToast = (msg: string) => {
@@ -123,8 +131,12 @@ export default function NewsletterAdmin({ initial, tags: initialTags }: Props) {
     })
     startTransition(async () => {
       try {
-        const result = await importSubscribersCsv(rows)
-        showToast(`Imported ${result.imported}, skipped ${result.skipped}. Confirm emails sent where needed.`)
+        const result = await importSubscribersCsv(rows, { confirmNow: importAsConfirmed })
+        showToast(
+          importAsConfirmed
+            ? `Imported ${result.imported} as confirmed (ready to email), skipped ${result.skipped}.`
+            : `Imported ${result.imported}, skipped ${result.skipped}. Confirm emails sent where needed.`,
+        )
         setImportOpen(false)
         setCsvText('')
         window.location.reload()
@@ -153,12 +165,76 @@ export default function NewsletterAdmin({ initial, tags: initialTags }: Props) {
 
   const addManual = () => {
     if (!manualEmail.trim()) return
+    const tagNames = tags.filter(t => manualTagIds.includes(t.id)).map(t => t.name)
     startTransition(async () => {
-      await addSubscriberManual(manualEmail, manualName)
-      showToast('Subscriber added')
+      await addSubscriberManual(manualEmail, manualName, tagNames.length ? tagNames : undefined)
+      showToast(tagNames.length ? `Subscriber added with tag(s): ${tagNames.join(', ')}` : 'Subscriber added')
       setManualEmail('')
       setManualName('')
+      setManualTagIds([])
       window.location.reload()
+    })
+  }
+
+  const applyTagToSelected = () => {
+    if (!applyTagId) {
+      showToast('Choose a tag to apply')
+      return
+    }
+    const ids = Array.from(selected)
+    if (!ids.length) {
+      showToast('Select subscribers first')
+      return
+    }
+    const tag = tags.find(t => t.id === applyTagId)
+    startTransition(async () => {
+      await connectTagsToSubscribers(ids, [applyTagId])
+      setSubs(prev =>
+        prev.map(s => {
+          if (!ids.includes(s.id) || !tag) return s
+          if (s.tags.some(t => t.id === tag.id)) return s
+          return { ...s, tags: [...s.tags, tag] }
+        }),
+      )
+      showToast(`Applied “${tag?.name}” to ${ids.length} subscriber${ids.length === 1 ? '' : 's'}`)
+    })
+  }
+
+  const toggleManualTag = (id: string) => {
+    setManualTagIds(prev => (prev.includes(id) ? prev.filter(t => t !== id) : [...prev, id]))
+  }
+
+  const openEdit = (s: Sub) => {
+    setEditing(s)
+    setEditName(s.name ?? '')
+    setEditTagIds(s.tags.map(t => t.id))
+  }
+
+  const toggleEditTag = (id: string) => {
+    setEditTagIds(prev => (prev.includes(id) ? prev.filter(t => t !== id) : [...prev, id]))
+  }
+
+  const saveEdit = () => {
+    if (!editing) return
+    startTransition(async () => {
+      try {
+        const updated = await updateSubscriber(editing.id, {
+          name: editName,
+          tagIds: editTagIds,
+        })
+        const nextTags = updated.tags as SubTag[]
+        setSubs(prev =>
+          prev.map(s =>
+            s.id === editing.id
+              ? { ...s, name: updated.name, tags: nextTags }
+              : s,
+          ),
+        )
+        setEditing(null)
+        showToast('Subscriber updated')
+      } catch (e) {
+        showToast(e instanceof Error ? e.message : 'Update failed')
+      }
     })
   }
 
@@ -190,6 +266,26 @@ export default function NewsletterAdmin({ initial, tags: initialTags }: Props) {
         </button>
       </div>
 
+      {selected.size > 0 && (
+        <div style={{ display: 'flex', gap: '.5rem', marginBottom: '1rem', flexWrap: 'wrap', alignItems: 'center', padding: '.75rem 1rem', background: '#fff', border: '1px solid #f0f0f0', borderRadius: 8 }}>
+          <span style={{ fontSize: '.78rem', color: '#666' }}>{selected.size} selected</span>
+          <select
+            value={applyTagId}
+            onChange={e => setApplyTagId(e.target.value)}
+            className={styles.input}
+            style={{ maxWidth: 200, fontSize: '.8rem' }}
+          >
+            <option value="">Apply tag…</option>
+            {tags.map(t => (
+              <option key={t.id} value={t.id}>{t.name}</option>
+            ))}
+          </select>
+          <button type="button" onClick={applyTagToSelected} disabled={isPending || !applyTagId} style={btnStyle}>
+            Apply to selected
+          </button>
+        </div>
+      )}
+
       <div style={{ display: 'flex', gap: '1rem', marginBottom: '1.25rem', flexWrap: 'wrap' }}>
         <div style={{ flex: '1 1 280px', background: '#fff', border: '1px solid #f0f0f0', borderRadius: 8, padding: '1rem' }}>
           <div style={labelStyle}>Tags</div>
@@ -211,6 +307,38 @@ export default function NewsletterAdmin({ initial, tags: initialTags }: Props) {
           <div style={labelStyle}>Add subscriber manually</div>
           <input value={manualEmail} onChange={e => setManualEmail(e.target.value)} placeholder="email@domain.com" className={styles.input} style={{ marginBottom: '.5rem', fontSize: '.8rem' }} />
           <input value={manualName} onChange={e => setManualName(e.target.value)} placeholder="Name (optional)" className={styles.input} style={{ marginBottom: '.5rem', fontSize: '.8rem' }} />
+          <div style={{ marginBottom: '.5rem' }}>
+            <div style={{ ...labelStyle, marginBottom: '.35rem' }}>Tags (optional)</div>
+            {tags.length === 0 ? (
+              <span style={{ fontSize: '.78rem', color: '#aaa' }}>Create a tag first (left)</span>
+            ) : (
+              <div style={{ display: 'flex', flexWrap: 'wrap', gap: '.35rem' }}>
+                {tags.map(t => {
+                  const on = manualTagIds.includes(t.id)
+                  return (
+                    <button
+                      key={t.id}
+                      type="button"
+                      onClick={() => toggleManualTag(t.id)}
+                      style={{
+                        fontSize: '.72rem',
+                        padding: '.25rem .55rem',
+                        borderRadius: 20,
+                        border: '1px solid',
+                        cursor: 'pointer',
+                        fontFamily: 'DM Sans, sans-serif',
+                        background: on ? 'rgba(200,16,46,.1)' : '#fff',
+                        color: on ? '#C8102E' : '#666',
+                        borderColor: on ? '#C8102E' : '#e5e5e5',
+                      }}
+                    >
+                      {t.name}
+                    </button>
+                  )
+                })}
+              </div>
+            )}
+          </div>
           <button type="button" onClick={addManual} disabled={isPending} style={btnStyle}>Add (confirmed)</button>
         </div>
       </div>
@@ -262,7 +390,10 @@ export default function NewsletterAdmin({ initial, tags: initialTags }: Props) {
                 </td>
                 <td className={styles.date}>{new Date(s.createdAt).toLocaleDateString('en-GB')}</td>
                 <td>
-                  <button disabled={isPending} onClick={() => remove(s.id)} className={`${styles.actionBtn} ${styles.del}`}>Delete</button>
+                  <div style={{ display: 'flex', gap: '.35rem', flexWrap: 'wrap' }}>
+                    <button type="button" disabled={isPending} onClick={() => openEdit(s)} className={styles.actionBtn}>Edit</button>
+                    <button disabled={isPending} onClick={() => remove(s.id)} className={`${styles.actionBtn} ${styles.del}`}>Delete</button>
+                  </div>
                 </td>
               </tr>
             ))}
@@ -275,18 +406,87 @@ export default function NewsletterAdmin({ initial, tags: initialTags }: Props) {
           <div style={modalStyle} onClick={e => e.stopPropagation()}>
             <h3 style={{ margin: '0 0 .5rem', fontFamily: 'Bebas Neue, sans-serif', letterSpacing: '.06em' }}>Import CSV</h3>
             <p style={{ fontSize: '.8rem', color: '#666', marginBottom: '.75rem' }}>
-              First row: <code>email,name,tags</code>. Tags semicolon-separated. Imports send a confirmation email.
+              First row: <code>email,name,tags</code>. Tags semicolon-separated.
             </p>
             <textarea
               value={csvText}
               onChange={e => setCsvText(e.target.value)}
               rows={8}
-              placeholder={'email,name,tags\nuser@example.com,Jane,vip;lagos'}
+              placeholder={'email,name,tags\nuser@example.com,Jane,afroqueens-rap'}
               style={{ width: '100%', fontFamily: 'monospace', fontSize: '.78rem', padding: '.6rem', border: '1px solid #e5e5e5', borderRadius: 6 }}
             />
+            <label style={{ display: 'flex', gap: '.5rem', alignItems: 'flex-start', marginTop: '.75rem', fontSize: '.8rem', color: '#444', cursor: 'pointer' }}>
+              <input
+                type="checkbox"
+                checked={importAsConfirmed}
+                onChange={e => setImportAsConfirmed(e.target.checked)}
+                style={{ marginTop: 2 }}
+              />
+              <span>
+                <strong>Import as confirmed</strong> (ready to receive emails). Use this for Google Form / event lists where people already opted in.
+                Uncheck to send a double opt-in confirm email instead.
+              </span>
+            </label>
             <div style={{ display: 'flex', gap: '.6rem', marginTop: '.75rem', justifyContent: 'flex-end' }}>
               <button type="button" onClick={() => setImportOpen(false)} style={btnStyle}>Cancel</button>
               <button type="button" onClick={runImport} disabled={isPending} style={{ ...btnStyle, background: '#C8102E', color: '#fff', borderColor: '#C8102E' }}>Import</button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {editing && (
+        <div style={overlayStyle} onClick={() => setEditing(null)}>
+          <div style={modalStyle} onClick={e => e.stopPropagation()}>
+            <h3 style={{ margin: '0 0 .35rem', fontFamily: 'Bebas Neue, sans-serif', letterSpacing: '.06em' }}>Edit subscriber</h3>
+            <p style={{ fontSize: '.8rem', color: '#888', margin: '0 0 1rem' }}>{editing.email}</p>
+            <div style={labelStyle}>Name</div>
+            <input
+              value={editName}
+              onChange={e => setEditName(e.target.value)}
+              className={styles.input}
+              style={{ marginBottom: '.85rem', fontSize: '.8rem' }}
+            />
+            <div style={labelStyle}>Tags</div>
+            {tags.length === 0 ? (
+              <p style={{ fontSize: '.78rem', color: '#aaa', marginBottom: '.85rem' }}>Create a tag first, then come back here.</p>
+            ) : (
+              <div style={{ display: 'flex', flexWrap: 'wrap', gap: '.35rem', marginBottom: '.85rem' }}>
+                {tags.map(t => {
+                  const on = editTagIds.includes(t.id)
+                  return (
+                    <button
+                      key={t.id}
+                      type="button"
+                      onClick={() => toggleEditTag(t.id)}
+                      style={{
+                        fontSize: '.72rem',
+                        padding: '.25rem .55rem',
+                        borderRadius: 20,
+                        border: '1px solid',
+                        cursor: 'pointer',
+                        fontFamily: 'DM Sans, sans-serif',
+                        background: on ? 'rgba(200,16,46,.1)' : '#fff',
+                        color: on ? '#C8102E' : '#666',
+                        borderColor: on ? '#C8102E' : '#e5e5e5',
+                      }}
+                    >
+                      {t.name}
+                    </button>
+                  )
+                })}
+              </div>
+            )}
+            <div style={{ display: 'flex', gap: '.6rem', justifyContent: 'flex-end' }}>
+              <button type="button" onClick={() => setEditing(null)} style={btnStyle}>Cancel</button>
+              <button
+                type="button"
+                onClick={saveEdit}
+                disabled={isPending}
+                style={{ ...btnStyle, background: '#C8102E', color: '#fff', borderColor: '#C8102E' }}
+              >
+                Save
+              </button>
             </div>
           </div>
         </div>

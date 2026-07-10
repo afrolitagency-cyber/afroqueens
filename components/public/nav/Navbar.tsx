@@ -12,6 +12,7 @@ const LINKS = [
   { href: '/blog',     label: 'Blog'     },
   { href: '/gallery',  label: 'Gallery'  },
   { href: '/episodes', label: 'Episodes' },
+  { href: '/events',   label: 'Events'   },
 ]
 
 export default function Navbar() {
