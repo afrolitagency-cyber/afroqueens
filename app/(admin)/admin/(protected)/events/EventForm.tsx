@@ -3,7 +3,7 @@
 import { useState, useTransition } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
-import { createEvent, updateEvent } from '../actions'
+import { createEvent, updateEvent } from './actions'
 import styles from '@/app/(admin)/admin/(protected)/shared.module.css'
 
 function toLocalInput(iso?: string | Date | null) {
