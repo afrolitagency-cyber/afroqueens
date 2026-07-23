@@ -6,7 +6,7 @@ import dynamic from 'next/dynamic'
 import slugify from 'slugify'
 import { updateBlogPost } from '../actions'
 import styles from '../../shared.module.css'
-import { deleteRemoteMedia } from '@/components/admin/uploads/deleteRemoteMedia'
+import CloudinaryUpload from '@/components/admin/uploads/CloudinaryUpload'
 import { FORM_DRAFT_KEYS } from '@/lib/formDraft'
 import { useFormDraft } from '@/hooks/useFormDraft'
 import { DraftBanner, DraftHint, SaveErrorBanner } from '@/components/admin/FormStatusBanners'
@@ -119,16 +119,6 @@ export default function EditBlogPage() {
     })
   }
 
-  const removeCover = async () => {
-    if (!coverUrl) return
-    try {
-      await deleteRemoteMedia(coverUrl)
-    } catch {
-      // Clear locally even if remote delete fails
-    }
-    setCoverUrl('')
-  }
-
   const CATEGORIES = [
     'Cover Story', 'Artist Profile', 'Event Review',
     'Opinion', 'Tech & Music', 'Culture', 'Festival Guide',
@@ -183,18 +173,14 @@ export default function EditBlogPage() {
         {/* ── Main editor column ── */}
         <div className={styles.editorMain}>
           {/* Cover image */}
-          {coverUrl && (
-            <div className={styles.coverPreview}>
-              <img src={coverUrl} alt="Cover" />
-              <button type="button" onClick={removeCover} className={styles.removeCover}>✕</button>
-            </div>
-          )}
-          <input
-            placeholder="Cover image URL (paste Cloudinary URL or upload below)"
-            value={coverUrl}
-            onChange={e => setCoverUrl(e.target.value)}
-            className={styles.coverInput}
-          />
+          <div className={styles.coverUpload}>
+            <CloudinaryUpload
+              folder="blog"
+              value={coverUrl}
+              onChange={setCoverUrl}
+              label="Drop cover image here or click to upload"
+            />
+          </div>
 
           {/* Title */}
           <input

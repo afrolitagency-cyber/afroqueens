@@ -140,14 +140,24 @@ export default function EditArtistPage() {
 
             {streamSource === 'YOUTUBE' && (
               <div className={styles.sourceField}>
-                <label className={styles.label}>YouTube Video ID</label>
-                <input value={youtubeVideoId} onChange={e => setYoutubeVideoId(e.target.value)} className={styles.input} placeholder="dQw4w9WgXcQ" />
+                <label className={styles.label}>YouTube URL or Video ID</label>
+                <input
+                  value={youtubeVideoId}
+                  onChange={e => setYoutubeVideoId(e.target.value)}
+                  className={styles.input}
+                  placeholder="https://www.youtube.com/watch?v=… or dQw4w9WgXcQ"
+                />
               </div>
             )}
             {streamSource === 'SPOTIFY' && (
               <div className={styles.sourceField}>
-                <label className={styles.label}>Spotify Track ID</label>
-                <input value={spotifyTrackId} onChange={e => setSpotifyTrackId(e.target.value)} className={styles.input} />
+                <label className={styles.label}>Spotify URL or Track ID</label>
+                <input
+                  value={spotifyTrackId}
+                  onChange={e => setSpotifyTrackId(e.target.value)}
+                  className={styles.input}
+                  placeholder="https://open.spotify.com/track/… or track ID"
+                />
               </div>
             )}
             {streamSource === 'SOUNDCLOUD' && (

@@ -11,6 +11,7 @@ import { withDbRetry, dbErrorMessage } from '@/lib/dbRetry'
 import type { ActionResult } from '@/lib/actions'
 import { actionOk, actionErr } from '@/lib/actions'
 import { normalizeArtistUrl } from '@/lib/artistLinks'
+import { extractSpotifyTrackId, extractYoutubeVideoId } from '@/lib/mediaIds'
 
 export type { ActionResult }
 
@@ -45,6 +46,16 @@ function linkData(data: ArtistPayload) {
   }
 }
 
+function streamData(data: ArtistPayload) {
+  return {
+    streamSource:   data.streamSource,
+    youtubeVideoId: extractYoutubeVideoId(data.youtubeVideoId) ?? null,
+    spotifyTrackId: extractSpotifyTrackId(data.spotifyTrackId) ?? null,
+    soundcloudUrl:  data.soundcloudUrl?.trim() || null,
+    customAudioUrl: data.customAudioUrl?.trim() || null,
+  }
+}
+
 async function requireAuth() {
   const session = await getServerSession(authOptions)
   if (!session) redirect('/admin/login')
@@ -70,11 +81,7 @@ export async function createArtist(data: ArtistPayload): Promise<ActionResult> {
           monthlyListeners: data.monthlyListeners ?? null,
           bio:              data.bio ?? null,
           profileImageUrl:  data.profileImageUrl ?? null,
-          streamSource:     data.streamSource,
-          spotifyTrackId:   data.spotifyTrackId ?? null,
-          youtubeVideoId:   data.youtubeVideoId ?? null,
-          soundcloudUrl:    data.soundcloudUrl ?? null,
-          customAudioUrl:   data.customAudioUrl ?? null,
+          ...streamData(data),
           ...linkData(data),
           featured:         data.featured ?? false,
           order:            data.order ?? 0,
@@ -83,6 +90,7 @@ export async function createArtist(data: ArtistPayload): Promise<ActionResult> {
     )
 
     revalidatePath('/artists')
+    revalidatePath(`/artists/${slug}`)
     revalidatePath('/')
     revalidatePath('/admin/artists')
     return actionOk()
@@ -96,7 +104,7 @@ export async function updateArtist(id: string, data: ArtistPayload): Promise<Act
 
   const existing = await prisma.artist.findUnique({
     where: { id },
-    select: { profileImageUrl: true, customAudioUrl: true },
+    select: { profileImageUrl: true, customAudioUrl: true, slug: true },
   })
 
   try {
@@ -110,11 +118,7 @@ export async function updateArtist(id: string, data: ArtistPayload): Promise<Act
           monthlyListeners: data.monthlyListeners ?? null,
           bio:              data.bio ?? null,
           profileImageUrl:  data.profileImageUrl ?? null,
-          streamSource:     data.streamSource,
-          spotifyTrackId:   data.spotifyTrackId ?? null,
-          youtubeVideoId:   data.youtubeVideoId ?? null,
-          soundcloudUrl:    data.soundcloudUrl ?? null,
-          customAudioUrl:   data.customAudioUrl ?? null,
+          ...streamData(data),
           ...linkData(data),
           featured:         data.featured ?? false,
           order:            data.order ?? 0,
@@ -126,6 +130,7 @@ export async function updateArtist(id: string, data: ArtistPayload): Promise<Act
     await deleteMediaIfReplaced(existing?.customAudioUrl, data.customAudioUrl)
 
     revalidatePath('/artists')
+    if (existing?.slug) revalidatePath(`/artists/${existing.slug}`)
     revalidatePath('/')
     revalidatePath('/admin/artists')
     return actionOk()

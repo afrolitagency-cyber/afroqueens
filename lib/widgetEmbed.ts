@@ -1,4 +1,5 @@
 // lib/widgetEmbed.ts
+import { extractYoutubeVideoId } from '@/lib/mediaIds'
 
 export type WidgetType = 'YOUTUBE' | 'SPOTIFY' | 'SOUNDCLOUD' | 'APPLE_MUSIC' | 'CUSTOM'
 export type WidgetPosition = 'LEFT' | 'RIGHT'
@@ -16,8 +17,7 @@ export function getEmbedSrc(widget: Pick<PublicWidget, 'type' | 'embedUrl'>): st
   const url = widget.embedUrl.trim()
 
   if (widget.type === 'YOUTUBE') {
-    const idMatch = url.match(/(?:v=|youtu\.be\/|embed\/)([a-zA-Z0-9_-]{11})/)
-    const id = idMatch ? idMatch[1] : url
+    const id = extractYoutubeVideoId(url) ?? url
     return `https://www.youtube.com/embed/${id}?rel=0&modestbranding=1`
   }
 

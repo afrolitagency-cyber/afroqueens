@@ -24,7 +24,7 @@ interface WidgetPayload {
 }
 
 function revalidateWidgetPaths() {
-  revalidatePath('/')
+  revalidatePath('/', 'layout')
   revalidatePath('/artists')
   revalidatePath('/episodes')
   revalidatePath('/blog')
@@ -66,8 +66,7 @@ export async function deleteWidgetSafe(id: string): Promise<ActionResult> {
   await requireAuth()
   try {
     await withDbRetry(() => prisma.widget.delete({ where: { id } }))
-    revalidatePath('/')
-    revalidatePath('/admin/widgets')
+    revalidateWidgetPaths()
     return actionOk()
   } catch (err) {
     return actionErr(dbErrorMessage(err))
@@ -83,7 +82,7 @@ export async function toggleWidgetSafe(id: string, active: boolean): Promise<Act
   await requireAuth()
   try {
     await withDbRetry(() => prisma.widget.update({ where: { id }, data: { active } }))
-    revalidatePath('/')
+    revalidateWidgetPaths()
     return actionOk()
   } catch (err) {
     return actionErr(dbErrorMessage(err))

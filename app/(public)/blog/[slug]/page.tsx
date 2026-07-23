@@ -4,7 +4,6 @@ import { notFound } from 'next/navigation'
 import BlockRenderer from '@/components/public/blog/BlockRenderer'
 import Comments from '@/components/public/blog/Comments'
 import NewsletterSignup from '@/components/public/newsletter/NewsletterSignup'
-import SiteWidgets from '@/components/public/widgets/SiteWidgets'
 import styles from './blogpost.module.css'
 import type { Metadata } from 'next'
 import { buildMetadata, articleJsonLd } from '@/lib/seo'
@@ -35,14 +34,10 @@ export async function generateStaticParams() {
 }
 
 export default async function BlogPostPage({ params }: Props) {
-  const [post, widgets, comments] = await Promise.all([
+  const [post, comments] = await Promise.all([
     prisma.blogPost.findUnique({
       where: { slug: params.slug, status: 'PUBLISHED' },
       include: { tags: true },
-    }),
-    prisma.widget.findMany({
-      where: { active: true },
-      orderBy: { createdAt: 'desc' },
     }),
     prisma.comment.findMany({
       where: {
@@ -131,9 +126,6 @@ export default async function BlogPostPage({ params }: Props) {
           }))}
         />
       </div>
-
-      {/* Widgets (rails on desktop, stack before footer on tablet/mobile) */}
-      <SiteWidgets widgets={widgets} />
     </main>
   )
 }

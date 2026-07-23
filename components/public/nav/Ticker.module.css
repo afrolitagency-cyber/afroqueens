@@ -1,8 +1,7 @@
 /* components/public/nav/Ticker.module.css */
 .ticker {
-  position: fixed;
-  top: 0; left: 0; right: 0;
-  z-index: 1100;
+  position: relative;
+  z-index: 10;
   height: 32px;
   overflow: hidden;
   background: var(--acc);

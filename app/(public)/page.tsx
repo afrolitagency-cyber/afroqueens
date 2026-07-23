@@ -3,7 +3,6 @@ import { prisma } from '@/lib/prisma'
 import Hero from '@/components/public/hero/Hero'
 import ArtistCard from '@/components/public/artists/ArtistCard'
 import NowPlaying from '@/components/player/NowPlaying'
-import SiteWidgets from '@/components/public/widgets/SiteWidgets'
 import Link from 'next/link'
 import styles from './home.module.css'
 import { buildMetadata } from '@/lib/seo'
@@ -19,7 +18,7 @@ export const metadata = buildMetadata({
 })
 
 async function getData() {
-  const [featuredArtist, artists, blogPosts, episodes, galleryItems, widgets] =
+  const [featuredArtist, artists, blogPosts, episodes, galleryItems] =
     await Promise.all([
       // Hero artist
       prisma.artist.findFirst({
@@ -56,18 +55,13 @@ async function getData() {
         take: 7,
         orderBy: [{ featured: 'desc' }, { order: 'asc' }],
       }),
-      // Widgets
-      prisma.widget.findMany({
-        where: { active: true },
-        orderBy: { createdAt: 'desc' },
-      }),
     ])
 
-  return { featuredArtist, artists, blogPosts, episodes, galleryItems, widgets }
+  return { featuredArtist, artists, blogPosts, episodes, galleryItems }
 }
 
 export default async function HomePage() {
-  const { featuredArtist, artists, blogPosts, episodes, galleryItems, widgets } =
+  const { featuredArtist, artists, blogPosts, episodes, galleryItems } =
     await getData()
 
   const featuredPost =
@@ -236,9 +230,6 @@ export default async function HomePage() {
           customAudioUrl: featuredArtist.customAudioUrl,
         } : null
       } />
-
-      {/* ── WIDGETS (rails on desktop, stack before footer on tablet/mobile) ── */}
-      <SiteWidgets widgets={widgets} />
     </main>
   )
 }

@@ -6,7 +6,7 @@ import dynamic from 'next/dynamic'
 import slugify from 'slugify'
 import { createBlogPost } from '../actions'
 import styles from '../../shared.module.css'
-import { deleteRemoteMedia } from '@/components/admin/uploads/deleteRemoteMedia'
+import CloudinaryUpload from '@/components/admin/uploads/CloudinaryUpload'
 import { FORM_DRAFT_KEYS } from '@/lib/formDraft'
 import { useFormDraft } from '@/hooks/useFormDraft'
 import { DraftBanner, DraftHint, SaveErrorBanner } from '@/components/admin/FormStatusBanners'
@@ -103,14 +103,6 @@ export default function NewBlogPage() {
     })
   }
 
-  const removeCover = async () => {
-    if (!coverUrl) return
-    try {
-      await deleteRemoteMedia(coverUrl)
-    } catch { /* ignore */ }
-    setCoverUrl('')
-  }
-
   const showEditor = loaded
 
   return (
@@ -138,7 +130,7 @@ export default function NewBlogPage() {
         show={restored}
         onDismiss={() => setRestored(false)}
         onClear={clear}
-        message="Draft restored — including cover URL and editor content."
+        message="Draft restored — including cover image and editor content."
       />
       <SaveErrorBanner
         error={saveError}
@@ -149,18 +141,14 @@ export default function NewBlogPage() {
 
       <div className={styles.editorLayout}>
         <div className={styles.editorMain}>
-          {coverUrl && (
-            <div className={styles.coverPreview}>
-              <img src={coverUrl} alt="Cover" />
-              <button type="button" onClick={removeCover} className={styles.removeCover}>✕</button>
-            </div>
-          )}
-          <input
-            placeholder="Cover image URL (paste Cloudinary URL or upload below)"
-            value={coverUrl}
-            onChange={e => setCoverUrl(e.target.value)}
-            className={styles.coverInput}
-          />
+          <div className={styles.coverUpload}>
+            <CloudinaryUpload
+              folder="blog"
+              value={coverUrl}
+              onChange={setCoverUrl}
+              label="Drop cover image here or click to upload"
+            />
+          </div>
           <input
             placeholder="Add title"
             value={title}

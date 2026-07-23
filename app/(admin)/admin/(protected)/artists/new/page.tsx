@@ -276,25 +276,25 @@ export default function NewArtistPage() {
 
             {streamSource === 'YOUTUBE' && (
               <div className={styles.sourceField}>
-                <label className={styles.label}>YouTube Video ID</label>
+                <label className={styles.label}>YouTube URL or Video ID</label>
                 <input
                   value={youtubeVideoId}
                   onChange={e => setYoutubeVideoId(e.target.value)}
                   className={styles.input}
-                  placeholder="e.g. dQw4w9WgXcQ (from youtube.com/watch?v=...)"
+                  placeholder="https://www.youtube.com/watch?v=… or dQw4w9WgXcQ"
                 />
-                <p className={styles.hint}>Full songs via official audio YouTube videos. 100% free.</p>
+                <p className={styles.hint}>Paste a full YouTube link or just the video ID. Official audio videos work best.</p>
               </div>
             )}
 
             {streamSource === 'SPOTIFY' && (
               <div className={styles.sourceField}>
-                <label className={styles.label}>Spotify Track ID</label>
+                <label className={styles.label}>Spotify URL or Track ID</label>
                 <input
                   value={spotifyTrackId}
                   onChange={e => setSpotifyTrackId(e.target.value)}
                   className={styles.input}
-                  placeholder="e.g. 4cOdK2wGLETKBW3PvgPWqT"
+                  placeholder="https://open.spotify.com/track/… or track ID"
                 />
                 <p className={styles.hint}>30s preview free · full song for Spotify Premium users.</p>
               </div>

@@ -1,6 +1,7 @@
 'use client'
 // components/player/NowPlaying.tsx
 import { useState, useEffect, useRef } from 'react'
+import { extractSpotifyTrackId, extractYoutubeVideoId } from '@/lib/mediaIds'
 import styles from './NowPlaying.module.css'
 
 interface NowPlayingProps {
@@ -29,6 +30,8 @@ export default function NowPlaying({ artist }: NowPlayingProps) {
 
   if (!artist) return null
 
+  const youtubeId = extractYoutubeVideoId(artist.youtubeVideoId)
+  const spotifyId = extractSpotifyTrackId(artist.spotifyTrackId)
   const trackTitle = artist.trackTitle ?? `${artist.name} — Latest Track`
 
   const handlePlay = () => {
@@ -62,19 +65,19 @@ export default function NowPlaying({ artist }: NowPlayingProps) {
         />
       )}
 
-      {artist.streamSource === 'YOUTUBE' && artist.youtubeVideoId && (
+      {artist.streamSource === 'YOUTUBE' && youtubeId && (
         <iframe
           ref={ytRef}
-          src={`https://www.youtube.com/embed/${artist.youtubeVideoId}?enablejsapi=1&autoplay=0`}
+          src={`https://www.youtube.com/embed/${youtubeId}?enablejsapi=1&autoplay=0`}
           style={{ display: 'none' }}
           allow="autoplay"
           title="YouTube player"
         />
       )}
 
-      {artist.streamSource === 'SPOTIFY' && artist.spotifyTrackId && (
+      {artist.streamSource === 'SPOTIFY' && spotifyId && (
         <iframe
-          src={`https://open.spotify.com/embed/track/${artist.spotifyTrackId}`}
+          src={`https://open.spotify.com/embed/track/${spotifyId}`}
           style={{ display: 'none' }}
           allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"
           title="Spotify player"

@@ -3,8 +3,8 @@
 .rail {
   position: fixed;
   z-index: 200;
-  /* Below ticker (32px) + navbar (68px), with breathing room */
-  top: calc(32px + 68px + 1.25rem);
+  /* Below navbar (68px), with breathing room */
+  top: calc(68px + 1.25rem);
   bottom: 1.25rem;
   display: flex;
   align-items: flex-start;

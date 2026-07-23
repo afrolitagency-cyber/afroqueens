@@ -5,6 +5,7 @@ import Image from 'next/image'
 import type { Metadata } from 'next'
 import { buildMetadata, artistJsonLd } from '@/lib/seo'
 import ArtistLinks from '@/components/public/artists/ArtistLinks'
+import { extractSpotifyTrackId, extractYoutubeVideoId } from '@/lib/mediaIds'
 import styles from './artist.module.css'
 
 interface Props { params: { slug: string } }
@@ -41,10 +42,14 @@ export default async function ArtistPage({ params }: Props) {
   })
 
   const getEmbedSrc = () => {
-    if (artist.streamSource === 'YOUTUBE' && artist.youtubeVideoId)
-      return `https://www.youtube.com/embed/${artist.youtubeVideoId}?rel=0&modestbranding=1`
-    if (artist.streamSource === 'SPOTIFY' && artist.spotifyTrackId)
-      return `https://open.spotify.com/embed/track/${artist.spotifyTrackId}`
+    if (artist.streamSource === 'YOUTUBE') {
+      const id = extractYoutubeVideoId(artist.youtubeVideoId)
+      if (id) return `https://www.youtube.com/embed/${id}?rel=0&modestbranding=1`
+    }
+    if (artist.streamSource === 'SPOTIFY') {
+      const id = extractSpotifyTrackId(artist.spotifyTrackId)
+      if (id) return `https://open.spotify.com/embed/track/${id}`
+    }
     if (artist.streamSource === 'SOUNDCLOUD' && artist.soundcloudUrl)
       return `https://w.soundcloud.com/player/?url=${encodeURIComponent(artist.soundcloudUrl)}&color=%23C8102E&hide_related=true&show_comments=false`
     return null

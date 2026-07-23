@@ -79,6 +79,7 @@
   align-items: center;
   gap: 0.5rem;
   font-size: 0.88rem;
+  color: #333;
   cursor: pointer;
 }
 
