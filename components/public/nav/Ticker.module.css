@@ -4,7 +4,8 @@
   z-index: 10;
   height: 32px;
   overflow: hidden;
-  background: var(--acc);
+  background: var(--bg-soft);
+  border-top: 1px solid var(--bdr);
   display: flex;
   align-items: center;
 }
@@ -21,7 +22,7 @@
   font-size: .63rem;
   letter-spacing: .2em;
   text-transform: uppercase;
-  color: rgba(255,255,255,.9);
+  color: var(--fg-dim);
   font-family: var(--fb);
   display: flex;
   align-items: center;
@@ -32,7 +33,7 @@
 .dot {
   width: 4px; height: 4px;
   border-radius: 50%;
-  background: rgba(255,255,255,.6);
+  background: var(--acc);
   flex-shrink: 0;
 }
 
