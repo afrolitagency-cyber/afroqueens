@@ -1,62 +1,388 @@
 .page {
-  min-height: 70vh;
-  padding: 4rem 1.25rem 5rem;
-  background:
-    radial-gradient(ellipse at top, rgba(200, 16, 46, 0.18), transparent 55%),
-    linear-gradient(180deg, #0a0a0a 0%, #14110f 100%);
+  min-height: 100vh;
+  background: #0a0a0a;
   color: #fff;
 }
 
 .inner {
-  max-width: 960px;
+  width: min(1100px, calc(100% - 2.5rem));
   margin: 0 auto;
 }
 
-.eyebrow {
-  font-size: 0.72rem;
-  letter-spacing: 0.16em;
-  text-transform: uppercase;
-  color: #C8102E;
-  font-weight: 700;
+.listingPage {
+  min-height: 70vh;
+  padding: 7.5rem 0 5rem;
+  background:
+    radial-gradient(ellipse at top, rgba(200, 16, 46, 0.18), transparent 55%),
+    linear-gradient(180deg, #0a0a0a 0%, #14110f 100%);
+}
+
+.listingPage .eyebrow {
   margin-bottom: 0.75rem;
 }
 
+.listingPage .desc {
+  margin-bottom: 2rem;
+  max-width: 40rem;
+}
+
 .title {
-  font-family: 'Bebas Neue', sans-serif;
+  margin: 0 0 1rem;
+  font-family: var(--fd);
   font-size: clamp(2.4rem, 6vw, 4rem);
   letter-spacing: 0.04em;
-  margin: 0 0 1rem;
   line-height: 1.05;
 }
 
-.meta {
+.hero {
+  position: relative;
+  min-height: 76vh;
+  display: flex;
+  align-items: flex-end;
+  overflow: hidden;
+  background: linear-gradient(145deg, #231014 0%, #0a0a0a 62%);
+}
+
+.heroImage {
+  position: absolute;
+  inset: 0;
+  background-position: center;
+  background-size: cover;
+  transform: scale(1.02);
+}
+
+.heroOverlay {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(180deg, rgba(5, 5, 5, 0.16), rgba(5, 5, 5, 0.5) 42%, #0a0a0a 100%);
+}
+
+.heroGlow {
+  position: absolute;
+  bottom: -12rem;
+  left: -10rem;
+  width: 36rem;
+  height: 36rem;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(200, 16, 46, 0.24), transparent 68%);
+}
+
+.heroContent {
+  position: relative;
+  z-index: 1;
+  padding-top: 7rem;
+  padding-bottom: 4.5rem;
+}
+
+.heroEyebrow {
+  display: flex;
+  align-items: center;
+  gap: 0.8rem;
+  margin-bottom: 1.25rem;
+  color: rgba(255, 255, 255, 0.65);
+  font-size: 0.76rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.eventTag {
+  padding: 0.35rem 0.7rem;
+  border-radius: 999px;
+  background: #c8102e;
+  color: #fff;
+  font-size: 0.66rem;
+  font-weight: 700;
+}
+
+.heroTitle {
+  max-width: 850px;
+  margin: 0;
+  font-family: var(--fd);
+  font-size: clamp(3rem, 7vw, 6rem);
+  font-weight: 800;
+  letter-spacing: -0.04em;
+  line-height: 0.96;
+}
+
+.heroMeta {
   display: flex;
   flex-wrap: wrap;
-  gap: 0.75rem 1.25rem;
-  font-size: 0.92rem;
-  color: rgba(255, 255, 255, 0.7);
-  margin-bottom: 1.5rem;
+  gap: 0.65rem 1.5rem;
+  margin-top: 1.5rem;
+  color: rgba(255, 255, 255, 0.72);
+  font-size: 0.9rem;
 }
 
-.desc {
-  font-size: 1.05rem;
-  line-height: 1.7;
-  color: rgba(255, 255, 255, 0.78);
-  max-width: 40rem;
-  margin-bottom: 2rem;
-  white-space: pre-wrap;
+.heroActions,
+.cardActions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.7rem;
+  margin-top: 1.8rem;
 }
 
-.grid {
+.primaryButton,
+.secondaryButton {
+  padding: 0.82rem 1.35rem;
+  border-radius: 8px;
+  cursor: pointer;
+  font: 700 0.8rem var(--fb);
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.primaryButton {
+  border: 1px solid #c8102e;
+  background: #c8102e;
+  color: #fff;
+  box-shadow: 0 6px 24px rgba(200, 16, 46, 0.3);
+}
+
+.secondaryButton {
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  background: rgba(255, 255, 255, 0.07);
+  color: #fff;
+}
+
+.primaryButton:hover,
+.secondaryButton:hover {
+  transform: translateY(-1px);
+}
+
+.countdownStrip {
+  display: flex;
+  min-height: 92px;
+  align-items: center;
+  justify-content: center;
+  gap: clamp(1.2rem, 4vw, 3rem);
+  padding: 1rem 1.25rem;
+  border-block: 1px solid rgba(255, 255, 255, 0.07);
+  background: #111;
+}
+
+.countdownLabel {
+  color: #777;
+  font-size: 0.7rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.countdownUnit {
   display: grid;
-  grid-template-columns: 1.2fr 0.8fr;
-  gap: 2rem;
+  justify-items: center;
+  gap: 0.2rem;
+}
+
+.countdownUnit strong {
+  font-family: var(--fd);
+  font-size: 1.8rem;
+  line-height: 1;
+}
+
+.countdownUnit span {
+  color: #666;
+  font-size: 0.58rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.eventBody {
+  padding-block: 4.5rem 6rem;
+}
+
+.eventGrid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 350px;
+  gap: 4rem;
   align-items: start;
 }
 
-@media (max-width: 800px) {
-  .grid {
+.eyebrow {
+  margin-bottom: 0.7rem;
+  color: #c8102e;
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+}
+
+.aboutSection h2,
+.registrationIntro h2 {
+  margin: 0 0 1.2rem;
+  font-family: var(--fd);
+  font-size: clamp(1.8rem, 4vw, 2.6rem);
+  line-height: 1.1;
+}
+
+.desc {
+  max-width: 650px;
+  margin: 0;
+  color: rgba(255, 255, 255, 0.68);
+  font-size: 1rem;
+  line-height: 1.85;
+  white-space: pre-wrap;
+}
+
+.sidebar {
+  position: sticky;
+  top: 84px;
+  display: grid;
+  gap: 1rem;
+}
+
+.detailsCard,
+.shareCard {
+  border: 1px solid rgba(255, 255, 255, 0.09);
+  border-radius: 14px;
+  background: #141414;
+}
+
+.detailsCard {
+  padding: 1.4rem;
+}
+
+.detailsCard h2 {
+  margin: 0 0 1.2rem;
+  font: 700 1rem var(--fd);
+}
+
+.detailItem {
+  display: flex;
+  gap: 0.8rem;
+  padding: 0.85rem 0;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.07);
+}
+
+.detailIcon {
+  display: grid;
+  width: 32px;
+  height: 32px;
+  flex: 0 0 32px;
+  place-items: center;
+  border-radius: 8px;
+  background: #202020;
+  color: #c8102e;
+}
+
+.detailItem div {
+  display: grid;
+  gap: 0.15rem;
+}
+
+.detailItem small {
+  color: #666;
+  font-size: 0.62rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.detailItem strong {
+  font-size: 0.85rem;
+}
+
+.detailItem div > span {
+  color: #888;
+  font-size: 0.78rem;
+}
+
+.cardActions {
+  display: grid;
+  margin-top: 1.2rem;
+}
+
+.cardActions button {
+  width: 100%;
+}
+
+.shareCard {
+  padding: 1rem;
+}
+
+.shareCard > span {
+  display: block;
+  margin-bottom: 0.7rem;
+  color: #666;
+  font-size: 0.64rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.shareCard > div {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.shareCard button {
+  flex: 1;
+  padding: 0.55rem;
+  border: 1px solid rgba(255, 255, 255, 0.09);
+  border-radius: 7px;
+  background: #202020;
+  color: #aaa;
+  cursor: pointer;
+  font: 500 0.72rem var(--fb);
+}
+
+.registrationSection {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 480px;
+  gap: 4rem;
+  align-items: start;
+  margin-top: 5rem;
+  padding-top: 4rem;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+  scroll-margin-top: 84px;
+}
+
+.registrationIntro p {
+  max-width: 430px;
+  color: #888;
+  font-size: 0.9rem;
+  line-height: 1.7;
+}
+
+@media (max-width: 860px) {
+  .eventGrid,
+  .registrationSection {
     grid-template-columns: 1fr;
+    gap: 2.5rem;
+  }
+
+  .sidebar {
+    position: static;
+  }
+
+  .hero {
+    min-height: 68vh;
+  }
+}
+
+@media (max-width: 600px) {
+  .heroContent {
+    padding-bottom: 3rem;
+  }
+
+  .heroTitle {
+    font-size: 2.7rem;
+  }
+
+  .heroEyebrow {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .countdownLabel {
+    display: none;
+  }
+
+  .countdownStrip {
+    gap: 1.2rem;
+  }
+
+  .countdownUnit strong {
+    font-size: 1.4rem;
   }
 }
 
@@ -66,34 +392,71 @@
 }
 
 .card {
-  display: block;
+  display: grid;
+  grid-template-columns: 148px minmax(0, 1fr);
+  align-items: stretch;
+  overflow: hidden;
   text-decoration: none;
   color: inherit;
-  padding: 1.25rem 1.4rem;
   border: 1px solid rgba(255, 255, 255, 0.1);
   border-radius: 12px;
   background: rgba(255, 255, 255, 0.03);
-  transition: border-color 0.2s, background 0.2s;
+  transition: border-color 0.2s, background 0.2s, transform 0.2s;
 }
 
 .card:hover {
   border-color: rgba(200, 16, 46, 0.5);
   background: rgba(200, 16, 46, 0.08);
+  transform: translateY(-1px);
+}
+
+.cardCover {
+  min-height: 112px;
+  background:
+    linear-gradient(145deg, rgba(200, 16, 46, 0.35), rgba(20, 17, 15, 0.9)),
+    #1a1214;
+  background-position: center;
+  background-size: cover;
+}
+
+.cardBody {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  justify-content: center;
+  gap: 0.35rem;
+  padding: 1.15rem 1.3rem;
 }
 
 .cardTitle {
-  font-family: 'Bebas Neue', sans-serif;
-  font-size: 1.6rem;
-  letter-spacing: 0.05em;
-  margin: 0 0 0.4rem;
+  font-family: var(--fd);
+  font-size: 1.55rem;
+  letter-spacing: 0.04em;
+  margin: 0;
+  line-height: 1.1;
 }
 
 .cardMeta {
   font-size: 0.85rem;
   color: rgba(255, 255, 255, 0.55);
+  line-height: 1.45;
 }
 
 .empty {
   color: rgba(255, 255, 255, 0.5);
   font-size: 0.95rem;
+}
+
+@media (max-width: 560px) {
+  .listingPage {
+    padding-top: 6.5rem;
+  }
+
+  .card {
+    grid-template-columns: 1fr;
+  }
+
+  .cardCover {
+    min-height: 160px;
+  }
 }

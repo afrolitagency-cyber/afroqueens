@@ -6,6 +6,9 @@ import { updateArtist } from '../../actions'
 import CloudinaryUpload from '@/components/admin/uploads/CloudinaryUpload'
 import SupabaseAudioUpload from '@/components/admin/uploads/SupabaseAudioUpload'
 import ArtistLinksFields from '@/components/admin/artists/ArtistLinksFields'
+import ArtistDiscographyEditor, {
+  type EditableRelease,
+} from '@/components/admin/artists/ArtistDiscographyEditor'
 import styles from '../../artists.module.css'
 
 export default function EditArtistPage() {
@@ -32,6 +35,7 @@ export default function EditArtistPage() {
   const [releaseUrl, setReleaseUrl]           = useState('')
   const [featured, setFeatured]               = useState(false)
   const [order, setOrder]                     = useState(0)
+  const [releases, setReleases]               = useState<EditableRelease[]>([])
   const [saveError, setSaveError]             = useState<string | null>(null)
 
   useEffect(() => {
@@ -48,6 +52,7 @@ export default function EditArtistPage() {
         setTiktokUrl(a.tiktokUrl ?? ''); setFacebookUrl(a.facebookUrl ?? '')
         setReleaseUrl(a.releaseUrl ?? '')
         setFeatured(a.featured ?? false); setOrder(a.order ?? 0)
+        setReleases(a.releases ?? [])
         setLoading(false)
       })
   }, [id])
@@ -184,6 +189,8 @@ export default function EditArtistPage() {
               if (key === 'releaseUrl') setReleaseUrl(value)
             }}
           />
+
+          <ArtistDiscographyEditor artistId={id} initialReleases={releases} />
         </div>
 
         <div className={styles.formSide}>

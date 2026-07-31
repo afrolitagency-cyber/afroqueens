@@ -12,6 +12,7 @@ import type { ActionResult } from '@/lib/actions'
 import { actionOk, actionErr } from '@/lib/actions'
 import { normalizeArtistUrl } from '@/lib/artistLinks'
 import { extractSpotifyTrackId, extractYoutubeVideoId } from '@/lib/mediaIds'
+import type { ReleaseType } from '@prisma/client'
 
 export type { ActionResult }
 
@@ -34,6 +35,27 @@ interface ArtistPayload {
   releaseUrl?: string
   featured?: boolean
   order?: number
+}
+
+export interface ReleaseTrackPayload {
+  number: number
+  title: string
+  featuredArtists?: string
+  duration?: string
+  explicit?: boolean
+  listenUrl?: string
+}
+
+export interface ArtistReleasePayload {
+  title: string
+  type: ReleaseType
+  year: number
+  label?: string
+  description?: string
+  coverUrl?: string
+  listenUrl?: string
+  order?: number
+  tracks: ReleaseTrackPayload[]
 }
 
 function linkData(data: ArtistPayload) {
@@ -59,6 +81,47 @@ function streamData(data: ArtistPayload) {
 async function requireAuth() {
   const session = await getServerSession(authOptions)
   if (!session) redirect('/admin/login')
+}
+
+function releaseData(data: ArtistReleasePayload) {
+  return {
+    title:       data.title.trim(),
+    type:        data.type,
+    year:        data.year,
+    label:       data.label?.trim() || null,
+    description: data.description?.trim() || null,
+    coverUrl:    data.coverUrl?.trim() || null,
+    listenUrl:   normalizeArtistUrl(data.listenUrl),
+    order:       data.order ?? 0,
+  }
+}
+
+function trackData(track: ReleaseTrackPayload, index: number) {
+  return {
+    number:          track.number || index + 1,
+    title:           track.title.trim(),
+    featuredArtists: track.featuredArtists?.trim() || null,
+    duration:        track.duration?.trim() || null,
+    explicit:        track.explicit ?? false,
+    listenUrl:       normalizeArtistUrl(track.listenUrl),
+  }
+}
+
+function validateRelease(data: ArtistReleasePayload): string | null {
+  if (!data.title?.trim()) return 'Release title is required.'
+  if (!Number.isInteger(data.year) || data.year < 1900 || data.year > 2100) {
+    return 'Enter a valid release year.'
+  }
+  if (!data.tracks.length || data.tracks.some(track => !track.title?.trim())) {
+    return 'Add at least one track and give every track a title.'
+  }
+  return null
+}
+
+function revalidateArtist(artistSlug?: string) {
+  revalidatePath('/artists')
+  if (artistSlug) revalidatePath(`/artists/${artistSlug}`)
+  revalidatePath('/admin/artists')
 }
 
 export async function createArtist(data: ArtistPayload): Promise<ActionResult> {
@@ -149,4 +212,92 @@ export async function deleteArtist(id: string) {
   await deleteMediaUrls([artist?.profileImageUrl, artist?.customAudioUrl])
   revalidatePath('/artists')
   revalidatePath('/')
+}
+
+export async function createArtistRelease(
+  artistId: string,
+  data: ArtistReleasePayload,
+): Promise<ActionResult> {
+  await requireAuth()
+  const validationError = validateRelease(data)
+  if (validationError) return actionErr(validationError)
+
+  const artist = await prisma.artist.findUnique({
+    where: { id: artistId },
+    select: { slug: true },
+  })
+  if (!artist) return actionErr('Artist not found.')
+
+  try {
+    await withDbRetry(() =>
+      prisma.artistRelease.create({
+        data: {
+          artistId,
+          ...releaseData(data),
+          tracks: {
+            create: data.tracks.map(trackData),
+          },
+        },
+      }),
+    )
+    revalidateArtist(artist.slug)
+    return actionOk()
+  } catch (err) {
+    return actionErr(dbErrorMessage(err))
+  }
+}
+
+export async function updateArtistRelease(
+  releaseId: string,
+  data: ArtistReleasePayload,
+): Promise<ActionResult> {
+  await requireAuth()
+  const validationError = validateRelease(data)
+  if (validationError) return actionErr(validationError)
+
+  const existing = await prisma.artistRelease.findUnique({
+    where: { id: releaseId },
+    select: { coverUrl: true, artist: { select: { slug: true } } },
+  })
+  if (!existing) return actionErr('Release not found.')
+
+  try {
+    await withDbRetry(() =>
+      prisma.$transaction([
+        prisma.releaseTrack.deleteMany({ where: { releaseId } }),
+        prisma.artistRelease.update({
+          where: { id: releaseId },
+          data: {
+            ...releaseData(data),
+            tracks: {
+              create: data.tracks.map(trackData),
+            },
+          },
+        }),
+      ]),
+    )
+    await deleteMediaIfReplaced(existing.coverUrl, data.coverUrl)
+    revalidateArtist(existing.artist.slug)
+    return actionOk()
+  } catch (err) {
+    return actionErr(dbErrorMessage(err))
+  }
+}
+
+export async function deleteArtistRelease(releaseId: string): Promise<ActionResult> {
+  await requireAuth()
+  const release = await prisma.artistRelease.findUnique({
+    where: { id: releaseId },
+    select: { coverUrl: true, artist: { select: { slug: true } } },
+  })
+  if (!release) return actionErr('Release not found.')
+
+  try {
+    await withDbRetry(() => prisma.artistRelease.delete({ where: { id: releaseId } }))
+    await deleteMediaUrls([release.coverUrl])
+    revalidateArtist(release.artist.slug)
+    return actionOk()
+  } catch (err) {
+    return actionErr(dbErrorMessage(err))
+  }
 }

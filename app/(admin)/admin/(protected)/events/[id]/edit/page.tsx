@@ -24,6 +24,7 @@ export default async function EditEventPage({
         title: event.title,
         slug: event.slug,
         description: event.description,
+        coverImageUrl: event.coverImageUrl,
         location: event.location,
         startsAt: event.startsAt.toISOString(),
         endsAt: event.endsAt?.toISOString() ?? null,

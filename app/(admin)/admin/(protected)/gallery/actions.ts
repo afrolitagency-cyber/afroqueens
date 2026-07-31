@@ -5,7 +5,7 @@ import { revalidatePath } from 'next/cache'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { redirect } from 'next/navigation'
-import { GalleryCategory, GalleryItem } from '@prisma/client'
+import { GalleryCategory, GalleryCropPosition, GalleryItem } from '@prisma/client'
 import { deleteMediaUrl } from '@/lib/media'
 import { withDbRetry, dbErrorMessage } from '@/lib/dbRetry'
 import type { ActionResult } from '@/lib/actions'
@@ -20,6 +20,7 @@ export async function createGalleryItem(data: {
   label: string
   category: GalleryCategory
   imageUrl: string
+  cropPosition?: GalleryCropPosition
   featured: boolean
   order: number
 }): Promise<ActionResult<GalleryItem>> {
@@ -37,7 +38,13 @@ export async function createGalleryItem(data: {
 
 export async function updateGalleryItem(
   id: string,
-  data: Partial<{ label: string; category: GalleryCategory; featured: boolean; order: number }>,
+  data: Partial<{
+    label: string
+    category: GalleryCategory
+    cropPosition: GalleryCropPosition
+    featured: boolean
+    order: number
+  }>,
 ): Promise<ActionResult<GalleryItem>> {
   await requireAuth()
   try {

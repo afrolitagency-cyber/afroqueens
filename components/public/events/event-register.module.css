@@ -1,10 +1,20 @@
 .form {
+  position: relative;
   display: grid;
   gap: 0.85rem;
-  padding: 1.5rem;
-  background: rgba(255, 255, 255, 0.04);
-  border: 1px solid rgba(255, 255, 255, 0.12);
-  border-radius: 12px;
+  overflow: hidden;
+  padding: 2rem;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 16px;
+  background: #141414;
+}
+
+.form::before {
+  position: absolute;
+  inset: 0 0 auto;
+  height: 3px;
+  background: linear-gradient(90deg, #c8102e, rgba(200, 16, 46, 0.25));
+  content: '';
 }
 
 .formTitle {
@@ -33,10 +43,10 @@
 }
 
 .input {
-  padding: 0.75rem 0.9rem;
-  border-radius: 8px;
-  border: 1px solid rgba(255, 255, 255, 0.15);
-  background: rgba(0, 0, 0, 0.35);
+  padding: 0.8rem 0.95rem;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 9px;
+  background: #202020;
   color: #fff;
   font-size: 0.95rem;
   font-family: 'DM Sans', sans-serif;
@@ -44,15 +54,16 @@
 
 .input:focus {
   outline: none;
-  border-color: #C8102E;
+  border-color: #c8102e;
+  box-shadow: 0 0 0 3px rgba(200, 16, 46, 0.12);
 }
 
 .btn {
   margin-top: 0.25rem;
   padding: 0.85rem 1.2rem;
   border: none;
-  border-radius: 8px;
-  background: #C8102E;
+  border-radius: 9px;
+  background: #c8102e;
   color: #fff;
   font-weight: 700;
   letter-spacing: 0.06em;
@@ -60,6 +71,7 @@
   font-size: 0.78rem;
   cursor: pointer;
   font-family: 'DM Sans', sans-serif;
+  box-shadow: 0 4px 20px rgba(200, 16, 46, 0.3);
 }
 
 .btn:disabled {

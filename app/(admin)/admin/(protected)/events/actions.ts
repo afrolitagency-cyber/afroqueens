@@ -5,6 +5,7 @@ import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
 import { withDbRetry } from '@/lib/dbRetry'
+import { deleteMediaIfReplaced, deleteMediaUrls } from '@/lib/media'
 
 async function requireAdmin() {
   const session = await getServerSession(authOptions)
@@ -24,6 +25,7 @@ type EventPayload = {
   title: string
   slug?: string
   description?: string
+  coverImageUrl?: string
   location?: string
   startsAt: string
   endsAt?: string
@@ -57,6 +59,7 @@ export async function createEvent(data: EventPayload) {
         title,
         slug,
         description: data.description?.trim() || null,
+        coverImageUrl: data.coverImageUrl?.trim() || null,
         location: data.location?.trim() || null,
         startsAt,
         endsAt: data.endsAt ? new Date(data.endsAt) : null,
@@ -104,6 +107,7 @@ export async function updateEvent(id: string, data: EventPayload) {
         title,
         slug,
         description: data.description?.trim() || null,
+        coverImageUrl: data.coverImageUrl?.trim() || null,
         location: data.location?.trim() || null,
         startsAt,
         endsAt: data.endsAt ? new Date(data.endsAt) : null,
@@ -114,6 +118,7 @@ export async function updateEvent(id: string, data: EventPayload) {
       },
     }),
   )
+  await deleteMediaIfReplaced(current.coverImageUrl, data.coverImageUrl)
 
   revalidatePath('/admin/events')
   revalidatePath('/events')
@@ -124,6 +129,7 @@ export async function updateEvent(id: string, data: EventPayload) {
 export async function deleteEvent(id: string) {
   await requireAdmin()
   const event = await prisma.event.delete({ where: { id } })
+  await deleteMediaUrls([event.coverImageUrl])
   revalidatePath('/admin/events')
   revalidatePath('/events')
   return event

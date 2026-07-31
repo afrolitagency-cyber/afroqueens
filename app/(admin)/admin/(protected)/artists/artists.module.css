@@ -217,7 +217,152 @@
   margin-bottom: 0.75rem;
 }
 
+.discAdmin {
+  padding: 1.25rem;
+  background: #fafafa;
+  border: 1px solid #e5e5e5;
+  border-radius: 10px;
+}
+.discAdminHeader,
+.trackEditorHeader,
+.releaseFormHeader,
+.releaseFormActions {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+}
+.discAdminHeader .streamHint { margin-bottom: 0; }
+.addReleaseBtn,
+.trackEditorHeader button {
+  padding: 0.45rem 0.85rem;
+  border: 1px solid #C8102E;
+  border-radius: 6px;
+  background: #fff;
+  color: #C8102E;
+  font-size: 0.78rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+.releaseAdminList { display: flex; flex-direction: column; gap: 0.65rem; margin-top: 1rem; }
+.releaseAdminRow {
+  display: grid;
+  grid-template-columns: 52px minmax(0, 1fr) auto auto;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.65rem;
+  background: #fff;
+  border: 1px solid #ececec;
+  border-radius: 8px;
+}
+.releaseAdminCover {
+  width: 52px;
+  aspect-ratio: 1;
+  border-radius: 6px;
+  background: #eee center / cover no-repeat;
+  color: #C8102E;
+  display: grid;
+  place-items: center;
+  font-weight: 700;
+}
+.releaseAdminInfo { min-width: 0; display: flex; flex-direction: column; gap: 0.15rem; color: #222; }
+.releaseAdminInfo strong { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.releaseAdminInfo span { color: #888; font-size: 0.72rem; }
+.releaseEditBtn,
+.releaseDeleteBtn,
+.releaseCancelBtn {
+  padding: 0.35rem 0.65rem;
+  border: 1px solid #ddd;
+  border-radius: 5px;
+  background: #fff;
+  color: #555;
+  cursor: pointer;
+  font-size: 0.72rem;
+}
+.releaseDeleteBtn { color: #dc2626; }
+.releaseEmpty { margin-top: 1rem; color: #999; font-size: 0.82rem; }
+.releaseError {
+  padding: 0.7rem 0.85rem;
+  margin-top: 1rem;
+  border: 1px solid rgba(220,38,38,.2);
+  border-radius: 6px;
+  background: #fef2f2;
+  color: #991b1b;
+  font-size: 0.8rem;
+}
+.releaseForm {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  margin-top: 1.25rem;
+  padding: 1.25rem;
+  border: 1px solid #e5e5e5;
+  border-radius: 10px;
+  background: #fff;
+}
+.releaseFormHeader h3 { color: #222; font-size: 1rem; }
+.releaseFormHeader button {
+  border: none;
+  background: none;
+  color: #888;
+  cursor: pointer;
+  font-size: 1rem;
+}
+.trackEditor {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  padding-top: 1rem;
+  border-top: 1px solid #eee;
+}
+.trackEditorHeader p { color: #aaa; font-size: 0.72rem; margin-top: 0.15rem; }
+.trackEditorRow {
+  display: grid;
+  grid-template-columns: 52px minmax(0, 1fr) auto auto;
+  align-items: start;
+  gap: 0.6rem;
+  padding: 0.75rem;
+  background: #fafafa;
+  border-radius: 8px;
+}
+.trackNumberInput {
+  width: 52px;
+  padding: 0.6rem 0.4rem;
+  border: 1px solid #e5e5e5;
+  border-radius: 8px;
+  background: #fff;
+  color: #333;
+  text-align: center;
+}
+.trackFields { display: flex; flex-direction: column; gap: 0.5rem; min-width: 0; }
+.trackMetaFields { display: grid; grid-template-columns: 1fr 90px 1.3fr; gap: 0.5rem; }
+.explicitCheck {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  color: #666;
+  font-size: 0.72rem;
+  padding-top: 0.55rem;
+}
+.removeTrackBtn {
+  border: none;
+  background: none;
+  color: #dc2626;
+  cursor: pointer;
+  padding-top: 0.55rem;
+}
+.removeTrackBtn:disabled { opacity: 0.25; cursor: not-allowed; }
+.releaseFormActions { justify-content: flex-end; padding-top: 0.5rem; }
+
 @media (max-width: 900px) {
   .formGrid { grid-template-columns: 1fr; }
   .row { grid-template-columns: 1fr; }
+  .trackMetaFields { grid-template-columns: 1fr; }
+}
+
+@media (max-width: 640px) {
+  .releaseAdminRow { grid-template-columns: 48px minmax(0, 1fr); }
+  .releaseEditBtn, .releaseDeleteBtn { grid-row: 2; }
+  .trackEditorRow { grid-template-columns: 42px minmax(0, 1fr); }
+  .explicitCheck, .removeTrackBtn { grid-row: 2; }
 }

@@ -83,7 +83,7 @@ export default function AboutPage() {
             </h1>
             <span className="red-rule" />
             <p className={styles.heroBody}>
-              Afroqueens FM was built on a simple conviction: the women shaping African music are among the most important artists alive, and the world deserves to know their names, their stories, and their sound.
+              Afroqueens is an initiative designed to empower emerging female Afrobeats music artists by providing them with a platform to showcase their talents, develop their skills, and thrive in a male-dominated industry.
             </p>
           </div>
         </div>
@@ -97,9 +97,7 @@ export default function AboutPage() {
               <h2 className={styles.missionTitle}>The <em>Mission</em></h2>
               <span className="red-rule" />
               <div className={styles.missionBody}>
-                <p>We are an independent platform dedicated to the documentation, amplification, and celebration of women in Afrobeats, Highlife, Electronic, and across the full spectrum of African sound.</p>
-                <p>Every artist profile, every episode, every cover story — it all serves one purpose: to ensure that the women who built this music are never footnotes in their own history.</p>
-                <p>We are not a label. We are not a PR firm. We are journalists, music lovers, and believers in the power of intentional storytelling.</p>
+                <p>Afroqueens is not just a writing camp for talented female artists; it is a reality series that authentically captures their experiences—the highs, the lows, the lessons learned, and the moments that define them. We aim to highlight the brilliance of these rising stars and provide viewers with an inside look at the creative processes and struggles of female artists trying to establish themselves in the vibrant Afrobeats scene.</p>
               </div>
             </div>
             <div className={styles.missionVisual}>

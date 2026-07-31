@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { createEvent, updateEvent } from './actions'
 import styles from '@/app/(admin)/admin/(protected)/shared.module.css'
+import CloudinaryUpload from '@/components/admin/uploads/CloudinaryUpload'
 
 function toLocalInput(iso?: string | Date | null) {
   if (!iso) return ''
@@ -21,6 +22,7 @@ interface Props {
     title: string
     slug: string
     description: string | null
+    coverImageUrl: string | null
     location: string | null
     startsAt: string
     endsAt: string | null
@@ -38,6 +40,7 @@ export default function EventForm({ mode, event }: Props) {
   const [title, setTitle] = useState(event?.title ?? '')
   const [slug, setSlug] = useState(event?.slug ?? '')
   const [description, setDescription] = useState(event?.description ?? '')
+  const [coverImageUrl, setCoverImageUrl] = useState(event?.coverImageUrl ?? '')
   const [location, setLocation] = useState(event?.location ?? '')
   const [startsAt, setStartsAt] = useState(toLocalInput(event?.startsAt))
   const [endsAt, setEndsAt] = useState(toLocalInput(event?.endsAt))
@@ -54,6 +57,7 @@ export default function EventForm({ mode, event }: Props) {
           title,
           slug: slug || undefined,
           description,
+          coverImageUrl,
           location,
           startsAt,
           endsAt: endsAt || undefined,
@@ -102,6 +106,15 @@ export default function EventForm({ mode, event }: Props) {
       )}
 
       <div style={{ background: '#fff', border: '1px solid #f0f0f0', borderRadius: 8, padding: '1.25rem', maxWidth: 640, display: 'grid', gap: '.85rem' }}>
+        <div>
+          <label className={styles.label}>Event cover image</label>
+          <CloudinaryUpload
+            folder="events"
+            value={coverImageUrl}
+            onChange={setCoverImageUrl}
+            label="Drop event cover here or click to upload"
+          />
+        </div>
         <div>
           <label className={styles.label}>Title *</label>
           <input className={styles.input} value={title} onChange={e => setTitle(e.target.value)} />

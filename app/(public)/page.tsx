@@ -17,6 +17,12 @@ export const metadata = buildMetadata({
   slug: '',
 })
 
+function galleryBgPosition(cropPosition: 'TOP' | 'CENTER' | 'BOTTOM') {
+  if (cropPosition === 'TOP') return 'center top'
+  if (cropPosition === 'BOTTOM') return 'center bottom'
+  return 'center'
+}
+
 async function getData() {
   const [featuredArtist, artists, blogPosts, episodes, galleryItems] =
     await Promise.all([
@@ -204,7 +210,11 @@ export default async function HomePage() {
               <div key={item.id} className={styles.gi}>
                 <div
                   className={styles.gf}
-                  style={{ backgroundImage: `url(${item.imageUrl})`, backgroundSize: 'cover', backgroundPosition: 'center' }}
+                  style={{
+                    backgroundImage: `url(${item.imageUrl})`,
+                    backgroundSize: 'cover',
+                    backgroundPosition: galleryBgPosition(item.cropPosition),
+                  }}
                 />
                 <div className={styles.go}>
                   <div className={styles.gIcon}>+</div>

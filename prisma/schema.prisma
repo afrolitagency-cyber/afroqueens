@@ -70,6 +70,7 @@ model Artist {
   order            Int           @default(0)
   createdAt        DateTime      @default(now())
   updatedAt        DateTime      @updatedAt
+  releases         ArtistRelease[]
 }
 
 enum StreamSource {
@@ -77,6 +78,48 @@ enum StreamSource {
   YOUTUBE
   SOUNDCLOUD
   CUSTOM
+}
+
+model ArtistRelease {
+  id          String       @id @default(cuid())
+  artistId    String
+  artist      Artist       @relation(fields: [artistId], references: [id], onDelete: Cascade)
+  title       String
+  type        ReleaseType  @default(SINGLE)
+  year        Int
+  label       String?
+  description String?      @db.Text
+  coverUrl    String?
+  listenUrl   String?
+  order       Int          @default(0)
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+  tracks      ReleaseTrack[]
+
+  @@index([artistId, order])
+}
+
+model ReleaseTrack {
+  id              String        @id @default(cuid())
+  releaseId       String
+  release         ArtistRelease @relation(fields: [releaseId], references: [id], onDelete: Cascade)
+  number          Int
+  title           String
+  featuredArtists String?
+  duration        String?
+  explicit        Boolean       @default(false)
+  listenUrl       String?
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
+
+  @@unique([releaseId, number])
+  @@index([releaseId, number])
+}
+
+enum ReleaseType {
+  ALBUM
+  EP
+  SINGLE
 }
 
 // ─── BLOG ─────────────────────────────────────────────────────────────────────
@@ -119,6 +162,7 @@ model GalleryItem {
   label       String
   category    GalleryCategory
   imageUrl    String   // Cloudinary
+  cropPosition GalleryCropPosition @default(CENTER)
   featured    Boolean  @default(false)
   order       Int      @default(0)
   createdAt   DateTime @default(now())
@@ -132,6 +176,12 @@ enum GalleryCategory {
   PORTRAITS
   BEHIND_THE_SCENES
   ON_THE_ROAD
+}
+
+enum GalleryCropPosition {
+  TOP
+  CENTER
+  BOTTOM
 }
 
 // ─── EPISODES ─────────────────────────────────────────────────────────────────
@@ -238,6 +288,7 @@ model Event {
   title               String
   slug                String   @unique
   description         String?  @db.Text
+  coverImageUrl       String?
   location            String?
   startsAt            DateTime
   endsAt              DateTime?

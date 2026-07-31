@@ -16,7 +16,7 @@ export default async function EventsPage() {
   })
 
   return (
-    <main className={styles.page}>
+    <main className={`${styles.page} ${styles.listingPage}`}>
       <div className={styles.inner}>
         <div className={styles.eyebrow}>Afroqueens live</div>
         <h1 className={styles.title}>Events</h1>
@@ -30,17 +30,24 @@ export default async function EventsPage() {
           <div className={styles.list}>
             {events.map(ev => (
               <Link key={ev.id} href={`/events/${ev.slug}`} className={styles.card}>
-                <div className={styles.cardTitle}>{ev.title}</div>
-                <div className={styles.cardMeta}>
-                  {ev.startsAt.toLocaleString('en-GB', {
-                    weekday: 'short',
-                    day: 'numeric',
-                    month: 'short',
-                    year: 'numeric',
-                    hour: '2-digit',
-                    minute: '2-digit',
-                  })}
-                  {ev.location ? ` · ${ev.location}` : ''}
+                <div
+                  className={styles.cardCover}
+                  style={ev.coverImageUrl ? { backgroundImage: `url(${ev.coverImageUrl})` } : undefined}
+                  aria-hidden={!ev.coverImageUrl}
+                />
+                <div className={styles.cardBody}>
+                  <div className={styles.cardTitle}>{ev.title}</div>
+                  <div className={styles.cardMeta}>
+                    {ev.startsAt.toLocaleString('en-GB', {
+                      weekday: 'short',
+                      day: 'numeric',
+                      month: 'short',
+                      year: 'numeric',
+                      hour: '2-digit',
+                      minute: '2-digit',
+                    })}
+                    {ev.location ? ` · ${ev.location}` : ''}
+                  </div>
                 </div>
               </Link>
             ))}

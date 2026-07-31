@@ -8,6 +8,7 @@ interface GalleryItem {
   label: string
   category: string
   imageUrl: string
+  cropPosition: 'TOP' | 'CENTER' | 'BOTTOM'
   featured: boolean
 }
 
@@ -18,6 +19,12 @@ interface Props {
 
 export default function GalleryGrid({ items, categories }: Props) {
   const [active, setActive] = useState('ALL')
+
+  const bgPosition = (cropPosition: GalleryItem['cropPosition']) => {
+    if (cropPosition === 'TOP') return 'center top'
+    if (cropPosition === 'BOTTOM') return 'center bottom'
+    return 'center'
+  }
 
   const filtered = active === 'ALL'
     ? items
@@ -50,7 +57,7 @@ export default function GalleryGrid({ items, categories }: Props) {
               style={{
                 backgroundImage: `url(${item.imageUrl})`,
                 backgroundSize: 'cover',
-                backgroundPosition: 'center',
+                backgroundPosition: bgPosition(item.cropPosition),
               }}
             />
             <div className={styles.overlay}>

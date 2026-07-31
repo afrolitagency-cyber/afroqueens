@@ -14,9 +14,21 @@ const CATEGORIES = [
   { value: 'ON_THE_ROAD',        label: 'On the Road' },
 ]
 
+const CROP_POSITIONS = [
+  { value: 'TOP', label: 'Top' },
+  { value: 'CENTER', label: 'Center' },
+  { value: 'BOTTOM', label: 'Bottom' },
+]
+
+const cropObjectPosition = (position: GalleryItem['cropPosition']) => {
+  if (position === 'TOP') return 'center top'
+  if (position === 'BOTTOM') return 'center bottom'
+  return 'center'
+}
+
 interface GalleryItem {
   id: string; label: string; category: string
-  imageUrl: string; featured: boolean; order: number
+  imageUrl: string; cropPosition: 'TOP' | 'CENTER' | 'BOTTOM'; featured: boolean; order: number
 }
 
 interface Props { initialItems: GalleryItem[] }
@@ -47,6 +59,7 @@ export default function GalleryAdminClient({ initialItems }: Props) {
           label,
           category: 'LIVE_SESSIONS',
           imageUrl: url,
+          cropPosition: 'CENTER',
           featured: false,
           order: items.length,
         })
@@ -139,7 +152,12 @@ export default function GalleryAdminClient({ initialItems }: Props) {
       <div className={styles.grid}>
         {items.map(item => (
           <div key={item.id} className={styles.item}>
-            <img src={item.imageUrl} alt={item.label} className={styles.img} />
+            <img
+              src={item.imageUrl}
+              alt={item.label}
+              className={styles.img}
+              style={{ objectPosition: cropObjectPosition(item.cropPosition) }}
+            />
             <div className={styles.itemMeta}>
               <input
                 value={item.label}
@@ -162,6 +180,23 @@ export default function GalleryAdminClient({ initialItems }: Props) {
               >
                 {CATEGORIES.map(c => (
                   <option key={c.value} value={c.value}>{c.label}</option>
+                ))}
+              </select>
+              <select
+                value={item.cropPosition}
+                onChange={e => {
+                  const cropPosition = e.target.value as GalleryItem['cropPosition']
+                  setItems(prev => prev.map(i => i.id === item.id ? { ...i, cropPosition } : i))
+                  startTrans(async () => {
+                    const result = await updateGalleryItem(item.id, { cropPosition })
+                    if (!result.ok) setSaveError(result.error)
+                  })
+                }}
+                className={styles.catSelect}
+                aria-label={`Preview crop position for ${item.label}`}
+              >
+                {CROP_POSITIONS.map(pos => (
+                  <option key={pos.value} value={pos.value}>Preview crop: {pos.label}</option>
                 ))}
               </select>
             </div>

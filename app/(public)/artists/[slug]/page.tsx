@@ -5,6 +5,7 @@ import Image from 'next/image'
 import type { Metadata } from 'next'
 import { buildMetadata, artistJsonLd } from '@/lib/seo'
 import ArtistLinks from '@/components/public/artists/ArtistLinks'
+import ArtistDiscography from '@/components/public/artists/ArtistDiscography'
 import { extractSpotifyTrackId, extractYoutubeVideoId } from '@/lib/mediaIds'
 import styles from './artist.module.css'
 
@@ -24,13 +25,16 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   })
 }
 
-export async function generateStaticParams() {
-  const artists = await prisma.artist.findMany({ select: { slug: true } })
-  return artists.map(a => ({ slug: a.slug }))
-}
-
 export default async function ArtistPage({ params }: Props) {
-  const artist = await prisma.artist.findUnique({ where: { slug: params.slug } })
+  const artist = await prisma.artist.findUnique({
+    where: { slug: params.slug },
+    include: {
+      releases: {
+        orderBy: [{ order: 'asc' }, { year: 'desc' }],
+        include: { tracks: { orderBy: { number: 'asc' } } },
+      },
+    },
+  })
   if (!artist) notFound()
 
   const jsonLd = artistJsonLd({
@@ -126,6 +130,10 @@ export default async function ArtistPage({ params }: Props) {
               Your browser does not support audio playback.
             </audio>
           </div>
+        )}
+
+        {artist.releases.length > 0 && (
+          <ArtistDiscography artistName={artist.name} releases={artist.releases} />
         )}
       </div>
     </main>
