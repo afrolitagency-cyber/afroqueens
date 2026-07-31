@@ -16,6 +16,14 @@ const Editor = dynamic(() => import('@/components/admin/editors/BlockEditor'), {
   loading: () => <div className={styles.editorSkeleton}>Loading editor…</div>,
 })
 
+function toLocalInput(iso?: string | Date | null) {
+  if (!iso) return ''
+  const d = typeof iso === 'string' ? new Date(iso) : iso
+  if (Number.isNaN(d.getTime())) return ''
+  const pad = (n: number) => String(n).padStart(2, '0')
+  return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`
+}
+
 export default function EditBlogPage() {
   const router = useRouter()
   const { id } = useParams<{ id: string }>()
@@ -31,6 +39,7 @@ export default function EditBlogPage() {
   const [metaTitle, setMetaTitle] = useState('')
   const [metaDesc, setMetaDesc]   = useState('')
   const [featured, setFeatured]   = useState(false)
+  const [publishedAt, setPublishedAt] = useState('')
   const [content, setContent]     = useState<any>(null)
   const [status, setStatus]       = useState<'DRAFT' | 'PUBLISHED'>('DRAFT')
   const [initialContent, setInitialContent] = useState<any>(null)
@@ -51,6 +60,7 @@ export default function EditBlogPage() {
         setMetaTitle(post.metaTitle ?? '')
         setMetaDesc(post.metaDesc ?? '')
         setFeatured(post.featured ?? false)
+        setPublishedAt(toLocalInput(post.publishedAt))
         setStatus(post.status ?? 'DRAFT')
         setInitialContent(post.content ?? null)
         setContent(post.content ?? null)
@@ -63,13 +73,13 @@ export default function EditBlogPage() {
   type BlogDraft = {
     title: string; slug: string; excerpt: string; category: string
     author: string; coverUrl: string; metaTitle: string; metaDesc: string
-    featured: boolean; content: any
+    featured: boolean; publishedAt: string; content: any
   }
 
   const draftData = useMemo<BlogDraft>(() => ({
     title, slug, excerpt, category, author, coverUrl,
-    metaTitle, metaDesc, featured, content,
-  }), [title, slug, excerpt, category, author, coverUrl, metaTitle, metaDesc, featured, content])
+    metaTitle, metaDesc, featured, publishedAt, content,
+  }), [title, slug, excerpt, category, author, coverUrl, metaTitle, metaDesc, featured, publishedAt, content])
 
   const applyLocalDraft = useCallback((d: BlogDraft) => {
     setTitle(d.title ?? '')
@@ -81,6 +91,7 @@ export default function EditBlogPage() {
     setMetaTitle(d.metaTitle ?? '')
     setMetaDesc(d.metaDesc ?? '')
     setFeatured(d.featured ?? false)
+    setPublishedAt(d.publishedAt ?? '')
     if (d.content) {
       setContent(d.content)
       setInitialContent(d.content)
@@ -108,6 +119,7 @@ export default function EditBlogPage() {
         title, slug, excerpt, category, author,
         coverImageUrl: coverUrl, content,
         status: s, metaTitle, metaDesc, featured,
+        publishedAt: publishedAt || null,
       })
       if (!result.ok) {
         setSaveError(result.error)
@@ -251,6 +263,19 @@ export default function EditBlogPage() {
               onChange={e => setAuthor(e.target.value)}
               className={styles.sideInput}
             />
+          </div>
+
+          <div className={styles.sideSection}>
+            <div className={styles.sideLabel}>Publish date</div>
+            <input
+              type="datetime-local"
+              value={publishedAt}
+              onChange={e => setPublishedAt(e.target.value)}
+              className={styles.sideInput}
+            />
+            <div className={styles.charCount}>
+              Use the original date when migrating old posts. Leave blank to use now on first publish.
+            </div>
           </div>
 
           <div className={styles.sideDivider} />

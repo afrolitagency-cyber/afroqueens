@@ -19,7 +19,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'No file provided' }, { status: 400 })
   }
 
-  const validFolders = ['artists', 'blog', 'gallery', 'episodes']
+  const validFolders = ['artists', 'blog', 'gallery', 'episodes', 'events']
   if (!validFolders.includes(folder)) {
     return NextResponse.json({ error: 'Invalid folder' }, { status: 400 })
   }

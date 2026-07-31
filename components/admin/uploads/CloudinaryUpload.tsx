@@ -5,7 +5,7 @@ import styles from './Upload.module.css'
 import { deleteRemoteMedia } from './deleteRemoteMedia'
 
 interface Props {
-  folder: 'artists' | 'blog' | 'gallery' | 'episodes'
+  folder: 'artists' | 'blog' | 'gallery' | 'episodes' | 'events'
   value: string
   onChange: (url: string) => void
   label?: string

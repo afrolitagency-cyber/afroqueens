@@ -22,6 +22,20 @@ interface BlogPayload {
   metaTitle?: string
   metaDesc?: string
   featured?: boolean
+  publishedAt?: string | null
+}
+
+function resolvePublishedAt(
+  status: 'DRAFT' | 'PUBLISHED',
+  requested: string | null | undefined,
+  existing: Date | null = null,
+) {
+  if (status !== 'PUBLISHED') return null
+  if (requested) {
+    const parsed = new Date(requested)
+    if (!Number.isNaN(parsed.getTime())) return parsed
+  }
+  return existing ?? new Date()
 }
 
 async function requireAuth() {
@@ -54,7 +68,7 @@ export async function createBlogPost(data: BlogPayload): Promise<ActionResult> {
           metaDesc:      data.metaDesc ?? null,
           featured:      data.featured ?? false,
           readingTime,
-          publishedAt:   data.status === 'PUBLISHED' ? new Date() : null,
+          publishedAt:   resolvePublishedAt(data.status, data.publishedAt),
         },
       }),
     )
@@ -73,7 +87,7 @@ export async function updateBlogPost(id: string, data: BlogPayload): Promise<Act
 
   const existing = await prisma.blogPost.findUnique({
     where: { id },
-    select: { coverImageUrl: true, slug: true },
+    select: { coverImageUrl: true, slug: true, publishedAt: true },
   })
 
   const readingTime = estimateReadingTime(data.content)
@@ -95,7 +109,7 @@ export async function updateBlogPost(id: string, data: BlogPayload): Promise<Act
           metaDesc:      data.metaDesc ?? null,
           featured:      data.featured ?? false,
           readingTime,
-          publishedAt:   data.status === 'PUBLISHED' ? new Date() : null,
+          publishedAt:   resolvePublishedAt(data.status, data.publishedAt, existing?.publishedAt ?? null),
         },
       }),
     )
@@ -141,13 +155,19 @@ export async function deleteBlogPostSafe(id: string): Promise<ActionResult> {
 
 function estimateReadingTime(content: any): number {
   if (!content || !Array.isArray(content)) return 1
+
+  const collectText = (nodes: any[] = []): string =>
+    nodes
+      .map(node => {
+        if (node?.type === 'text') return node.text ?? ''
+        if (node?.type === 'link') return collectText(node.content)
+        if (Array.isArray(node?.content)) return collectText(node.content)
+        return ''
+      })
+      .join(' ')
+
   const text = content
-    .map((block: any) => {
-      if (block.content) {
-        return block.content.map((c: any) => c.text ?? '').join(' ')
-      }
-      return ''
-    })
+    .map((block: any) => collectText(block.content))
     .join(' ')
   const words = text.split(/\s+/).filter(Boolean).length
   return Math.max(1, Math.round(words / 200))

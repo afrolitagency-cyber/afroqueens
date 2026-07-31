@@ -12,6 +12,17 @@
   color: var(--fg-dim);
 }
 
+.inlineLink {
+  color: var(--acc);
+  text-decoration: underline;
+  text-underline-offset: 0.18em;
+  word-break: break-word;
+}
+
+.inlineLink:hover {
+  opacity: 0.85;
+}
+
 .h1 {
   font-family: var(--fd);
   font-size: clamp(2rem, 4vw, 3rem);
@@ -79,6 +90,33 @@
   border-radius: 4px;
 }
 .pre code { font-family: 'Monaco', 'Fira Code', monospace; color: var(--fg); }
+
+.buttonWrap {
+  margin: 1.8rem 0;
+}
+
+.button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 140px;
+  padding: 0.8rem 1.4rem;
+  border-radius: 8px;
+  background: var(--acc);
+  color: #fff;
+  font-family: var(--fb);
+  font-size: 0.85rem;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  text-decoration: none;
+  text-transform: uppercase;
+  transition: opacity 0.15s, transform 0.15s;
+}
+
+.button:hover {
+  opacity: 0.9;
+  transform: translateY(-1px);
+}
 
 .figure {
   margin: 2rem 0;

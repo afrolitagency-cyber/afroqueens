@@ -3,28 +3,62 @@
 // Renders BlockNote JSON blocks as HTML without needing the full editor
 import styles from './BlockRenderer.module.css'
 
+type InlineContent = {
+  type: string
+  text?: string
+  href?: string
+  styles?: Record<string, any>
+  content?: InlineContent[]
+}
+
 type Block = {
   type: string
-  content?: Array<{ type: string; text?: string; styles?: Record<string, any> }>
+  content?: InlineContent[]
   children?: Block[]
   props?: Record<string, any>
 }
 
+function renderStyledText(c: InlineContent, key: number | string) {
+  let el: React.ReactNode = c.text ?? ''
+
+  if (c.styles?.bold)            el = <strong>{el}</strong>
+  if (c.styles?.italic)          el = <em>{el}</em>
+  if (c.styles?.underline)       el = <u>{el}</u>
+  if (c.styles?.strike)          el = <s>{el}</s>
+  if (c.styles?.code)            el = <code>{el}</code>
+  if (c.styles?.textColor)       el = <span style={{ color: c.styles.textColor }}>{el}</span>
+  if (c.styles?.backgroundColor) el = <mark style={{ background: c.styles.backgroundColor }}>{el}</mark>
+
+  return <span key={key}>{el}</span>
+}
+
 function renderInline(content: Block['content'] = []) {
   return content.map((c, i) => {
+    if (c.type === 'link') {
+      const href = c.href?.trim()
+      if (!href) return <span key={i}>{renderInline(c.content)}</span>
+      return (
+        <a
+          key={i}
+          href={href}
+          className={styles.inlineLink}
+          target={href.startsWith('http') ? '_blank' : undefined}
+          rel={href.startsWith('http') ? 'noopener noreferrer' : undefined}
+        >
+          {renderInline(c.content)}
+        </a>
+      )
+    }
+
     if (c.type !== 'text') return null
-    let el: React.ReactNode = c.text
-
-    if (c.styles?.bold)          el = <strong key={i}>{el}</strong>
-    if (c.styles?.italic)        el = <em key={i}>{el}</em>
-    if (c.styles?.underline)     el = <u key={i}>{el}</u>
-    if (c.styles?.strike)        el = <s key={i}>{el}</s>
-    if (c.styles?.code)          el = <code key={i}>{el}</code>
-    if (c.styles?.textColor)     el = <span key={i} style={{ color: c.styles.textColor }}>{el}</span>
-    if (c.styles?.backgroundColor) el = <mark key={i} style={{ background: c.styles.backgroundColor }}>{el}</mark>
-
-    return <span key={i}>{el}</span>
+    return renderStyledText(c, i)
   })
+}
+
+function isButtonParagraph(block: Block) {
+  const content = block.content ?? []
+  if (content.length !== 1) return false
+  return content[0]?.type === 'link' && Boolean(content[0]?.href?.trim())
 }
 
 function Block({ block }: { block: Block }) {
@@ -33,6 +67,26 @@ function Block({ block }: { block: Block }) {
 
   switch (block.type) {
     case 'paragraph':
+      if (isButtonParagraph(block)) {
+        const link = block.content![0]
+        const href = link.href!.trim()
+        const label = (link.content || [])
+          .map(node => (node.type === 'text' ? node.text ?? '' : ''))
+          .join('')
+          .trim() || href
+        return (
+          <p className={styles.buttonWrap}>
+            <a
+              href={href}
+              className={styles.button}
+              target={href.startsWith('http') ? '_blank' : undefined}
+              rel={href.startsWith('http') ? 'noopener noreferrer' : undefined}
+            >
+              {label}
+            </a>
+          </p>
+        )
+      }
       return <p className={styles.p}>{content}</p>
 
     case 'heading':
@@ -77,6 +131,34 @@ function Block({ block }: { block: Block }) {
           )}
         </figure>
       )
+
+    case 'button': {
+      const inlineLabel = block.content
+        ?.map(c => {
+          if (c.type === 'text') return c.text ?? ''
+          if (c.type === 'link') {
+            return c.content?.map(inner => inner.text ?? '').join('') ?? ''
+          }
+          return ''
+        })
+        .join('')
+        .trim()
+      const label = inlineLabel || block.props?.label?.trim() || 'Click here'
+      const href = block.props?.url?.trim()
+      if (!href) return <p className={styles.p}>{label}</p>
+      return (
+        <p className={styles.buttonWrap}>
+          <a
+            href={href}
+            className={styles.button}
+            target={href.startsWith('http') ? '_blank' : undefined}
+            rel={href.startsWith('http') ? 'noopener noreferrer' : undefined}
+          >
+            {label}
+          </a>
+        </p>
+      )
+    }
 
     case 'table':
       return (

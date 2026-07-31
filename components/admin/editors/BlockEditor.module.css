@@ -1,14 +1,16 @@
 /* components/admin/editors/BlockEditor.module.css */
 .wrap {
   min-height: 500px;
+  padding-left: 3.5rem;
+  overflow: visible;
   font-family: 'DM Sans', sans-serif;
 }
 
-/* Override BlockNote defaults to match our admin aesthetic */
+/* Keep left gutter so + / drag handles stay inside the bordered box */
 .wrap :global(.bn-editor) {
   font-family: 'DM Sans', sans-serif !important;
   font-size: 1rem !important;
-  padding: 0 !important;
+  padding: 0.25rem 0.25rem 0.25rem 0 !important;
 }
 
 .wrap :global(.bn-block-content) {
@@ -32,4 +34,13 @@
 .wrap :global(.bn-suggestion-menu-item[data-selected="true"]) {
   background: rgba(200,16,46,.06) !important;
   color: #C8102E !important;
+}
+
+.menuIcon {
+  display: inline-flex;
+  width: 18px;
+  height: 18px;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.85rem;
 }

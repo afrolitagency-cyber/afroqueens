@@ -26,6 +26,7 @@ type BlogDraft = {
   metaTitle: string
   metaDesc: string
   featured: boolean
+  publishedAt: string
   content: any
 }
 
@@ -47,6 +48,7 @@ export default function NewBlogPage() {
   const [metaTitle, setMetaTitle] = useState('')
   const [metaDesc, setMetaDesc]   = useState('')
   const [featured, setFeatured]   = useState(false)
+  const [publishedAt, setPublishedAt] = useState('')
   const [content, setContent]     = useState<any>(null)
   const [status, setStatus]       = useState<'DRAFT' | 'PUBLISHED'>('DRAFT')
   const [initialContent, setInitialContent] = useState<any>(null)
@@ -62,6 +64,7 @@ export default function NewBlogPage() {
     setMetaTitle(d.metaTitle ?? '')
     setMetaDesc(d.metaDesc ?? '')
     setFeatured(d.featured ?? false)
+    setPublishedAt(d.publishedAt ?? '')
     if (d.content) {
       setContent(d.content)
       setInitialContent(d.content)
@@ -70,8 +73,8 @@ export default function NewBlogPage() {
 
   const draftData = useMemo<BlogDraft>(() => ({
     title, slug, excerpt, category, author, coverUrl,
-    metaTitle, metaDesc, featured, content,
-  }), [title, slug, excerpt, category, author, coverUrl, metaTitle, metaDesc, featured, content])
+    metaTitle, metaDesc, featured, publishedAt, content,
+  }), [title, slug, excerpt, category, author, coverUrl, metaTitle, metaDesc, featured, publishedAt, content])
 
   const { restored, setRestored, savedAt, clear, persist, loaded } = useFormDraft(
     FORM_DRAFT_KEYS.blogNew,
@@ -92,6 +95,7 @@ export default function NewBlogPage() {
         title, slug, excerpt, category, author,
         coverImageUrl: coverUrl, content,
         status: s, metaTitle, metaDesc, featured,
+        publishedAt: publishedAt || null,
       })
       if (!result.ok) {
         setSaveError(result.error)
@@ -196,6 +200,18 @@ export default function NewBlogPage() {
           <div className={styles.sideSection}>
             <div className={styles.sideLabel}>Author</div>
             <input value={author} onChange={e => setAuthor(e.target.value)} className={styles.sideInput} />
+          </div>
+          <div className={styles.sideSection}>
+            <div className={styles.sideLabel}>Publish date</div>
+            <input
+              type="datetime-local"
+              value={publishedAt}
+              onChange={e => setPublishedAt(e.target.value)}
+              className={styles.sideInput}
+            />
+            <div className={styles.charCount}>
+              Use the original date when migrating old posts. Leave blank to use now on first publish.
+            </div>
           </div>
           <div className={styles.sideDivider} />
           <div className={styles.sideSection}>
