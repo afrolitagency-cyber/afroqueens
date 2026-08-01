@@ -382,3 +382,25 @@ enum WidgetPosition {
   LEFT
   RIGHT
 }
+
+// ─── MEDIA LIBRARY ────────────────────────────────────────────────────────────
+model MediaAsset {
+  id         String   @id @default(cuid())
+  url        String
+  publicId   String   @unique
+  folder     String   // artists | blog | gallery | episodes | events
+  filename   String?
+  title      String?
+  alt        String?
+  caption    String?  @db.Text
+  width      Int?
+  height     Int?
+  bytes      Int?
+  mimeType   String?
+  uploadedBy String?
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  @@index([folder, createdAt])
+  @@index([createdAt])
+}

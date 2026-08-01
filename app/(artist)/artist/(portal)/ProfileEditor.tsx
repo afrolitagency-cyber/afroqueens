@@ -145,6 +145,7 @@ export default function ProfileEditor({
             folder="artists"
             value={form.profileImageUrl ?? ''}
             onChange={url => set('profileImageUrl', url || null)}
+            showLibrary={false}
           />
           <p className={styles.sub} style={{ margin: '0.35rem 0 0', fontSize: '0.78rem' }}>
             Required for review. Use a clear, well-lit photo.
@@ -279,6 +280,7 @@ export default function ProfileEditor({
           artistId={artistId}
           initialReleases={releases}
           beforeSave={persistProfileDraft}
+          showLibrary={false}
           actions={{
             create: createMyRelease,
             update: updateMyRelease,

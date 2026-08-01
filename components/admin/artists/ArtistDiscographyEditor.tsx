@@ -57,6 +57,7 @@ interface Props {
   hint?: string
   /** Persist other form data before release save (e.g. profile links). Return error message or null. */
   beforeSave?: () => Promise<string | null>
+  showLibrary?: boolean
 }
 
 const defaultActions: DiscographyActions = {
@@ -113,6 +114,7 @@ export default function ArtistDiscographyEditor({
   actions = defaultActions,
   hint = 'Albums, EPs and singles shown on the public artist page.',
   beforeSave,
+  showLibrary = true,
 }: Props) {
   const [releases, setReleases] = useState(initialReleases)
   const [editingId, setEditingId] = useState<string | 'new' | null>(null)
@@ -266,6 +268,7 @@ export default function ArtistDiscographyEditor({
               value={draft.coverUrl ?? ''}
               onChange={coverUrl => setDraft(current => ({ ...current, coverUrl }))}
               label="Drop release artwork here or click to upload"
+              showLibrary={showLibrary}
             />
           </div>
 

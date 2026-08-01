@@ -9,8 +9,8 @@ cloudinary.config({
 
 export async function uploadToCloudinary(
   file: Buffer | string,
-  folder: 'artists' | 'blog' | 'gallery' | 'episodes'
-): Promise<{ url: string; publicId: string }> {
+  folder: 'artists' | 'blog' | 'gallery' | 'episodes' | 'events',
+): Promise<{ url: string; publicId: string; width?: number; height?: number; bytes?: number; format?: string }> {
   return new Promise((resolve, reject) => {
     const upload = cloudinary.uploader.upload_stream(
       {
@@ -20,7 +20,14 @@ export async function uploadToCloudinary(
       },
       (error, result) => {
         if (error || !result) return reject(error)
-        resolve({ url: result.secure_url, publicId: result.public_id })
+        resolve({
+          url: result.secure_url,
+          publicId: result.public_id,
+          width: result.width,
+          height: result.height,
+          bytes: result.bytes,
+          format: result.format,
+        })
       }
     )
     if (Buffer.isBuffer(file)) {

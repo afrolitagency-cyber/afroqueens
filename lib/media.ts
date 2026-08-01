@@ -65,16 +65,20 @@ export async function deleteMediaUrl(url: string | null | undefined): Promise<bo
   return false
 }
 
-/** Delete the previous file when a media URL is replaced or cleared. */
+/** Delete the previous file when a media URL is replaced or cleared.
+ *  Skips Cloudinary destroy when the URL is in the media library (shared asset). */
 export async function deleteMediaIfReplaced(
   oldUrl: string | null | undefined,
   newUrl: string | null | undefined,
 ): Promise<void> {
   const prev = oldUrl?.trim() || ''
   const next = newUrl?.trim() || ''
-  if (prev && prev !== next) {
-    await deleteMediaUrl(prev)
-  }
+  if (!prev || prev === next) return
+
+  const { isLibraryMediaUrl } = await import('@/lib/mediaAssets')
+  if (await isLibraryMediaUrl(prev)) return
+
+  await deleteMediaUrl(prev)
 }
 
 export async function deleteMediaUrls(urls: (string | null | undefined)[]): Promise<void> {

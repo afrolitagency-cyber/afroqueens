@@ -11,6 +11,7 @@ const NAV = [
       { href: '/admin/dashboard',        icon: '▣', label: 'Dashboard'  },
       { href: '/admin/blogs',            icon: '✎', label: 'Blog Posts' },
       { href: '/admin/artists',          icon: '♪', label: 'Artists'    },
+      { href: '/admin/media',            icon: '▤', label: 'Media'      },
       { href: '/admin/gallery',          icon: '⊡', label: 'Gallery'    },
       { href: '/admin/episodes',         icon: '◉', label: 'Episodes'   },
     ],
