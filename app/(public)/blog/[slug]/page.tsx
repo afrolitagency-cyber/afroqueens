@@ -2,13 +2,18 @@
 import { prisma } from '@/lib/prisma'
 import { notFound } from 'next/navigation'
 import BlockRenderer from '@/components/public/blog/BlockRenderer'
+import BlogSidebar, { type SidebarPost } from '@/components/public/blog/BlogSidebar'
 import Comments from '@/components/public/blog/Comments'
-import NewsletterSignup from '@/components/public/newsletter/NewsletterSignup'
 import styles from './blogpost.module.css'
 import type { Metadata } from 'next'
 import { buildMetadata, articleJsonLd } from '@/lib/seo'
 
 interface Props { params: { slug: string } }
+
+const sidebarSelect = {
+  id: true, title: true, slug: true, category: true,
+  publishedAt: true, readingTime: true, featured: true, coverImageUrl: true,
+} as const
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const post = await prisma.blogPost.findUnique({
@@ -33,12 +38,36 @@ export async function generateStaticParams() {
   return posts.map(p => ({ slug: p.slug }))
 }
 
+function pickRelated(
+  currentId: string,
+  sameCategory: SidebarPost[],
+  featured: SidebarPost[],
+  recent: SidebarPost[],
+  limit = 4,
+): SidebarPost[] {
+  const seen = new Set([currentId])
+  const out: SidebarPost[] = []
+
+  for (const pool of [sameCategory, featured, recent]) {
+    for (const post of pool) {
+      if (seen.has(post.id)) continue
+      seen.add(post.id)
+      out.push(post)
+      if (out.length >= limit) return out
+    }
+  }
+  return out
+}
+
 export default async function BlogPostPage({ params }: Props) {
-  const [post, comments] = await Promise.all([
-    prisma.blogPost.findUnique({
-      where: { slug: params.slug, status: 'PUBLISHED' },
-      include: { tags: true },
-    }),
+  const post = await prisma.blogPost.findUnique({
+    where: { slug: params.slug, status: 'PUBLISHED' },
+    include: { tags: true },
+  })
+
+  if (!post) notFound()
+
+  const [comments, sameCategory, featured, recent] = await Promise.all([
     prisma.comment.findMany({
       where: {
         post: { slug: params.slug },
@@ -47,9 +76,38 @@ export default async function BlogPostPage({ params }: Props) {
       orderBy: { createdAt: 'asc' },
       select: { id: true, name: true, body: true, createdAt: true },
     }),
+    prisma.blogPost.findMany({
+      where: {
+        status: 'PUBLISHED',
+        category: post.category,
+        id: { not: post.id },
+      },
+      take: 4,
+      orderBy: { publishedAt: 'desc' },
+      select: sidebarSelect,
+    }),
+    prisma.blogPost.findMany({
+      where: {
+        status: 'PUBLISHED',
+        featured: true,
+        id: { not: post.id },
+      },
+      take: 3,
+      orderBy: { publishedAt: 'desc' },
+      select: sidebarSelect,
+    }),
+    prisma.blogPost.findMany({
+      where: {
+        status: 'PUBLISHED',
+        id: { not: post.id },
+      },
+      take: 6,
+      orderBy: { publishedAt: 'desc' },
+      select: sidebarSelect,
+    }),
   ])
 
-  if (!post) notFound()
+  const related = pickRelated(post.id, sameCategory, featured, recent)
 
   const jsonLd = articleJsonLd({
     title:       post.metaTitle ?? post.title,
@@ -97,27 +155,27 @@ export default async function BlogPostPage({ params }: Props) {
         </div>
       </div>
 
-      {/* Body */}
-      <div className={`si ${styles.body}`}>
-        <BlockRenderer content={post.content} />
+      {/* Body + sidebar */}
+      <div className={`si ${styles.layout}`}>
+        <div className={styles.body}>
+          <BlockRenderer content={post.content} />
 
-        {/* Tags */}
-        {post.tags.length > 0 && (
-          <div className={styles.tags}>
-            {post.tags.map(tag => (
-              <span key={tag.id} className={styles.tag}>{tag.name}</span>
-            ))}
-          </div>
-        )}
-      </div>
+          {post.tags.length > 0 && (
+            <div className={styles.tags}>
+              {post.tags.map(tag => (
+                <span key={tag.id} className={styles.tag}>{tag.name}</span>
+              ))}
+            </div>
+          )}
+        </div>
 
-      {/* Newsletter */}
-      <div className="si" style={{ padding: '0 4rem' }}>
-        <NewsletterSignup variant="inline" />
+        <div className={styles.rail}>
+          <BlogSidebar posts={related} showNewsletter />
+        </div>
       </div>
 
       {/* Comments */}
-      <div className="si" style={{ padding: '0 4rem 4rem' }}>
+      <div className={`si ${styles.comments}`}>
         <Comments
           postId={post.id}
           initial={comments.map(c => ({

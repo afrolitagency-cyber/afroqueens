@@ -11,6 +11,7 @@ export default async function ProtectedAdminLayout({
 }) {
   const session = await getServerSession(authOptions)
   if (!session) redirect('/admin/login')
+  if (session.user.role === 'ARTIST') redirect('/artist')
 
   return <AdminShell user={session.user}>{children}</AdminShell>
 }

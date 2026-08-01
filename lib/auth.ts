@@ -32,10 +32,11 @@ export const authOptions: NextAuthOptions = {
         if (!valid) return null
 
         return {
-          id:    user.id,
-          email: user.email,
-          name:  user.name,
-          role:  user.role,
+          id:       user.id,
+          email:    user.email,
+          name:     user.name,
+          role:     user.role,
+          artistId: user.artistId,
         }
       },
     }),
@@ -43,11 +44,19 @@ export const authOptions: NextAuthOptions = {
 
   callbacks: {
     async jwt({ token, user }) {
-      if (user) token.role = (user as any).role
+      if (user) {
+        token.role = user.role
+        token.artistId = user.artistId ?? null
+        token.sub = user.id
+      }
       return token
     },
     async session({ session, token }) {
-      if (session.user) (session.user as any).role = token.role
+      if (session.user) {
+        session.user.id = token.sub ?? ''
+        session.user.role = token.role as any
+        session.user.artistId = token.artistId ?? null
+      }
       return session
     },
   },

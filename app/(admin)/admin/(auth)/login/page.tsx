@@ -27,7 +27,13 @@ export default function AdminLoginPage() {
       setError('Invalid email or password')
       setLoading(false)
     } else {
-      router.push('/admin/dashboard')
+      const me = await fetch('/api/auth/session').then(r => r.json()).catch(() => null)
+      if (me?.user?.role === 'ARTIST') {
+        router.push('/artist')
+      } else {
+        router.push('/admin/dashboard')
+      }
+      setLoading(false)
     }
   }
 

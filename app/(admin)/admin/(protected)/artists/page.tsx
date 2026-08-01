@@ -10,6 +10,9 @@ export const revalidate = 0
 export default async function ArtistsPage() {
   const artists = await prisma.artist.findMany({
     orderBy: [{ featured: 'desc' }, { order: 'asc' }, { name: 'asc' }],
+    include: {
+      account: { select: { email: true } },
+    },
   })
 
   return (
@@ -19,7 +22,12 @@ export default async function ArtistsPage() {
           <h1 className={styles.pageTitle}>Artists</h1>
           <p className={styles.pageDesc}>{artists.length} artist{artists.length !== 1 ? 's' : ''}</p>
         </div>
-        <Link href="/admin/artists/new" className={styles.newBtn}>+ New Artist</Link>
+        <div className={styles.headerActions}>
+          <Link href="/admin/artists/invite" className={styles.secondaryBtn}>
+            Invite Artist
+          </Link>
+          <Link href="/admin/artists/new" className={styles.newBtn}>+ New Artist</Link>
+        </div>
       </div>
 
       {artists.length === 0 ? (
@@ -38,6 +46,7 @@ export default async function ArtistsPage() {
                 <th>Listeners</th>
                 <th>Source</th>
                 <th>Featured</th>
+                <th>Portal</th>
                 <th>Actions</th>
               </tr>
             </thead>
@@ -84,7 +93,26 @@ export default async function ArtistsPage() {
                       : <span className={styles.badge}>—</span>
                     }
                   </td>
+                  <td>
+                    {a.reviewStatus === 'PENDING' ? (
+                      <span className={`${styles.badge} ${styles.badgeGreen}`}>Pending review</span>
+                    ) : a.reviewStatus === 'CHANGES_REQUESTED' ? (
+                      <span className={styles.badge}>Changes requested</span>
+                    ) : a.account ? (
+                      <span className={styles.badge}>Linked</span>
+                    ) : (
+                      <span className={styles.badge}>No account</span>
+                    )}
+                  </td>
                   <td className={styles.tdActions}>
+                    {!a.account && (
+                      <Link
+                        href={`/admin/artists/invite?artistId=${a.id}`}
+                        className={styles.editBtn}
+                      >
+                        Invite
+                      </Link>
+                    )}
                     <Link href={`/admin/artists/${a.id}/edit`} className={styles.editBtn}>Edit</Link>
                     <form action={async () => {
                       'use server'

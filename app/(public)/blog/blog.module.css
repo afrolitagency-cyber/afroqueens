@@ -15,6 +15,24 @@
   font-family: var(--fb);
 }
 
+.pageBody {
+  padding: 5rem 4rem;
+}
+
+.layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 300px;
+  gap: 2.5rem;
+  align-items: start;
+}
+
+.main { min-width: 0; }
+
+.rail {
+  position: sticky;
+  top: 100px;
+}
+
 /* Featured post */
 .featCard {
   position: relative;
@@ -110,7 +128,7 @@
 /* Post grid */
 .grid {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
+  grid-template-columns: repeat(2, 1fr);
   gap: 1.5rem;
 }
 [data-design="1"] .grid { gap: 1.5px; background: var(--bdr); }
@@ -217,10 +235,13 @@
   letter-spacing: .04em;
 }
 
-@media (max-width: 1024px) {
+@media (max-width: 1100px) {
+  .layout { grid-template-columns: 1fr; }
+  .rail { position: static; }
   .grid { grid-template-columns: repeat(2, 1fr); }
 }
 @media (max-width: 640px) {
+  .pageBody { padding: 3rem 1.25rem; }
   .featContent { padding: 2rem; min-height: 340px; }
   .grid { grid-template-columns: 1fr; }
 }

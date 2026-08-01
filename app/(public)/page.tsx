@@ -24,30 +24,34 @@ function galleryBgPosition(cropPosition: 'TOP' | 'CENTER' | 'BOTTOM') {
 }
 
 async function getData() {
-  const [featuredArtist, artists, blogPosts, episodes, galleryItems] =
+  const blogSelect = {
+    id: true, title: true, slug: true,
+    excerpt: true, category: true, publishedAt: true,
+    readingTime: true, featured: true, coverImageUrl: true, author: true,
+  } as const
+
+  const [featuredArtist, artists, pinnedPosts, recentPosts, episodes, galleryItems] =
     await Promise.all([
-      // Hero artist
       prisma.artist.findFirst({
         where: { featured: true },
         orderBy: { order: 'asc' },
       }),
-      // Artists section (4)
       prisma.artist.findMany({
         take: 4,
         orderBy: { order: 'asc' },
       }),
-      // Blog posts (5)
+      prisma.blogPost.findMany({
+        where: { status: 'PUBLISHED', featured: true },
+        take: 3,
+        orderBy: { publishedAt: 'desc' },
+        select: blogSelect,
+      }),
       prisma.blogPost.findMany({
         where: { status: 'PUBLISHED' },
-        take: 5,
+        take: 8,
         orderBy: { publishedAt: 'desc' },
-        select: {
-          id: true, title: true, slug: true,
-          excerpt: true, category: true, publishedAt: true,
-          readingTime: true, featured: true, coverImageUrl: true,
-        },
+        select: blogSelect,
       }),
-      // Episodes (4)
       prisma.episode.findMany({
         take: 4,
         orderBy: { number: 'desc' },
@@ -56,25 +60,36 @@ async function getData() {
           subtitle: true, duration: true, category: true,
         },
       }),
-      // Gallery (7)
       prisma.galleryItem.findMany({
         take: 7,
         orderBy: [{ featured: 'desc' }, { order: 'asc' }],
       }),
     ])
 
-  return { featuredArtist, artists, blogPosts, episodes, galleryItems }
+  return { featuredArtist, artists, pinnedPosts, recentPosts, episodes, galleryItems }
+}
+
+function formatPostDate(date: Date | null) {
+  if (!date) return ''
+  return date.toLocaleDateString('en-GB', {
+    day: 'numeric',
+    month: 'short',
+    year: 'numeric',
+  })
 }
 
 export default async function HomePage() {
-  const { featuredArtist, artists, blogPosts, episodes, galleryItems } =
+  const { featuredArtist, artists, pinnedPosts, recentPosts, episodes, galleryItems } =
     await getData()
 
-  const featuredPost =
-    blogPosts.find(p => p.featured) ?? blogPosts[0] ?? null
-  const restPosts = featuredPost
-    ? blogPosts.filter(p => p.id !== featuredPost.id)
-    : []
+  const featuredGrid = [
+    ...pinnedPosts,
+    ...recentPosts.filter(post => !pinnedPosts.some(pinned => pinned.id === post.id)),
+  ].slice(0, 3)
+  const [mainFeature, ...sideFeatures] = featuredGrid
+  const listPosts = recentPosts
+    .filter(post => !featuredGrid.some(featured => featured.id === post.id))
+    .slice(0, 3)
 
   return (
     <main>
@@ -113,55 +128,106 @@ export default async function HomePage() {
         <div className="si">
           <div className="hdr-row">
             <div>
-              <div className="sl">Latest Stories</div>
-              <h2 className="st">From the <em>Press Room</em></h2>
+              <div className="sl">From the Blog</div>
+              <h2 className="st">Stories worth <em>reading</em></h2>
             </div>
             <Link href="/blog" className="btn-g">All Posts →</Link>
           </div>
-          <div className={styles.blogGrid}>
-            {featuredPost && (
-              <Link href={`/blog/${featuredPost.slug}`} className={`${styles.blogCard} ${styles.feat}`}>
+
+          {mainFeature && (
+            <div className={styles.featuredGrid}>
+              <Link
+                href={`/blog/${mainFeature.slug}`}
+                className={`${styles.featureCard} ${styles.featureMain}`}
+              >
                 <div
-                  className={`${styles.bcImg} ${!featuredPost.coverImageUrl ? styles.bcImgPlaceholder : ''}`}
+                  className={`${styles.featureImg} ${!mainFeature.coverImageUrl ? styles.featureImgPlaceholder : ''}`}
                   style={
-                    featuredPost.coverImageUrl
-                      ? { backgroundImage: `url(${getCoverUrl(featuredPost.coverImageUrl, 'hero')})` }
+                    mainFeature.coverImageUrl
+                      ? { backgroundImage: `url(${getCoverUrl(mainFeature.coverImageUrl, 'hero')})` }
                       : undefined
                   }
                 />
-                <div className={styles.bcN}>01</div>
-                <div className={styles.bcCat}>{featuredPost.category}</div>
-                <h3 className={styles.bcTitle}>{featuredPost.title}</h3>
-                {featuredPost.excerpt && (
-                  <p className={styles.bcExc}>{featuredPost.excerpt}</p>
-                )}
-                <div className={styles.bcFoot}>
-                  <span>{featuredPost.publishedAt?.toLocaleDateString('en-GB', { month: 'short', year: 'numeric' })} · {featuredPost.readingTime} min</span>
-                  <span className={styles.bcRm}>Read More →</span>
+                <div className={styles.featureOverlay} />
+                {mainFeature.featured && <span className={styles.pinBadge}>Pinned</span>}
+                <div className={styles.featureBody}>
+                  <span className={styles.featureCat}>{mainFeature.category}</span>
+                  <h3 className={styles.featureTitle}>{mainFeature.title}</h3>
+                  {mainFeature.excerpt && (
+                    <p className={styles.featureExcerpt}>{mainFeature.excerpt}</p>
+                  )}
+                  <div className={styles.featureMeta}>
+                    <span>{mainFeature.author}</span>
+                    <span>·</span>
+                    <span>{formatPostDate(mainFeature.publishedAt)}</span>
+                    {mainFeature.readingTime ? (
+                      <>
+                        <span>·</span>
+                        <span>{mainFeature.readingTime} min read</span>
+                      </>
+                    ) : null}
+                  </div>
                 </div>
               </Link>
-            )}
-            {restPosts.map((post, i) => (
-              <Link key={post.id} href={`/blog/${post.slug}`} className={styles.blogCard}>
-                <div
-                  className={`${styles.bcImg} ${!post.coverImageUrl ? styles.bcImgPlaceholder : ''}`}
-                  style={
-                    post.coverImageUrl
-                      ? { backgroundImage: `url(${getCoverUrl(post.coverImageUrl, 'card')})` }
-                      : undefined
-                  }
-                />
-                <div className={styles.bcN}>0{i + 2}</div>
-                <div className={styles.bcCat}>{post.category}</div>
-                <h3 className={styles.bcTitle}>{post.title}</h3>
-                {post.excerpt && <p className={styles.bcExc}>{post.excerpt}</p>}
-                <div className={styles.bcFoot}>
-                  <span>{post.publishedAt?.toLocaleDateString('en-GB', { month: 'short', year: 'numeric' })}</span>
-                  <span className={styles.bcRm}>Read →</span>
-                </div>
-              </Link>
-            ))}
-          </div>
+
+              {sideFeatures.map(post => (
+                <Link
+                  key={post.id}
+                  href={`/blog/${post.slug}`}
+                  className={`${styles.featureCard} ${styles.featureSide}`}
+                >
+                  <div
+                    className={`${styles.featureImg} ${!post.coverImageUrl ? styles.featureImgPlaceholder : ''}`}
+                    style={
+                      post.coverImageUrl
+                        ? { backgroundImage: `url(${getCoverUrl(post.coverImageUrl, 'card')})` }
+                        : undefined
+                    }
+                  />
+                  <div className={styles.featureOverlay} />
+                  {post.featured && <span className={styles.pinBadge}>Pinned</span>}
+                  <div className={styles.featureBody}>
+                    <span className={styles.featureCat}>{post.category}</span>
+                    <h3 className={styles.featureTitle}>{post.title}</h3>
+                    <div className={styles.featureMeta}>
+                      <span>{formatPostDate(post.publishedAt)}</span>
+                      {post.readingTime ? (
+                        <>
+                          <span>·</span>
+                          <span>{post.readingTime} min read</span>
+                        </>
+                      ) : null}
+                    </div>
+                  </div>
+                </Link>
+              ))}
+            </div>
+          )}
+
+          {listPosts.length > 0 && (
+            <div className={styles.blogListRow}>
+              {listPosts.map(post => (
+                <Link key={post.id} href={`/blog/${post.slug}`} className={styles.blogListCard}>
+                  <div
+                    className={`${styles.blogListThumb} ${!post.coverImageUrl ? styles.featureImgPlaceholder : ''}`}
+                    style={
+                      post.coverImageUrl
+                        ? { backgroundImage: `url(${getCoverUrl(post.coverImageUrl, 'thumb')})` }
+                        : undefined
+                    }
+                  />
+                  <div className={styles.blogListBody}>
+                    <div className={styles.blogListCat}>{post.category}</div>
+                    <div className={styles.blogListTitle}>{post.title}</div>
+                    <div className={styles.blogListMeta}>
+                      {formatPostDate(post.publishedAt)}
+                      {post.readingTime ? ` · ${post.readingTime} min` : ''}
+                    </div>
+                  </div>
+                </Link>
+              ))}
+            </div>
+          )}
         </div>
       </section>
 

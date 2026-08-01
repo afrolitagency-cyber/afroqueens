@@ -6,6 +6,7 @@ import {
   deleteArtistRelease,
   updateArtistRelease,
   type ArtistReleasePayload,
+  type ActionResult,
 } from '@/app/(admin)/admin/(protected)/artists/actions'
 import CloudinaryUpload from '@/components/admin/uploads/CloudinaryUpload'
 import styles from '@/app/(admin)/admin/(protected)/artists/artists.module.css'
@@ -43,9 +44,25 @@ export interface EditableRelease {
   }>
 }
 
+export type DiscographyActions = {
+  create: (artistId: string, data: ArtistReleasePayload) => Promise<ActionResult>
+  update: (releaseId: string, data: ArtistReleasePayload) => Promise<ActionResult>
+  remove: (releaseId: string) => Promise<ActionResult>
+}
+
 interface Props {
   artistId: string
   initialReleases: EditableRelease[]
+  actions?: DiscographyActions
+  hint?: string
+  /** Persist other form data before release save (e.g. profile links). Return error message or null. */
+  beforeSave?: () => Promise<string | null>
+}
+
+const defaultActions: DiscographyActions = {
+  create: createArtistRelease,
+  update: updateArtistRelease,
+  remove: deleteArtistRelease,
 }
 
 const blankTrack = (number = 1): ReleaseTrack => ({
@@ -90,7 +107,13 @@ function toDraft(release: EditableRelease): ArtistReleasePayload {
   }
 }
 
-export default function ArtistDiscographyEditor({ artistId, initialReleases }: Props) {
+export default function ArtistDiscographyEditor({
+  artistId,
+  initialReleases,
+  actions = defaultActions,
+  hint = 'Albums, EPs and singles shown on the public artist page.',
+  beforeSave,
+}: Props) {
   const [releases, setReleases] = useState(initialReleases)
   const [editingId, setEditingId] = useState<string | 'new' | null>(null)
   const [draft, setDraft] = useState<ArtistReleasePayload>(blankRelease)
@@ -141,9 +164,17 @@ export default function ArtistDiscographyEditor({ artistId, initialReleases }: P
   const save = () => {
     setError(null)
     startTransition(async () => {
+      if (beforeSave) {
+        const persistError = await beforeSave()
+        if (persistError) {
+          setError(persistError)
+          return
+        }
+      }
+
       const result = editingId === 'new'
-        ? await createArtistRelease(artistId, draft)
-        : await updateArtistRelease(editingId!, draft)
+        ? await actions.create(artistId, draft)
+        : await actions.update(editingId!, draft)
 
       if (!result.ok) {
         setError(result.error)
@@ -158,7 +189,14 @@ export default function ArtistDiscographyEditor({ artistId, initialReleases }: P
     if (!window.confirm(`Delete “${release.title}” and its tracks?`)) return
     setError(null)
     startTransition(async () => {
-      const result = await deleteArtistRelease(release.id)
+      if (beforeSave) {
+        const persistError = await beforeSave()
+        if (persistError) {
+          setError(persistError)
+          return
+        }
+      }
+      const result = await actions.remove(release.id)
       if (!result.ok) {
         setError(result.error)
         return
@@ -173,7 +211,7 @@ export default function ArtistDiscographyEditor({ artistId, initialReleases }: P
       <div className={styles.discAdminHeader}>
         <div>
           <div className={styles.streamLabel}>Discography</div>
-          <p className={styles.streamHint}>Albums, EPs and singles shown on the public artist page.</p>
+          <p className={styles.streamHint}>{hint}</p>
         </div>
         <button type="button" className={styles.addReleaseBtn} onClick={startNew}>
           + Add Release

@@ -119,7 +119,7 @@ export default function NewBlogPage() {
         <div className={styles.editorTopRight}>
           <label className={styles.featCheck}>
             <input type="checkbox" checked={featured} onChange={e => setFeatured(e.target.checked)} />
-            Featured
+            Pin to homepage (max 3)
           </label>
           <button onClick={() => save('DRAFT')} disabled={isPending} className={styles.draftBtn}>
             {isPending && status === 'DRAFT' ? 'Saving…' : 'Save Draft'}

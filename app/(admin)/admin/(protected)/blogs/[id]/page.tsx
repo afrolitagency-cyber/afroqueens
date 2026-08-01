@@ -153,7 +153,7 @@ export default function EditBlogPage() {
               checked={featured}
               onChange={e => setFeatured(e.target.checked)}
             />
-            Featured
+            Pin to homepage (max 3)
           </label>
           <button
             onClick={() => save('DRAFT')}

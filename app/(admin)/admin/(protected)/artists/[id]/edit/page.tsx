@@ -6,10 +6,38 @@ import { updateArtist } from '../../actions'
 import CloudinaryUpload from '@/components/admin/uploads/CloudinaryUpload'
 import SupabaseAudioUpload from '@/components/admin/uploads/SupabaseAudioUpload'
 import ArtistLinksFields from '@/components/admin/artists/ArtistLinksFields'
+import ArtistInvitePanel from '@/components/admin/artists/ArtistInvitePanel'
+import ArtistPendingReview from '@/components/admin/artists/ArtistPendingReview'
 import ArtistDiscographyEditor, {
   type EditableRelease,
 } from '@/components/admin/artists/ArtistDiscographyEditor'
-import styles from '../../artists.module.css'
+import type { ArtistProfileFields, StreamSourceValue } from '@/lib/artistProfile'
+import { spotifyTrackUrl, youtubeWatchUrl } from '@/lib/mediaIds'
+import styles from '@/app/(admin)/admin/(protected)/artists/artists.module.css'
+
+function parsePendingProfile(raw: unknown): ArtistProfileFields | null {
+  if (!raw) return null
+  if (typeof raw === 'string') {
+    try {
+      const parsed = JSON.parse(raw) as unknown
+      return parsePendingProfile(parsed)
+    } catch {
+      return null
+    }
+  }
+  if (typeof raw !== 'object' || Array.isArray(raw)) return null
+  return raw as ArtistProfileFields
+}
+
+function fieldStr(
+  pending: ArtistProfileFields | null,
+  live: string | null | undefined,
+  key: keyof ArtistProfileFields,
+): string {
+  const fromPending = pending?.[key]
+  if (typeof fromPending === 'string') return fromPending
+  return live ?? ''
+}
 
 export default function EditArtistPage() {
   const router = useRouter()
@@ -23,7 +51,7 @@ export default function EditArtistPage() {
   const [listeners, setListeners]             = useState('')
   const [bio, setBio]                         = useState('')
   const [profileImageUrl, setProfileImageUrl] = useState('')
-  const [streamSource, setStreamSource]       = useState<'SPOTIFY'|'YOUTUBE'|'SOUNDCLOUD'|'CUSTOM'>('YOUTUBE')
+  const [streamSource, setStreamSource]       = useState<StreamSourceValue>('YOUTUBE')
   const [spotifyTrackId, setSpotifyTrackId]   = useState('')
   const [youtubeVideoId, setYoutubeVideoId]   = useState('')
   const [soundcloudUrl, setSoundcloudUrl]     = useState('')
@@ -37,24 +65,76 @@ export default function EditArtistPage() {
   const [order, setOrder]                     = useState(0)
   const [releases, setReleases]               = useState<EditableRelease[]>([])
   const [saveError, setSaveError]             = useState<string | null>(null)
+  const [accountEmail, setAccountEmail]       = useState<string | null>(null)
+  const [reviewStatus, setReviewStatus]       = useState<'NONE' | 'DRAFT' | 'PENDING' | 'CHANGES_REQUESTED'>('NONE')
+  const [pendingSummary, setPendingSummary]   = useState<string | null>(null)
+  const [pendingProfile, setPendingProfile]   = useState<ArtistProfileFields | null>(null)
+  const [reviewNote, setReviewNote]           = useState<string | null>(null)
+  const [formEpoch, setFormEpoch]             = useState(0)
 
   useEffect(() => {
+    let cancelled = false
+    setLoading(true)
     fetch(`/api/admin/artists/${id}`)
-      .then(r => r.json())
+      .then(async r => {
+        if (!r.ok) throw new Error(`Failed to load artist (${r.status})`)
+        return r.json()
+      })
       .then(a => {
-        setName(a.name ?? ''); setGenre(a.genre ?? ''); setLocation(a.location ?? '')
-        setListeners(a.monthlyListeners ?? ''); setBio(a.bio ?? '')
-        setProfileImageUrl(a.profileImageUrl ?? '')
-        setStreamSource(a.streamSource ?? 'YOUTUBE')
-        setSpotifyTrackId(a.spotifyTrackId ?? ''); setYoutubeVideoId(a.youtubeVideoId ?? '')
-        setSoundcloudUrl(a.soundcloudUrl ?? ''); setCustomAudioUrl(a.customAudioUrl ?? '')
-        setInstagramUrl(a.instagramUrl ?? ''); setTwitterUrl(a.twitterUrl ?? '')
-        setTiktokUrl(a.tiktokUrl ?? ''); setFacebookUrl(a.facebookUrl ?? '')
-        setReleaseUrl(a.releaseUrl ?? '')
-        setFeatured(a.featured ?? false); setOrder(a.order ?? 0)
+        if (cancelled) return
+        const pending = parsePendingProfile(a.pendingProfile)
+
+        // Pending submission wins field-by-field (discography is live; profile music may only be pending)
+        setName(fieldStr(pending, a.name, 'name'))
+        setGenre(fieldStr(pending, a.genre, 'genre'))
+        setLocation(fieldStr(pending, a.location, 'location'))
+        setListeners(fieldStr(pending, a.monthlyListeners, 'monthlyListeners'))
+        setBio(fieldStr(pending, a.bio, 'bio'))
+        setProfileImageUrl(fieldStr(pending, a.profileImageUrl, 'profileImageUrl'))
+        setStreamSource(
+          (pending?.streamSource as StreamSourceValue | undefined) ??
+            (a.streamSource as StreamSourceValue | undefined) ??
+            'YOUTUBE',
+        )
+        setSpotifyTrackId(
+          spotifyTrackUrl(fieldStr(pending, a.spotifyTrackId, 'spotifyTrackId'))
+            ?? fieldStr(pending, a.spotifyTrackId, 'spotifyTrackId'),
+        )
+        setYoutubeVideoId(
+          youtubeWatchUrl(fieldStr(pending, a.youtubeVideoId, 'youtubeVideoId'))
+            ?? fieldStr(pending, a.youtubeVideoId, 'youtubeVideoId'),
+        )
+        setSoundcloudUrl(fieldStr(pending, a.soundcloudUrl, 'soundcloudUrl'))
+        setCustomAudioUrl(fieldStr(pending, a.customAudioUrl, 'customAudioUrl'))
+        setInstagramUrl(fieldStr(pending, a.instagramUrl, 'instagramUrl'))
+        setTwitterUrl(fieldStr(pending, a.twitterUrl, 'twitterUrl'))
+        setTiktokUrl(fieldStr(pending, a.tiktokUrl, 'tiktokUrl'))
+        setFacebookUrl(fieldStr(pending, a.facebookUrl, 'facebookUrl'))
+        setReleaseUrl(fieldStr(pending, a.releaseUrl, 'releaseUrl'))
+        setFeatured(a.featured ?? false)
+        setOrder(a.order ?? 0)
         setReleases(a.releases ?? [])
+        setAccountEmail(a.account?.email ?? null)
+        setReviewStatus(a.reviewStatus ?? 'NONE')
+        setReviewNote(a.reviewNote ?? null)
+        if (pending) {
+          setPendingProfile(pending)
+          setPendingSummary(
+            `Submitted updates for ${pending.name ?? a.name}${pending.genre ? ` · ${pending.genre}` : ''}`,
+          )
+        } else {
+          setPendingProfile(null)
+          setPendingSummary(null)
+        }
+        setFormEpoch(e => e + 1)
         setLoading(false)
       })
+      .catch(err => {
+        if (cancelled) return
+        setSaveError(err instanceof Error ? err.message : 'Failed to load artist')
+        setLoading(false)
+      })
+    return () => { cancelled = true }
   }, [id])
 
   const save = () => {
@@ -76,7 +156,23 @@ export default function EditArtistPage() {
     })
   }
 
-  if (loading) return <div className={styles.page}><p>Loading…</p></div>
+  if (loading) {
+    return (
+      <div className={styles.page}>
+        <div className={styles.header}>
+          <button onClick={() => router.back()} className={styles.back}>← Back</button>
+          <h1 className={styles.title}>Edit Artist</h1>
+        </div>
+        <ArtistInvitePanel
+          artistId={id}
+          artistName="this artist"
+          accountEmail={null}
+          reviewStatus="NONE"
+        />
+        <p>Loading…</p>
+      </div>
+    )
+  }
 
   return (
     <div className={styles.page}>
@@ -97,7 +193,33 @@ export default function EditArtistPage() {
         </div>
       )}
 
-      <div className={styles.formGrid}>
+      {pendingProfile && (reviewStatus === 'PENDING' || reviewStatus === 'CHANGES_REQUESTED') && (
+        <ArtistPendingReview
+          artistId={id}
+          pending={pendingProfile}
+          reviewStatus={reviewStatus}
+          reviewNote={reviewNote}
+        />
+      )}
+
+      {pendingProfile && reviewStatus === 'PENDING' && (
+        <p className={styles.hint} style={{ marginBottom: '1rem', color: '#555' }}>
+          Photo, bio, and music below are from the artist’s pending submission (not live yet).
+          Discography saves live immediately — that’s why releases can appear before you approve.
+          Use <strong>Approve &amp; publish</strong> above to push the profile/music live.
+        </p>
+      )}
+
+      <ArtistInvitePanel
+        artistId={id}
+        artistName={name || 'this artist'}
+        accountEmail={accountEmail}
+        reviewStatus={reviewStatus}
+        pendingSummary={pendingSummary}
+        hideReviewActions
+      />
+
+      <div className={styles.formGrid} key={formEpoch}>
         <div className={styles.formMain}>
           <div className={styles.fieldGroup}>
             <label className={styles.label}>Profile Photo</label>

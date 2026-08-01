@@ -38,6 +38,28 @@ function resolvePublishedAt(
   return existing ?? new Date()
 }
 
+const MAX_FEATURED = 3
+
+/** When pinning a post, keep at most 3 featured — unpin the oldest extras. */
+async function enforceFeaturedLimit(excludeId?: string) {
+  const featured = await prisma.blogPost.findMany({
+    where: {
+      featured: true,
+      ...(excludeId ? { id: { not: excludeId } } : {}),
+    },
+    orderBy: [{ updatedAt: 'desc' }, { createdAt: 'desc' }],
+    select: { id: true },
+  })
+  // After this post is pinned, total = featured.length + 1. Trim to MAX_FEATURED - 1 others.
+  const keep = MAX_FEATURED - 1
+  const toUnpin = featured.slice(keep)
+  if (toUnpin.length === 0) return
+  await prisma.blogPost.updateMany({
+    where: { id: { in: toUnpin.map(p => p.id) } },
+    data: { featured: false },
+  })
+}
+
 async function requireAuth() {
   const session = await getServerSession(authOptions)
   if (!session) redirect('/admin/login')
@@ -51,8 +73,11 @@ export async function createBlogPost(data: BlogPayload): Promise<ActionResult> {
   if (!data.slug?.trim()) return actionErr('Slug is required.')
 
   const readingTime = estimateReadingTime(data.content)
+  const featured = data.featured ?? false
 
   try {
+    if (featured) await enforceFeaturedLimit()
+
     await withDbRetry(() =>
       prisma.blogPost.create({
         data: {
@@ -66,7 +91,7 @@ export async function createBlogPost(data: BlogPayload): Promise<ActionResult> {
           status:        data.status,
           metaTitle:     data.metaTitle ?? null,
           metaDesc:      data.metaDesc ?? null,
-          featured:      data.featured ?? false,
+          featured,
           readingTime,
           publishedAt:   resolvePublishedAt(data.status, data.publishedAt),
         },
@@ -87,12 +112,15 @@ export async function updateBlogPost(id: string, data: BlogPayload): Promise<Act
 
   const existing = await prisma.blogPost.findUnique({
     where: { id },
-    select: { coverImageUrl: true, slug: true, publishedAt: true },
+    select: { coverImageUrl: true, slug: true, publishedAt: true, featured: true },
   })
 
   const readingTime = estimateReadingTime(data.content)
+  const featured = data.featured ?? false
 
   try {
+    if (featured && !existing?.featured) await enforceFeaturedLimit(id)
+
     await withDbRetry(() =>
       prisma.blogPost.update({
         where: { id },
@@ -107,7 +135,7 @@ export async function updateBlogPost(id: string, data: BlogPayload): Promise<Act
           status:        data.status,
           metaTitle:     data.metaTitle ?? null,
           metaDesc:      data.metaDesc ?? null,
-          featured:      data.featured ?? false,
+          featured,
           readingTime,
           publishedAt:   resolvePublishedAt(data.status, data.publishedAt, existing?.publishedAt ?? null),
         },

@@ -171,7 +171,7 @@ export default function NewArtistPage() {
       }
 
       clearFormDraft(DRAFT_KEY)
-      router.push('/admin/artists')
+      router.push(`/admin/artists/${result.data.id}/edit#invite`)
     })
   }
 

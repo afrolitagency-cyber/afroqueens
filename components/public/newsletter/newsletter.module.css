@@ -29,6 +29,41 @@
   margin: 3rem 0;
 }
 
+/* Sidebar = compact card for blog rails */
+.sidebar {
+  grid-template-columns: 1fr;
+  padding: 1.25rem;
+  margin: 0;
+  border: 1px solid var(--bdr);
+  border-radius: 0;
+  background: var(--bg-card);
+}
+[data-design="2"] .sidebar { border-radius: 14px; }
+.sidebar .heading {
+  font-size: 1.35rem;
+  margin-bottom: 0.45rem;
+}
+.sidebar .desc {
+  font-size: 0.8rem;
+  line-height: 1.6;
+  margin-bottom: 0.25rem;
+}
+.sidebar .input {
+  padding: 0.7rem 0.9rem;
+  font-size: 0.82rem;
+}
+.sidebar .btn {
+  width: 100%;
+  align-self: stretch;
+  padding: 0.75rem 1rem;
+  font-size: 0.75rem;
+}
+.sidebar.done {
+  padding: 1.25rem !important;
+  flex-direction: column;
+  text-align: center;
+}
+
 .copy {}
 .heading {
   font-family: var(--fs);

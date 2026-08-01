@@ -46,6 +46,34 @@
 .addBtn:hover,
 .newBtn:hover { opacity: .88; }
 
+.headerActions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.6rem;
+  align-items: center;
+}
+
+.secondaryBtn {
+  padding: .6rem 1.4rem;
+  background: #fff;
+  color: #C8102E;
+  border: 1px solid #C8102E;
+  font-size: .78rem;
+  font-weight: 600;
+  letter-spacing: .08em;
+  text-decoration: none;
+  border-radius: 6px;
+  font-family: 'DM Sans', sans-serif;
+  transition: background .2s, color .2s;
+  white-space: nowrap;
+  cursor: pointer;
+  display: inline-block;
+}
+.secondaryBtn:hover {
+  background: #C8102E;
+  color: #fff;
+}
+
 /* Filter tabs */
 .filterBar {
   display: flex;

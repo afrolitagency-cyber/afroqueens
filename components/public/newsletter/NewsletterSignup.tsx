@@ -4,7 +4,7 @@ import { useState, useTransition } from 'react'
 import styles from './newsletter.module.css'
 
 interface Props {
-  variant?: 'inline' | 'banner'
+  variant?: 'inline' | 'banner' | 'sidebar'
 }
 
 export default function NewsletterSignup({ variant = 'banner' }: Props) {
@@ -45,9 +45,13 @@ export default function NewsletterSignup({ variant = 'banner' }: Props) {
     <div className={`${styles.wrap} ${styles[variant]}`}>
       <div className={styles.copy}>
         <div className="sl">Newsletter</div>
-        <h2 className={styles.heading}>Stay in the <em>Loop</em></h2>
+        <h2 className={styles.heading}>
+          {variant === 'sidebar' ? <>Stay in the <em>loop</em></> : <>Stay in the <em>Loop</em></>}
+        </h2>
         <p className={styles.desc}>
-          New artists, episode drops, culture coverage — straight to your inbox. No spam, ever.
+          {variant === 'sidebar'
+            ? 'New drops and culture coverage — straight to your inbox.'
+            : 'New artists, episode drops, culture coverage — straight to your inbox. No spam, ever.'}
         </p>
       </div>
 

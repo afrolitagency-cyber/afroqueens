@@ -1,0 +1,417 @@
+/* app/(artist)/artist/artist.module.css — theme-aware artist portal */
+
+.shell {
+  min-height: 100vh;
+  background:
+    radial-gradient(ellipse 80% 50% at 10% -10%, rgba(200, 16, 46, 0.14), transparent 55%),
+    var(--bg);
+  color: var(--fg);
+}
+
+.topbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 1.1rem 1.5rem;
+  border-bottom: 1px solid var(--bdr);
+  backdrop-filter: blur(8px);
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  background: color-mix(in srgb, var(--bg) 88%, transparent);
+}
+
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 0.85rem;
+}
+
+.brandMark {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.2rem;
+  height: 2.2rem;
+  background: var(--acc);
+  color: #fff;
+  font-family: 'Bebas Neue', sans-serif;
+  letter-spacing: 0.06em;
+  border-radius: 6px;
+}
+
+.brandName {
+  font-family: 'Syne', sans-serif;
+  font-weight: 700;
+  font-size: 0.95rem;
+  color: var(--fg);
+}
+
+.brandSub {
+  font-family: 'DM Sans', sans-serif;
+  font-size: 0.72rem;
+  color: var(--fg-dim);
+}
+
+.topActions {
+  display: flex;
+  gap: 0.6rem;
+}
+
+.ghostBtn {
+  padding: 0.55rem 0.9rem;
+  border: 1px solid var(--bdr);
+  color: var(--fg-dim);
+  text-decoration: none;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 0.75rem;
+  letter-spacing: 0.04em;
+  background: var(--bg-card);
+  transition: border-color 0.2s, color 0.2s;
+}
+.ghostBtn:hover {
+  border-color: var(--acc-bdr);
+  color: var(--fg);
+}
+
+.main {
+  width: min(920px, calc(100% - 2rem));
+  margin: 0 auto;
+  padding: 2rem 0 4rem;
+}
+
+.hero {
+  margin-bottom: 1.75rem;
+}
+
+.eyebrow {
+  font-family: 'DM Sans', sans-serif;
+  font-size: 0.68rem;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--acc);
+  margin-bottom: 0.55rem;
+}
+
+.title {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: clamp(2rem, 4vw, 2.8rem);
+  letter-spacing: 0.04em;
+  margin: 0 0 0.45rem;
+  color: var(--fg);
+}
+
+.sub {
+  font-family: 'DM Sans', sans-serif;
+  color: var(--fg-dim);
+  font-size: 0.92rem;
+  line-height: 1.6;
+  max-width: 40rem;
+}
+
+.status {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  margin-top: 1rem;
+  padding: 0.4rem 0.75rem;
+  border: 1px solid var(--bdr);
+  background: var(--bg-card);
+  font-family: 'DM Sans', sans-serif;
+  font-size: 0.72rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--fg-dim);
+}
+.status a { color: inherit; }
+.statusPending {
+  border-color: var(--acc-bdr);
+  color: var(--acc);
+  background: var(--acc-gl);
+}
+.statusDraft {
+  border-color: rgba(180, 140, 40, 0.35);
+  color: #b8860b;
+  background: rgba(180, 140, 40, 0.1);
+}
+[data-theme="dark"] .statusDraft {
+  color: #f0d27a;
+  border-color: rgba(245, 200, 66, 0.35);
+  background: rgba(245, 200, 66, 0.08);
+}
+
+.card {
+  border: 1px solid var(--bdr);
+  background: var(--bg-card);
+  padding: 1.5rem;
+  margin-bottom: 1.25rem;
+}
+
+.cardTitle {
+  font-family: 'Syne', sans-serif;
+  font-weight: 700;
+  font-size: 0.95rem;
+  margin-bottom: 1rem;
+  color: var(--fg);
+}
+
+.grid2 {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  margin-bottom: 1rem;
+}
+
+.label {
+  font-family: 'DM Sans', sans-serif;
+  font-size: 0.68rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--fg-dim);
+}
+
+.input,
+.textarea {
+  padding: 0.85rem 1rem;
+  background: var(--bg-soft);
+  border: 1px solid var(--bdr);
+  color: var(--fg);
+  font-family: 'DM Sans', sans-serif;
+  font-size: 0.9rem;
+  outline: none;
+}
+.input::placeholder,
+.textarea::placeholder {
+  color: var(--fg-dim);
+  opacity: 0.7;
+}
+.input:focus,
+.textarea:focus {
+  border-color: var(--acc);
+}
+.textarea {
+  resize: vertical;
+  min-height: 120px;
+  line-height: 1.6;
+}
+
+.tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.45rem;
+  margin-bottom: 1rem;
+}
+
+.tab {
+  padding: 0.45rem 0.8rem;
+  border: 1px solid var(--bdr);
+  background: var(--bg-soft);
+  color: var(--fg-dim);
+  font-family: 'DM Sans', sans-serif;
+  font-size: 0.75rem;
+  cursor: pointer;
+}
+.tabActive {
+  border-color: var(--acc);
+  color: var(--fg);
+  background: var(--acc-gl);
+}
+
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  position: sticky;
+  bottom: 0;
+  padding: 1rem 0 0.25rem;
+  background: linear-gradient(to top, var(--bg) 60%, transparent);
+}
+
+.primaryBtn,
+.secondaryBtn {
+  padding: 0.9rem 1.35rem;
+  border: none;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  cursor: pointer;
+}
+.primaryBtn {
+  background: var(--acc);
+  color: #fff;
+}
+.secondaryBtn {
+  background: var(--bg-card);
+  color: var(--fg);
+  border: 1px solid var(--bdr);
+}
+.primaryBtn:disabled,
+.secondaryBtn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.banner {
+  margin-bottom: 1rem;
+  padding: 0.85rem 1rem;
+  border: 1px solid var(--acc-bdr);
+  background: var(--acc-gl);
+  color: var(--acc);
+  font-family: 'DM Sans', sans-serif;
+  font-size: 0.85rem;
+}
+.bannerOk {
+  border-color: rgba(34, 197, 94, 0.35);
+  background: rgba(34, 197, 94, 0.1);
+  color: #15803d;
+}
+[data-theme="dark"] .bannerOk {
+  color: #86efac;
+}
+
+/* Nested admin widgets (links, discography, uploads) — force theme blend */
+.blend :global(input),
+.blend :global(textarea),
+.blend :global(select) {
+  background: var(--bg-soft) !important;
+  color: var(--fg) !important;
+  border-color: var(--bdr) !important;
+}
+.blend :global(input::placeholder),
+.blend :global(textarea::placeholder) {
+  color: var(--fg-dim) !important;
+}
+.blend :global(label),
+.blend :global(.streamLabel),
+.blend :global(h3),
+.blend :global(strong) {
+  color: var(--fg) !important;
+}
+.blend :global(p),
+.blend :global(span) {
+  color: var(--fg-dim);
+}
+
+.blend :global([class*="dropzone"]) {
+  background: var(--bg-soft) !important;
+  border-color: var(--bdr) !important;
+}
+.blend :global([class*="dropText"]),
+.blend :global([class*="dropSub"]),
+.blend :global([class*="icon"]) {
+  color: var(--fg-dim) !important;
+}
+.blend :global([class*="dropzone"]:hover) {
+  border-color: var(--acc) !important;
+  background: var(--acc-gl) !important;
+}
+.blend :global([class*="previewImg"]),
+.blend :global([class*="changeBtn"]),
+.blend :global([class*="removeBtn"]) {
+  border-color: var(--bdr) !important;
+  background: var(--bg-card) !important;
+  color: var(--fg) !important;
+}
+
+.blend :global([class*="linksSection"]),
+.blend :global([class*="streamSection"]),
+.blend :global([class*="discAdmin"]),
+.blend :global([class*="releaseForm"]),
+.blend :global([class*="sideCard"]),
+.blend :global([class*="trackEditorRow"]) {
+  background: var(--bg-soft) !important;
+  border-color: var(--bdr) !important;
+  color: var(--fg) !important;
+}
+.blend :global([class*="releaseAdminRow"]),
+.blend :global([class*="releaseAdminCover"]),
+.blend :global([class*="addReleaseBtn"]),
+.blend :global([class*="releaseEditBtn"]),
+.blend :global([class*="releaseCancelBtn"]),
+.blend :global([class*="saveBtn"]) {
+  background: var(--bg-card) !important;
+  border-color: var(--bdr) !important;
+  color: var(--fg) !important;
+}
+.blend :global([class*="saveBtn"]) {
+  background: var(--acc) !important;
+  color: #fff !important;
+  border-color: var(--acc) !important;
+}
+.blend :global([class*="sourceTab"]) {
+  background: var(--bg-card) !important;
+  border-color: var(--bdr) !important;
+  color: var(--fg-dim) !important;
+}
+.blend :global([class*="sourceActive"]) {
+  background: var(--acc) !important;
+  color: #fff !important;
+  border-color: var(--acc) !important;
+}
+.blend :global([class*="releaseEmpty"]),
+.blend :global([class*="streamHint"]),
+.blend :global([class*="hint"]) {
+  color: var(--fg-dim) !important;
+}
+
+/* Auth screens */
+.authPage {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 2rem;
+  background:
+    radial-gradient(ellipse 70% 45% at 80% 0%, rgba(200, 16, 46, 0.16), transparent 55%),
+    var(--bg);
+  color: var(--fg);
+}
+
+.authCard {
+  width: 100%;
+  max-width: 420px;
+  border: 1px solid var(--bdr);
+  background: var(--bg-card);
+  padding: 2.25rem;
+}
+
+.authLogo {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin-bottom: 1.75rem;
+}
+
+.authTitle {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 2.1rem;
+  letter-spacing: 0.05em;
+  margin: 0 0 0.35rem;
+  color: var(--fg);
+}
+
+.authSub {
+  font-family: 'DM Sans', sans-serif;
+  color: var(--fg-dim);
+  font-size: 0.85rem;
+  margin-bottom: 1.75rem;
+  line-height: 1.55;
+}
+.authSub a {
+  color: var(--fg);
+}
+
+@media (max-width: 720px) {
+  .grid2 { grid-template-columns: 1fr; }
+  .main { width: min(920px, calc(100% - 1.25rem)); }
+  .topbar { padding: 1rem; }
+}

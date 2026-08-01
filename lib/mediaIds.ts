@@ -14,6 +14,12 @@ export function extractYoutubeVideoId(input: string | null | undefined): string 
   return null
 }
 
+/** Canonical watch URL for display / form fields (storage still uses the ID). */
+export function youtubeWatchUrl(input: string | null | undefined): string | null {
+  const id = extractYoutubeVideoId(input)
+  return id ? `https://www.youtube.com/watch?v=${id}` : null
+}
+
 /** Extract a Spotify track ID from a raw ID or open.spotify.com URL. */
 export function extractSpotifyTrackId(input: string | null | undefined): string | null {
   if (!input) return null
@@ -29,4 +35,9 @@ export function extractSpotifyTrackId(input: string | null | undefined): string 
   if (!raw.includes('/') && !raw.includes('?') && !raw.includes('http')) return raw
 
   return null
+}
+
+export function spotifyTrackUrl(input: string | null | undefined): string | null {
+  const id = extractSpotifyTrackId(input)
+  return id ? `https://open.spotify.com/track/${id}` : null
 }

@@ -81,6 +81,8 @@ function streamData(data: ArtistPayload) {
 async function requireAuth() {
   const session = await getServerSession(authOptions)
   if (!session) redirect('/admin/login')
+  if (session.user.role === 'ARTIST') redirect('/artist')
+  return session
 }
 
 function releaseData(data: ArtistReleasePayload) {
@@ -109,6 +111,7 @@ function trackData(track: ReleaseTrackPayload, index: number) {
 
 function validateRelease(data: ArtistReleasePayload): string | null {
   if (!data.title?.trim()) return 'Release title is required.'
+  if (!data.coverUrl?.trim()) return 'Release cover art is required.'
   if (!Number.isInteger(data.year) || data.year < 1900 || data.year > 2100) {
     return 'Enter a valid release year.'
   }
@@ -124,7 +127,7 @@ function revalidateArtist(artistSlug?: string) {
   revalidatePath('/admin/artists')
 }
 
-export async function createArtist(data: ArtistPayload): Promise<ActionResult> {
+export async function createArtist(data: ArtistPayload): Promise<ActionResult<{ id: string }>> {
   await requireAuth()
 
   if (!data.name?.trim() || !data.genre?.trim() || !data.location?.trim()) {
@@ -134,7 +137,7 @@ export async function createArtist(data: ArtistPayload): Promise<ActionResult> {
   const slug = slugify(data.name, { lower: true, strict: true })
 
   try {
-    await withDbRetry(() =>
+    const artist = await withDbRetry(() =>
       prisma.artist.create({
         data: {
           name:             data.name,
@@ -149,6 +152,7 @@ export async function createArtist(data: ArtistPayload): Promise<ActionResult> {
           featured:         data.featured ?? false,
           order:            data.order ?? 0,
         },
+        select: { id: true },
       }),
     )
 
@@ -156,7 +160,7 @@ export async function createArtist(data: ArtistPayload): Promise<ActionResult> {
     revalidatePath(`/artists/${slug}`)
     revalidatePath('/')
     revalidatePath('/admin/artists')
-    return actionOk()
+    return actionOk({ id: artist.id })
   } catch (err) {
     return actionErr(dbErrorMessage(err))
   }
@@ -185,6 +189,10 @@ export async function updateArtist(id: string, data: ArtistPayload): Promise<Act
           ...linkData(data),
           featured:         data.featured ?? false,
           order:            data.order ?? 0,
+          // Admin live edit supersedes any pending artist submission
+          pendingProfile:   null,
+          reviewStatus:     'NONE',
+          reviewNote:       null,
         },
       }),
     )

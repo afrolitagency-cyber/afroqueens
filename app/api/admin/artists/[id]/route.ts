@@ -6,6 +6,7 @@ export async function GET(_: Request, { params }: { params: { id: string } }) {
   const artist = await prisma.artist.findUnique({
     where: { id: params.id },
     include: {
+      account: { select: { email: true } },
       releases: {
         orderBy: [{ order: 'asc' }, { year: 'desc' }],
         include: { tracks: { orderBy: { number: 'asc' } } },

@@ -31,19 +31,22 @@ enum Design {
   TWO
 }
 
-// ─── ADMIN USERS ─────────────────────────────────────────────────────────────
+// ─── ADMIN / ARTIST USERS ────────────────────────────────────────────────────
 model User {
   id        String   @id @default(cuid())
   email     String   @unique
   password  String   // hashed with bcrypt
   name      String
   role      Role     @default(EDITOR)
+  artistId  String?  @unique
+  artist    Artist?  @relation(fields: [artistId], references: [id], onDelete: SetNull)
   createdAt DateTime @default(now())
 }
 
 enum Role {
   SUPER_ADMIN
   EDITOR
+  ARTIST
 }
 
 // ─── ARTISTS ─────────────────────────────────────────────────────────────────
@@ -68,9 +71,37 @@ model Artist {
   releaseUrl       String?       // OUT NOW / smart link (e.g. lnk.to)
   featured         Boolean       @default(false)
   order            Int           @default(0)
+  /// Artist-submitted edits awaiting admin approval (JSON of profile fields)
+  pendingProfile   Json?
+  reviewStatus     ArtistReviewStatus @default(NONE)
+  /// Feedback from editor when changes are requested
+  reviewNote       String?       @db.Text
   createdAt        DateTime      @default(now())
   updatedAt        DateTime      @updatedAt
   releases         ArtistRelease[]
+  account          User?
+  invites          ArtistInvite[]
+}
+
+enum ArtistReviewStatus {
+  NONE
+  DRAFT
+  PENDING
+  CHANGES_REQUESTED
+}
+
+model ArtistInvite {
+  id         String    @id @default(cuid())
+  artistId   String
+  artist     Artist    @relation(fields: [artistId], references: [id], onDelete: Cascade)
+  email      String
+  token      String    @unique
+  expiresAt  DateTime
+  acceptedAt DateTime?
+  createdAt  DateTime  @default(now())
+
+  @@index([artistId])
+  @@index([email])
 }
 
 enum StreamSource {
