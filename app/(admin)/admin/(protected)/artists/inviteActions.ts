@@ -18,6 +18,7 @@ import {
 import { normalizeArtistUrl } from '@/lib/artistLinks'
 import { extractSpotifyTrackId, extractYoutubeVideoId } from '@/lib/mediaIds'
 import { pickLiveProfile, type ArtistProfileFields } from '@/lib/artistProfile'
+import { Prisma } from '@prisma/client'
 
 async function requireAdmin() {
   const session = await getServerSession(authOptions)
@@ -200,6 +201,7 @@ export async function createAndInviteArtist(input: {
     revalidatePath('/artists')
     revalidatePath(`/artists/${slug}`)
     revalidatePath('/')
+    if (!invite.ok) return invite
     return { ...invite, artistId: artist.id }
   } catch (err) {
     return { ok: false, error: dbErrorMessage(err) }
@@ -288,7 +290,7 @@ export async function approveArtistProfile(artistId: string): Promise<ActionResu
           tiktokUrl:        normalizeArtistUrl(merged.tiktokUrl ?? undefined),
           facebookUrl:      normalizeArtistUrl(merged.facebookUrl ?? undefined),
           releaseUrl:       normalizeArtistUrl(merged.releaseUrl ?? undefined),
-          pendingProfile:   null,
+          pendingProfile:   Prisma.DbNull,
           reviewStatus:     'NONE',
           reviewNote:       null,
         },
@@ -318,7 +320,7 @@ export async function rejectArtistProfile(
       prisma.artist.update({
         where: { id: artistId },
         data: {
-          pendingProfile: null,
+          pendingProfile: Prisma.DbNull,
           reviewStatus: 'NONE',
           reviewNote: note?.trim() || null,
         },

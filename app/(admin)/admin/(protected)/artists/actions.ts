@@ -12,7 +12,7 @@ import type { ActionResult } from '@/lib/actions'
 import { actionOk, actionErr } from '@/lib/actions'
 import { normalizeArtistUrl } from '@/lib/artistLinks'
 import { extractSpotifyTrackId, extractYoutubeVideoId } from '@/lib/mediaIds'
-import type { ReleaseType } from '@prisma/client'
+import { Prisma, type ReleaseType } from '@prisma/client'
 
 export type { ActionResult }
 
@@ -190,7 +190,7 @@ export async function updateArtist(id: string, data: ArtistPayload): Promise<Act
           featured:         data.featured ?? false,
           order:            data.order ?? 0,
           // Admin live edit supersedes any pending artist submission
-          pendingProfile:   null,
+          pendingProfile:   Prisma.DbNull,
           reviewStatus:     'NONE',
           reviewNote:       null,
         },
