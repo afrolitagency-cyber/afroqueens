@@ -16,7 +16,7 @@ export const revalidate = 60
 
 export default async function BlogPage() {
   const posts = await prisma.blogPost.findMany({
-    where: { status: 'PUBLISHED' },
+    where: { status: 'PUBLISHED', audience: 'SITE' },
     orderBy: { publishedAt: 'desc' },
     select: {
       id: true, title: true, slug: true, excerpt: true,

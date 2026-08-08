@@ -7,6 +7,9 @@ import slugify from 'slugify'
 import { createBlogPost } from '../actions'
 import styles from '../../shared.module.css'
 import CloudinaryUpload from '@/components/admin/uploads/CloudinaryUpload'
+import BlogAudienceFields, {
+  type BlogAudienceValue,
+} from '@/components/admin/blogs/BlogAudienceFields'
 import { FORM_DRAFT_KEYS } from '@/lib/formDraft'
 import { useFormDraft } from '@/hooks/useFormDraft'
 import { DraftBanner, DraftHint, SaveErrorBanner } from '@/components/admin/FormStatusBanners'
@@ -27,6 +30,8 @@ type BlogDraft = {
   metaDesc: string
   featured: boolean
   publishedAt: string
+  audience: BlogAudienceValue
+  artistId: string
   content: any
 }
 
@@ -49,6 +54,8 @@ export default function NewBlogPage() {
   const [metaDesc, setMetaDesc]   = useState('')
   const [featured, setFeatured]   = useState(false)
   const [publishedAt, setPublishedAt] = useState('')
+  const [audience, setAudience]   = useState<BlogAudienceValue>('SITE')
+  const [artistId, setArtistId]   = useState('')
   const [content, setContent]     = useState<any>(null)
   const [status, setStatus]       = useState<'DRAFT' | 'PUBLISHED'>('DRAFT')
   const [initialContent, setInitialContent] = useState<any>(null)
@@ -65,6 +72,8 @@ export default function NewBlogPage() {
     setMetaDesc(d.metaDesc ?? '')
     setFeatured(d.featured ?? false)
     setPublishedAt(d.publishedAt ?? '')
+    setAudience(d.audience === 'ARTIST' ? 'ARTIST' : 'SITE')
+    setArtistId(d.artistId ?? '')
     if (d.content) {
       setContent(d.content)
       setInitialContent(d.content)
@@ -73,8 +82,8 @@ export default function NewBlogPage() {
 
   const draftData = useMemo<BlogDraft>(() => ({
     title, slug, excerpt, category, author, coverUrl,
-    metaTitle, metaDesc, featured, publishedAt, content,
-  }), [title, slug, excerpt, category, author, coverUrl, metaTitle, metaDesc, featured, publishedAt, content])
+    metaTitle, metaDesc, featured, publishedAt, audience, artistId, content,
+  }), [title, slug, excerpt, category, author, coverUrl, metaTitle, metaDesc, featured, publishedAt, audience, artistId, content])
 
   const { restored, setRestored, savedAt, clear, persist, loaded } = useFormDraft(
     FORM_DRAFT_KEYS.blogNew,
@@ -94,8 +103,11 @@ export default function NewBlogPage() {
       const result = await createBlogPost({
         title, slug, excerpt, category, author,
         coverImageUrl: coverUrl, content,
-        status: s, metaTitle, metaDesc, featured,
+        status: s, metaTitle, metaDesc,
+        featured: audience === 'SITE' ? featured : false,
         publishedAt: publishedAt || null,
+        audience,
+        artistId: audience === 'ARTIST' ? artistId : null,
       })
       if (!result.ok) {
         setSaveError(result.error)
@@ -117,10 +129,12 @@ export default function NewBlogPage() {
           <span className={styles.editorPageTitle}>New Post</span>
         </div>
         <div className={styles.editorTopRight}>
-          <label className={styles.featCheck}>
-            <input type="checkbox" checked={featured} onChange={e => setFeatured(e.target.checked)} />
-            Pin to homepage (max 3)
-          </label>
+          {audience === 'SITE' && (
+            <label className={styles.featCheck}>
+              <input type="checkbox" checked={featured} onChange={e => setFeatured(e.target.checked)} />
+              Pin to homepage (max 3)
+            </label>
+          )}
           <button onClick={() => save('DRAFT')} disabled={isPending} className={styles.draftBtn}>
             {isPending && status === 'DRAFT' ? 'Saving…' : 'Save Draft'}
           </button>
@@ -190,6 +204,12 @@ export default function NewBlogPage() {
         </div>
 
         <div className={styles.editorSidebar}>
+          <BlogAudienceFields
+            audience={audience}
+            artistId={artistId}
+            onAudienceChange={setAudience}
+            onArtistChange={setArtistId}
+          />
           <div className={styles.sideSection}>
             <div className={styles.sideLabel}>Category</div>
             <select value={category} onChange={e => setCategory(e.target.value)} className={styles.sideSelect}>

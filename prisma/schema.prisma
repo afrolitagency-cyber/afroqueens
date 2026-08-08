@@ -79,6 +79,7 @@ model Artist {
   createdAt        DateTime      @default(now())
   updatedAt        DateTime      @updatedAt
   releases         ArtistRelease[]
+  blogPosts        BlogPost[]
   account          User?
   invites          ArtistInvite[]
 }
@@ -155,24 +156,36 @@ enum ReleaseType {
 
 // ─── BLOG ─────────────────────────────────────────────────────────────────────
 model BlogPost {
-  id             String      @id @default(cuid())
+  id             String       @id @default(cuid())
   title          String
-  slug           String      @unique
-  excerpt        String?     @db.Text
-  content        Json        // BlockNote JSON blocks
-  coverImageUrl  String?     // Cloudinary
+  slug           String       @unique
+  excerpt        String?      @db.Text
+  content        Json         // BlockNote JSON blocks
+  coverImageUrl  String?      // Cloudinary
   category       String
-  author         String      @default("Afroqueens Editorial")
-  status         PostStatus  @default(DRAFT)
+  author         String       @default("Afroqueens Editorial")
+  status         PostStatus   @default(DRAFT)
+  /// SITE = main blog / homepage. ARTIST = only that artist’s page (still shareable at /blog/slug).
+  audience       BlogAudience @default(SITE)
+  artistId       String?
+  artist         Artist?      @relation(fields: [artistId], references: [id], onDelete: SetNull)
   metaTitle      String?
   metaDesc       String?
-  featured       Boolean     @default(false)
-  readingTime    Int?        // minutes
+  featured       Boolean      @default(false)
+  readingTime    Int?         // minutes
   publishedAt    DateTime?
-  createdAt      DateTime    @default(now())
-  updatedAt      DateTime    @updatedAt
-  tags           Tag[]       @relation("BlogTags")
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+  tags           Tag[]        @relation("BlogTags")
   comments       Comment[]
+
+  @@index([audience, status, publishedAt])
+  @@index([artistId, status, publishedAt])
+}
+
+enum BlogAudience {
+  SITE
+  ARTIST
 }
 
 model Tag {

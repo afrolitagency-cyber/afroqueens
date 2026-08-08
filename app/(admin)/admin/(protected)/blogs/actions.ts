@@ -23,6 +23,30 @@ interface BlogPayload {
   metaDesc?: string
   featured?: boolean
   publishedAt?: string | null
+  audience?: 'SITE' | 'ARTIST'
+  artistId?: string | null
+}
+
+function resolveAudience(data: BlogPayload): {
+  ok: true
+  audience: 'SITE' | 'ARTIST'
+  artistId: string | null
+  featured: boolean
+} | { ok: false; error: string } {
+  const audience = data.audience === 'ARTIST' ? 'ARTIST' : 'SITE'
+  const artistId = data.artistId?.trim() || null
+
+  if (audience === 'ARTIST' && !artistId) {
+    return { ok: false, error: 'Select an artist for artist-page posts.' }
+  }
+
+  return {
+    ok: true,
+    audience,
+    artistId: audience === 'ARTIST' ? artistId : null,
+    // Artist posts never pin to the homepage
+    featured: audience === 'SITE' ? (data.featured ?? false) : false,
+  }
 }
 
 function resolvePublishedAt(
@@ -72,8 +96,19 @@ export async function createBlogPost(data: BlogPayload): Promise<ActionResult> {
   if (!data.title?.trim()) return actionErr('Title is required.')
   if (!data.slug?.trim()) return actionErr('Slug is required.')
 
+  const audienceResult = resolveAudience(data)
+  if (!audienceResult.ok) return actionErr(audienceResult.error)
+
+  if (audienceResult.audience === 'ARTIST') {
+    const artist = await prisma.artist.findUnique({
+      where: { id: audienceResult.artistId! },
+      select: { id: true, slug: true },
+    })
+    if (!artist) return actionErr('Selected artist was not found.')
+  }
+
   const readingTime = estimateReadingTime(data.content)
-  const featured = data.featured ?? false
+  const { audience, artistId, featured } = audienceResult
 
   try {
     if (featured) await enforceFeaturedLimit()
@@ -89,6 +124,8 @@ export async function createBlogPost(data: BlogPayload): Promise<ActionResult> {
           category:      data.category,
           author:        data.author,
           status:        data.status,
+          audience,
+          artistId,
           metaTitle:     data.metaTitle ?? null,
           metaDesc:      data.metaDesc ?? null,
           featured,
@@ -101,6 +138,13 @@ export async function createBlogPost(data: BlogPayload): Promise<ActionResult> {
     revalidatePath('/blog')
     revalidatePath('/')
     revalidatePath('/admin/blogs')
+    if (artistId) {
+      const artist = await prisma.artist.findUnique({
+        where: { id: artistId },
+        select: { slug: true },
+      })
+      if (artist?.slug) revalidatePath(`/artists/${artist.slug}`)
+    }
     return actionOk()
   } catch (err) {
     return actionErr(dbErrorMessage(err))
@@ -112,11 +156,29 @@ export async function updateBlogPost(id: string, data: BlogPayload): Promise<Act
 
   const existing = await prisma.blogPost.findUnique({
     where: { id },
-    select: { coverImageUrl: true, slug: true, publishedAt: true, featured: true },
+    select: {
+      coverImageUrl: true,
+      slug: true,
+      publishedAt: true,
+      featured: true,
+      artistId: true,
+      artist: { select: { slug: true } },
+    },
   })
 
+  const audienceResult = resolveAudience(data)
+  if (!audienceResult.ok) return actionErr(audienceResult.error)
+
+  if (audienceResult.audience === 'ARTIST') {
+    const artist = await prisma.artist.findUnique({
+      where: { id: audienceResult.artistId! },
+      select: { id: true, slug: true },
+    })
+    if (!artist) return actionErr('Selected artist was not found.')
+  }
+
   const readingTime = estimateReadingTime(data.content)
-  const featured = data.featured ?? false
+  const { audience, artistId, featured } = audienceResult
 
   try {
     if (featured && !existing?.featured) await enforceFeaturedLimit(id)
@@ -133,6 +195,8 @@ export async function updateBlogPost(id: string, data: BlogPayload): Promise<Act
           category:      data.category,
           author:        data.author,
           status:        data.status,
+          audience,
+          artistId,
           metaTitle:     data.metaTitle ?? null,
           metaDesc:      data.metaDesc ?? null,
           featured,
@@ -151,6 +215,14 @@ export async function updateBlogPost(id: string, data: BlogPayload): Promise<Act
     }
     revalidatePath('/')
     revalidatePath('/admin/blogs')
+    if (existing?.artist?.slug) revalidatePath(`/artists/${existing.artist.slug}`)
+    if (artistId) {
+      const artist = await prisma.artist.findUnique({
+        where: { id: artistId },
+        select: { slug: true },
+      })
+      if (artist?.slug) revalidatePath(`/artists/${artist.slug}`)
+    }
     return actionOk()
   } catch (err) {
     return actionErr(dbErrorMessage(err))

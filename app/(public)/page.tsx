@@ -41,13 +41,13 @@ async function getData() {
         orderBy: { order: 'asc' },
       }),
       prisma.blogPost.findMany({
-        where: { status: 'PUBLISHED', featured: true },
+        where: { status: 'PUBLISHED', audience: 'SITE', featured: true },
         take: 3,
         orderBy: { publishedAt: 'desc' },
         select: blogSelect,
       }),
       prisma.blogPost.findMany({
-        where: { status: 'PUBLISHED' },
+        where: { status: 'PUBLISHED', audience: 'SITE' },
         take: 8,
         orderBy: { publishedAt: 'desc' },
         select: blogSelect,

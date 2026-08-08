@@ -2,11 +2,13 @@
 import { prisma } from '@/lib/prisma'
 import { notFound } from 'next/navigation'
 import Image from 'next/image'
+import Link from 'next/link'
 import type { Metadata } from 'next'
 import { buildMetadata, artistJsonLd } from '@/lib/seo'
 import ArtistLinks from '@/components/public/artists/ArtistLinks'
 import ArtistDiscography from '@/components/public/artists/ArtistDiscography'
 import { extractSpotifyTrackId, extractYoutubeVideoId } from '@/lib/mediaIds'
+import { getCoverUrl } from '@/lib/images'
 import styles from './artist.module.css'
 
 interface Props { params: { slug: string } }
@@ -36,6 +38,26 @@ export default async function ArtistPage({ params }: Props) {
     },
   })
   if (!artist) notFound()
+
+  const stories = await prisma.blogPost.findMany({
+    where: {
+      status: 'PUBLISHED',
+      audience: 'ARTIST',
+      artistId: artist.id,
+    },
+    orderBy: { publishedAt: 'desc' },
+    take: 12,
+    select: {
+      id: true,
+      title: true,
+      slug: true,
+      excerpt: true,
+      category: true,
+      publishedAt: true,
+      coverImageUrl: true,
+      readingTime: true,
+    },
+  })
 
   const jsonLd = artistJsonLd({
     name:  artist.name,
@@ -134,6 +156,40 @@ export default async function ArtistPage({ params }: Props) {
 
         {artist.releases.length > 0 && (
           <ArtistDiscography artistName={artist.name} releases={artist.releases} />
+        )}
+
+        {stories.length > 0 && (
+          <section className={styles.stories}>
+            <h2 className={styles.sectionTitle}>Stories</h2>
+            <p className={styles.storiesLead}>Features and updates about {artist.name}.</p>
+            <div className={styles.storiesList}>
+              {stories.map(post => (
+                <Link key={post.id} href={`/blog/${post.slug}`} className={styles.storyCard}>
+                  <div
+                    className={`${styles.storyCover} ${!post.coverImageUrl ? styles.storyCoverEmpty : ''}`}
+                    style={
+                      post.coverImageUrl
+                        ? { backgroundImage: `url(${getCoverUrl(post.coverImageUrl, 'card')})` }
+                        : undefined
+                    }
+                  />
+                  <div className={styles.storyBody}>
+                    <div className={styles.storyCat}>{post.category}</div>
+                    <h3 className={styles.storyTitle}>{post.title}</h3>
+                    {post.excerpt && <p className={styles.storyExc}>{post.excerpt}</p>}
+                    <div className={styles.storyMeta}>
+                      {post.publishedAt?.toLocaleDateString('en-GB', {
+                        day: 'numeric',
+                        month: 'short',
+                        year: 'numeric',
+                      })}
+                      {post.readingTime ? ` · ${post.readingTime} min read` : ''}
+                    </div>
+                  </div>
+                </Link>
+              ))}
+            </div>
+          </section>
         )}
       </div>
     </main>

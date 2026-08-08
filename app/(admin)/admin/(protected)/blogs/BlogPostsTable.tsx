@@ -16,6 +16,8 @@ export type AdminBlogPost = {
   createdAt: Date
   featured: boolean
   coverImageUrl: string | null
+  audience: 'SITE' | 'ARTIST'
+  artist: { name: string } | null
 }
 
 export default function BlogPostsTable({ posts }: { posts: AdminBlogPost[] }) {
@@ -65,9 +67,18 @@ export default function BlogPostsTable({ posts }: { posts: AdminBlogPost[] }) {
             <td>
               <div className={styles.postTitle}>
                 {post.featured && <span className={styles.featBadge}>Featured</span>}
+                {post.audience === 'ARTIST' && (
+                  <span className={styles.featBadge} style={{ background: '#eef2ff', color: '#3730a3' }}>
+                    Artist
+                  </span>
+                )}
                 {post.title}
               </div>
-              <div className={styles.postSlug}>/{post.slug}</div>
+              <div className={styles.postSlug}>
+                {post.audience === 'ARTIST' && post.artist
+                  ? `${post.artist.name} · /${post.slug}`
+                  : `/${post.slug}`}
+              </div>
             </td>
             <td><span className={styles.cat}>{post.category}</span></td>
             <td>

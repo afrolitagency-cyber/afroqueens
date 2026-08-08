@@ -11,6 +11,7 @@ export default async function AdminBlogsPage() {
       id: true, title: true, slug: true, status: true,
       category: true, publishedAt: true, createdAt: true,
       featured: true, coverImageUrl: true,
+      audience: true, artist: { select: { name: true } },
     },
   })
 

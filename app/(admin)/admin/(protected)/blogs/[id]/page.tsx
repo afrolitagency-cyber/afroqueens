@@ -7,6 +7,9 @@ import slugify from 'slugify'
 import { updateBlogPost } from '../actions'
 import styles from '../../shared.module.css'
 import CloudinaryUpload from '@/components/admin/uploads/CloudinaryUpload'
+import BlogAudienceFields, {
+  type BlogAudienceValue,
+} from '@/components/admin/blogs/BlogAudienceFields'
 import { FORM_DRAFT_KEYS } from '@/lib/formDraft'
 import { useFormDraft } from '@/hooks/useFormDraft'
 import { DraftBanner, DraftHint, SaveErrorBanner } from '@/components/admin/FormStatusBanners'
@@ -40,6 +43,8 @@ export default function EditBlogPage() {
   const [metaDesc, setMetaDesc]   = useState('')
   const [featured, setFeatured]   = useState(false)
   const [publishedAt, setPublishedAt] = useState('')
+  const [audience, setAudience]   = useState<BlogAudienceValue>('SITE')
+  const [artistId, setArtistId]   = useState('')
   const [content, setContent]     = useState<any>(null)
   const [status, setStatus]       = useState<'DRAFT' | 'PUBLISHED'>('DRAFT')
   const [initialContent, setInitialContent] = useState<any>(null)
@@ -61,6 +66,8 @@ export default function EditBlogPage() {
         setMetaDesc(post.metaDesc ?? '')
         setFeatured(post.featured ?? false)
         setPublishedAt(toLocalInput(post.publishedAt))
+        setAudience(post.audience === 'ARTIST' ? 'ARTIST' : 'SITE')
+        setArtistId(post.artistId ?? '')
         setStatus(post.status ?? 'DRAFT')
         setInitialContent(post.content ?? null)
         setContent(post.content ?? null)
@@ -73,13 +80,14 @@ export default function EditBlogPage() {
   type BlogDraft = {
     title: string; slug: string; excerpt: string; category: string
     author: string; coverUrl: string; metaTitle: string; metaDesc: string
-    featured: boolean; publishedAt: string; content: any
+    featured: boolean; publishedAt: string; audience: BlogAudienceValue
+    artistId: string; content: any
   }
 
   const draftData = useMemo<BlogDraft>(() => ({
     title, slug, excerpt, category, author, coverUrl,
-    metaTitle, metaDesc, featured, publishedAt, content,
-  }), [title, slug, excerpt, category, author, coverUrl, metaTitle, metaDesc, featured, publishedAt, content])
+    metaTitle, metaDesc, featured, publishedAt, audience, artistId, content,
+  }), [title, slug, excerpt, category, author, coverUrl, metaTitle, metaDesc, featured, publishedAt, audience, artistId, content])
 
   const applyLocalDraft = useCallback((d: BlogDraft) => {
     setTitle(d.title ?? '')
@@ -92,6 +100,8 @@ export default function EditBlogPage() {
     setMetaDesc(d.metaDesc ?? '')
     setFeatured(d.featured ?? false)
     setPublishedAt(d.publishedAt ?? '')
+    setAudience(d.audience === 'ARTIST' ? 'ARTIST' : 'SITE')
+    setArtistId(d.artistId ?? '')
     if (d.content) {
       setContent(d.content)
       setInitialContent(d.content)
@@ -118,8 +128,11 @@ export default function EditBlogPage() {
       const result = await updateBlogPost(id, {
         title, slug, excerpt, category, author,
         coverImageUrl: coverUrl, content,
-        status: s, metaTitle, metaDesc, featured,
+        status: s, metaTitle, metaDesc,
+        featured: audience === 'SITE' ? featured : false,
         publishedAt: publishedAt || null,
+        audience,
+        artistId: audience === 'ARTIST' ? artistId : null,
       })
       if (!result.ok) {
         setSaveError(result.error)
@@ -147,14 +160,16 @@ export default function EditBlogPage() {
           <span className={styles.editorPageTitle}>Edit Post</span>
         </div>
         <div className={styles.editorTopRight}>
-          <label className={styles.featCheck}>
-            <input
-              type="checkbox"
-              checked={featured}
-              onChange={e => setFeatured(e.target.checked)}
-            />
-            Pin to homepage (max 3)
-          </label>
+          {audience === 'SITE' && (
+            <label className={styles.featCheck}>
+              <input
+                type="checkbox"
+                checked={featured}
+                onChange={e => setFeatured(e.target.checked)}
+              />
+              Pin to homepage (max 3)
+            </label>
+          )}
           <button
             onClick={() => save('DRAFT')}
             disabled={isPending}
@@ -242,6 +257,12 @@ export default function EditBlogPage() {
 
         {/* ── Sidebar metadata ── */}
         <div className={styles.editorSidebar}>
+          <BlogAudienceFields
+            audience={audience}
+            artistId={artistId}
+            onAudienceChange={setAudience}
+            onArtistChange={setArtistId}
+          />
           <div className={styles.sideSection}>
             <div className={styles.sideLabel}>Category</div>
             <select

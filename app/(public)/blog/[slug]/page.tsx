@@ -67,6 +67,20 @@ export default async function BlogPostPage({ params }: Props) {
 
   if (!post) notFound()
 
+  const relatedWhere =
+    post.audience === 'ARTIST' && post.artistId
+      ? {
+          status: 'PUBLISHED' as const,
+          audience: 'ARTIST' as const,
+          artistId: post.artistId,
+          id: { not: post.id },
+        }
+      : {
+          status: 'PUBLISHED' as const,
+          audience: 'SITE' as const,
+          id: { not: post.id },
+        }
+
   const [comments, sameCategory, featured, recent] = await Promise.all([
     prisma.comment.findMany({
       where: {
@@ -78,9 +92,8 @@ export default async function BlogPostPage({ params }: Props) {
     }),
     prisma.blogPost.findMany({
       where: {
-        status: 'PUBLISHED',
+        ...relatedWhere,
         category: post.category,
-        id: { not: post.id },
       },
       take: 4,
       orderBy: { publishedAt: 'desc' },
@@ -88,19 +101,15 @@ export default async function BlogPostPage({ params }: Props) {
     }),
     prisma.blogPost.findMany({
       where: {
-        status: 'PUBLISHED',
-        featured: true,
-        id: { not: post.id },
+        ...relatedWhere,
+        ...(post.audience === 'SITE' ? { featured: true } : {}),
       },
       take: 3,
       orderBy: { publishedAt: 'desc' },
       select: sidebarSelect,
     }),
     prisma.blogPost.findMany({
-      where: {
-        status: 'PUBLISHED',
-        id: { not: post.id },
-      },
+      where: relatedWhere,
       take: 6,
       orderBy: { publishedAt: 'desc' },
       select: sidebarSelect,
