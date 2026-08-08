@@ -136,6 +136,7 @@ export async function createBlogPost(data: BlogPayload): Promise<ActionResult> {
     )
 
     revalidatePath('/blog')
+    revalidatePath(`/blog/${data.slug}`)
     revalidatePath('/')
     revalidatePath('/admin/blogs')
     if (artistId) {

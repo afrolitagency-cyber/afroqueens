@@ -61,9 +61,15 @@ function isButtonParagraph(block: Block) {
   return content[0]?.type === 'link' && Boolean(content[0]?.href?.trim())
 }
 
+function renderChildBlocks(children?: Block[]) {
+  if (!children?.length) return null
+  return children.map((b, i) => <Block key={i} block={b} />)
+}
+
 function Block({ block }: { block: Block }) {
   const content = renderInline(block.content)
-  const children = block.children?.map((b, i) => <Block key={i} block={b} />)
+  const hasInline = (block.content?.length ?? 0) > 0
+  const childNodes = renderChildBlocks(block.children)
 
   switch (block.type) {
     case 'paragraph':
@@ -87,29 +93,50 @@ function Block({ block }: { block: Block }) {
           </p>
         )
       }
-      return <p className={styles.p}>{content}</p>
+      // BlockNote can nest blocks under a paragraph (e.g. indented text).
+      // Don't nest <p> inside <p> — unwrap empty parents and render children.
+      if (!hasInline && childNodes) return <>{childNodes}</>
+      if (!hasInline && !childNodes) return null
+      return (
+        <>
+          <p className={styles.p}>{content}</p>
+          {childNodes}
+        </>
+      )
 
-    case 'heading':
+    case 'heading': {
       const level = block.props?.level ?? 1
       const Tag = `h${level}` as 'h1' | 'h2' | 'h3'
-      return <Tag className={styles[`h${level}`]}>{content}</Tag>
+      return (
+        <>
+          <Tag className={styles[`h${level}`]}>{content}</Tag>
+          {childNodes}
+        </>
+      )
+    }
 
     case 'bulletListItem':
-      return <li className={styles.li}>{content}{children}</li>
+      return <li className={styles.li}>{content}{childNodes}</li>
 
     case 'numberedListItem':
-      return <li className={styles.li}>{content}{children}</li>
+      return <li className={styles.li}>{content}{childNodes}</li>
 
     case 'checkListItem':
       return (
         <li className={styles.checkItem}>
           <span className={`${styles.check} ${block.props?.checked ? styles.checked : ''}`} />
           {content}
+          {childNodes}
         </li>
       )
 
     case 'quote':
-      return <blockquote className={styles.quote}>{content}</blockquote>
+      return (
+        <>
+          <blockquote className={styles.quote}>{content}</blockquote>
+          {childNodes}
+        </>
+      )
 
     case 'codeBlock':
       return (
@@ -180,7 +207,13 @@ function Block({ block }: { block: Block }) {
       )
 
     default:
-      return <p className={styles.p}>{content}</p>
+      if (!hasInline && childNodes) return <>{childNodes}</>
+      return (
+        <>
+          {hasInline ? <p className={styles.p}>{content}</p> : null}
+          {childNodes}
+        </>
+      )
   }
 }
 
