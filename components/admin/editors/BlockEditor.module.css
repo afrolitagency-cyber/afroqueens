@@ -44,3 +44,11 @@
   justify-content: center;
   font-size: 0.85rem;
 }
+
+.libraryHint {
+  margin: 0 0 0.65rem;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 0.8rem;
+  line-height: 1.4;
+  color: #666;
+}
