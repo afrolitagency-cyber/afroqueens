@@ -38,7 +38,7 @@ type EventPayload = {
 }
 
 async function uniqueArtistIds(ids?: string[]) {
-  const unique = [...new Set((ids ?? []).map(id => id.trim()).filter(Boolean))]
+  const unique = Array.from(new Set((ids ?? []).map(id => id.trim()).filter(Boolean)))
   if (unique.length === 0) return []
   const artists = await prisma.artist.findMany({
     where: { id: { in: unique } },
@@ -127,9 +127,9 @@ export async function updateEvent(id: string, data: EventPayload) {
   })
 
   const artists = await uniqueArtistIds(data.artistIds)
-  const artistSlugs = [
-    ...new Set([...current.artists.map(a => a.slug), ...artists.map(a => a.slug)]),
-  ]
+  const artistSlugs = Array.from(
+    new Set([...current.artists.map(a => a.slug), ...artists.map(a => a.slug)]),
+  )
 
   const event = await withDbRetry(() =>
     prisma.event.update({
