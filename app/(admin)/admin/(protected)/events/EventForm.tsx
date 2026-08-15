@@ -1,11 +1,12 @@
 'use client'
 
-import { useState, useTransition } from 'react'
+import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { createEvent, updateEvent } from './actions'
 import styles from '@/app/(admin)/admin/(protected)/shared.module.css'
 import CloudinaryUpload from '@/components/admin/uploads/CloudinaryUpload'
+import EventArtistPicker from './EventArtistPicker'
 
 function toLocalInput(iso?: string | Date | null) {
   if (!iso) return ''
@@ -27,15 +28,18 @@ interface Props {
     startsAt: string
     endsAt: string | null
     published: boolean
+    registrationRequired: boolean
     tagName: string | null
     confirmEmailSubject: string | null
     confirmEmailBody: string | null
+    artistIds: string[]
   }
 }
 
 export default function EventForm({ mode, event }: Props) {
   const router = useRouter()
-  const [isPending, startTransition] = useTransition()
+  const [saving, setSaving] = useState(false)
+  const [toast, setToast] = useState<string | null>(null)
   const [error, setError] = useState<string | null>(null)
   const [title, setTitle] = useState(event?.title ?? '')
   const [slug, setSlug] = useState(event?.slug ?? '')
@@ -45,13 +49,22 @@ export default function EventForm({ mode, event }: Props) {
   const [startsAt, setStartsAt] = useState(toLocalInput(event?.startsAt))
   const [endsAt, setEndsAt] = useState(toLocalInput(event?.endsAt))
   const [published, setPublished] = useState(event?.published ?? true)
+  const [registrationRequired, setRegistrationRequired] = useState(event?.registrationRequired ?? true)
   const [tagName, setTagName] = useState(event?.tagName ?? '')
   const [confirmEmailSubject, setConfirmEmailSubject] = useState(event?.confirmEmailSubject ?? '')
   const [confirmEmailBody, setConfirmEmailBody] = useState(event?.confirmEmailBody ?? '')
+  const [artistIds, setArtistIds] = useState<string[]>(event?.artistIds ?? [])
+
+  useEffect(() => {
+    if (!toast) return
+    const t = window.setTimeout(() => setToast(null), 3500)
+    return () => window.clearTimeout(t)
+  }, [toast])
 
   const save = () => {
     setError(null)
-    startTransition(async () => {
+    setSaving(true)
+    void (async () => {
       try {
         const payload = {
           title,
@@ -62,22 +75,29 @@ export default function EventForm({ mode, event }: Props) {
           startsAt,
           endsAt: endsAt || undefined,
           published,
+          registrationRequired,
           tagName: tagName || undefined,
           confirmEmailSubject,
           confirmEmailBody,
+          artistIds,
         }
         if (mode === 'create') {
           const created = await createEvent(payload)
+          setToast('Event saved')
           router.push(`/admin/events/${created.id}/edit`)
-          router.refresh()
-        } else if (event) {
+          return
+        }
+        if (event) {
           await updateEvent(event.id, payload)
+          setToast('Event saved')
           router.refresh()
         }
       } catch (e) {
         setError(e instanceof Error ? e.message : 'Save failed')
+      } finally {
+        setSaving(false)
       }
-    })
+    })()
   }
 
   return (
@@ -93,8 +113,8 @@ export default function EventForm({ mode, event }: Props) {
           <Link href="/admin/events" className={styles.actionBtn}>
             ← Back
           </Link>
-          <button type="button" className={styles.addBtn} onClick={save} disabled={isPending}>
-            {isPending ? 'Saving…' : 'Save'}
+          <button type="button" className={styles.addBtn} onClick={save} disabled={saving}>
+            {saving ? 'Saving…' : 'Save'}
           </button>
         </div>
       </div>
@@ -107,14 +127,15 @@ export default function EventForm({ mode, event }: Props) {
 
       <div style={{ background: '#fff', border: '1px solid #f0f0f0', borderRadius: 8, padding: '1.25rem', maxWidth: 640, display: 'grid', gap: '.85rem' }}>
         <div>
-          <label className={styles.label}>Event cover image</label>
+          <label className={styles.label}>Event flyer / cover</label>
           <CloudinaryUpload
             folder="events"
             value={coverImageUrl}
             onChange={setCoverImageUrl}
-            label="Drop event cover here or click to upload"
+            label="Drop event flyer or cover here or click to upload"
           />
         </div>
+        <EventArtistPicker selectedIds={artistIds} onChange={setArtistIds} />
         <div>
           <label className={styles.label}>Title *</label>
           <input className={styles.input} value={title} onChange={e => setTitle(e.target.value)} />
@@ -176,6 +197,18 @@ export default function EventForm({ mode, event }: Props) {
           </div>
         </div>
 
+        <label className={styles.checkRow}>
+          <input
+            type="checkbox"
+            checked={registrationRequired}
+            onChange={e => setRegistrationRequired(e.target.checked)}
+          />
+          Registration required
+        </label>
+        <div style={{ fontSize: '.75rem', color: '#888', marginTop: '-.45rem' }}>
+          Uncheck to hide Register now and drop the signup form. Add to calendar stays put.
+        </div>
+        {registrationRequired && (
         <div style={{ borderTop: '1px solid #f0f0f0', paddingTop: '1rem', marginTop: '.25rem' }}>
           <div className={styles.label} style={{ marginBottom: '.65rem' }}>
             Registration confirmation email
@@ -209,12 +242,14 @@ export default function EventForm({ mode, event }: Props) {
             </div>
           </div>
         </div>
+        )}
 
-        <label style={{ display: 'flex', gap: '.5rem', alignItems: 'center', fontSize: '.85rem' }}>
+        <label className={styles.checkRow}>
           <input type="checkbox" checked={published} onChange={e => setPublished(e.target.checked)} />
           Published (visible on /events)
         </label>
       </div>
+      {toast && <div className={styles.toast} role="status">{toast}</div>}
     </div>
   )
 }

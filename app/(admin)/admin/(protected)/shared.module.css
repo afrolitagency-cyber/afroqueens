@@ -1,7 +1,7 @@
 /* Shared admin form styles — import in blogs.module.css, artists.module.css, episodes.module.css */
 
 /* Page wrapper */
-.page { padding: 2rem; max-width: 1200px; }
+.page { padding: 2rem; max-width: 1200px; color: #222; }
 
 /* List page header */
 .pageHeader,
@@ -349,7 +349,7 @@
 .row { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
 .checkRow {
   display: flex; align-items: center; gap: .5rem;
-  font-size: .82rem; color: #555; cursor: pointer; font-family: 'DM Sans', sans-serif;
+  font-size: .85rem; color: #222; cursor: pointer; font-family: 'DM Sans', sans-serif;
 }
 
 /* Stream source */
@@ -576,4 +576,18 @@
   .tableWrap { overflow-x: auto; }
   .table { min-width: 600px; }
   .grid { grid-template-columns: 1fr; }
+}
+
+.toast {
+  position: fixed;
+  right: 1.25rem;
+  bottom: 1.25rem;
+  z-index: 80;
+  padding: 0.75rem 1.2rem;
+  border-radius: 8px;
+  background: #0a0a0a;
+  color: #fff;
+  font-size: 0.82rem;
+  font-family: 'DM Sans', sans-serif;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
 }

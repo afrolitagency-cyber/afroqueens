@@ -33,6 +33,9 @@ export async function POST(req: Request) {
     if (!event) {
       return NextResponse.json({ error: 'Event not found.' }, { status: 404 })
     }
+    if (!event.registrationRequired) {
+      return NextResponse.json({ error: 'This event does not take registrations.' }, { status: 400 })
+    }
 
     const tagNames = event.tag?.name ? [event.tag.name] : undefined
 

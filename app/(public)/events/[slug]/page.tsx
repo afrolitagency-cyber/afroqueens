@@ -1,4 +1,5 @@
 import { notFound } from 'next/navigation'
+import Link from 'next/link'
 import { prisma } from '@/lib/prisma'
 import EventRegisterForm from '@/components/public/events/EventRegisterForm'
 import {
@@ -6,6 +7,7 @@ import {
   EventCountdown,
   EventShare,
 } from '@/components/public/events/EventPageClient'
+import { getCoverUrl } from '@/lib/images'
 import styles from '../events.module.css'
 
 export const dynamic = 'force-dynamic'
@@ -21,6 +23,7 @@ export async function generateMetadata({
   return {
     title: `${event.title} | Afroqueens FM`,
     description: event.description?.slice(0, 160) || `Register for ${event.title}`,
+    openGraph: event.coverImageUrl ? { images: [event.coverImageUrl] } : undefined,
   }
 }
 
@@ -30,7 +33,15 @@ export default async function EventDetailPage({
   params: Promise<{ slug: string }>
 }) {
   const { slug } = await params
-  const event = await prisma.event.findUnique({ where: { slug } })
+  const event = await prisma.event.findUnique({
+    where: { slug },
+    include: {
+      artists: {
+        select: { id: true, name: true, slug: true, profileImageUrl: true },
+        orderBy: { name: 'asc' },
+      },
+    },
+  })
   if (!event || !event.published) notFound()
 
   const startsAt = event.startsAt.toISOString()
@@ -55,7 +66,7 @@ export default async function EventDetailPage({
         {event.coverImageUrl && (
           <div
             className={styles.heroImage}
-            style={{ backgroundImage: `url(${event.coverImageUrl})` }}
+            style={{ backgroundImage: `url(${getCoverUrl(event.coverImageUrl, 'hero')})` }}
           />
         )}
         <div className={styles.heroOverlay} />
@@ -75,6 +86,7 @@ export default async function EventDetailPage({
             startsAt={startsAt}
             endsAt={endsAt}
             location={event.location}
+            showRegister={event.registrationRequired}
           />
         </div>
       </header>
@@ -87,8 +99,24 @@ export default async function EventDetailPage({
             <div className={styles.eyebrow}>About the event</div>
             <h2>Everything you need to know</h2>
             <p className={styles.desc}>
-              {event.description || 'Register below to save your spot and get event updates.'}
+              {event.description || (
+                event.registrationRequired
+                  ? 'Register below to save your spot and get event updates.'
+                  : 'Check the details here for date, time, and venue.'
+              )}
             </p>
+            {event.artists.length > 0 && (
+              <div className={styles.lineup}>
+                <div className={styles.eyebrow}>Lineup</div>
+                <div className={styles.lineupList}>
+                  {event.artists.map(artist => (
+                    <Link key={artist.id} href={`/artists/${artist.slug}`} className={styles.lineupChip}>
+                      {artist.name}
+                    </Link>
+                  ))}
+                </div>
+              </div>
+            )}
           </article>
 
           <aside className={styles.sidebar}>
@@ -115,7 +143,9 @@ export default async function EventDetailPage({
                 <span className={styles.detailIcon}>◇</span>
                 <div>
                   <small>Admission</small>
-                  <strong>Registration required</strong>
+                  <strong>
+                    {event.registrationRequired ? 'Registration required' : 'No registration needed'}
+                  </strong>
                 </div>
               </div>
               <EventActions
@@ -124,26 +154,29 @@ export default async function EventDetailPage({
                 endsAt={endsAt}
                 location={event.location}
                 compact
+                showRegister={event.registrationRequired}
               />
             </div>
             <EventShare title={event.title} />
           </aside>
         </div>
 
-        <section className={styles.registrationSection} id="register">
-          <div className={styles.registrationIntro}>
-            <div className={styles.eyebrow}>Register</div>
-            <h2>Save your spot</h2>
-            <p>
-              Registration is quick. We&apos;ll email your confirmation and any important event updates.
-            </p>
-          </div>
-          <EventRegisterForm
-            eventId={event.id}
-            eventSlug={event.slug}
-            eventTitle={event.title}
-          />
-        </section>
+        {event.registrationRequired && (
+          <section className={styles.registrationSection} id="register">
+            <div className={styles.registrationIntro}>
+              <div className={styles.eyebrow}>Register</div>
+              <h2>Save your spot</h2>
+              <p>
+                Registration is quick. We&apos;ll email your confirmation and any important event updates.
+              </p>
+            </div>
+            <EventRegisterForm
+              eventId={event.id}
+              eventSlug={event.slug}
+              eventTitle={event.title}
+            />
+          </section>
+        )}
       </div>
     </main>
   )

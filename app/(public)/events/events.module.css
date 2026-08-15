@@ -149,6 +149,11 @@
   transform: translateY(-1px);
 }
 
+.hiddenAction {
+  visibility: hidden;
+  pointer-events: none;
+}
+
 .countdownStrip {
   display: flex;
   min-height: 92px;
@@ -221,6 +226,33 @@
   font-size: 1rem;
   line-height: 1.85;
   white-space: pre-wrap;
+}
+
+.lineup {
+  margin-top: 2rem;
+}
+
+.lineupList {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.55rem;
+  margin-top: 0.75rem;
+}
+
+.lineupChip {
+  padding: 0.45rem 0.85rem;
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.05);
+  color: #fff;
+  text-decoration: none;
+  font-size: 0.82rem;
+  font-weight: 600;
+}
+
+.lineupChip:hover {
+  border-color: rgba(200, 16, 46, 0.6);
+  background: rgba(200, 16, 46, 0.12);
 }
 
 .sidebar {

@@ -80,6 +80,7 @@ model Artist {
   updatedAt        DateTime      @updatedAt
   releases         ArtistRelease[]
   blogPosts        BlogPost[]
+  events           Event[]
   account          User?
   invites          ArtistInvite[]
 }
@@ -337,6 +338,8 @@ model Event {
   startsAt            DateTime
   endsAt              DateTime?
   published           Boolean  @default(true)
+  /// When false, hide Register now / the signup form; keep calendar in place
+  registrationRequired Boolean @default(true)
   confirmEmailSubject String?  // optional override; default: You're registered — {title}
   confirmEmailBody    String?  @db.Text // custom notes in the confirmation email
   tagId               String?
@@ -344,6 +347,7 @@ model Event {
   createdAt           DateTime @default(now())
   updatedAt           DateTime @updatedAt
   registrations       EventRegistration[]
+  artists             Artist[]
 }
 
 model EventRegistration {

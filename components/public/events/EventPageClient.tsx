@@ -9,6 +9,7 @@ interface EventActionProps {
   endsAt: string | null
   location: string | null
   compact?: boolean
+  showRegister?: boolean
 }
 
 function calendarStamp(value: string) {
@@ -21,6 +22,7 @@ export function EventActions({
   endsAt,
   location,
   compact = false,
+  showRegister = true,
 }: EventActionProps) {
   const addToCalendar = () => {
     const start = calendarStamp(startsAt)
@@ -40,7 +42,14 @@ export function EventActions({
 
   return (
     <div className={compact ? styles.cardActions : styles.heroActions}>
-      <button type="button" className={styles.primaryButton} onClick={scrollToRegister}>
+      <button
+        type="button"
+        className={`${styles.primaryButton} ${showRegister ? '' : styles.hiddenAction}`.trim()}
+        onClick={showRegister ? scrollToRegister : undefined}
+        disabled={!showRegister}
+        tabIndex={showRegister ? 0 : -1}
+        aria-hidden={!showRegister}
+      >
         Register now
       </button>
       <button type="button" className={styles.secondaryButton} onClick={addToCalendar}>

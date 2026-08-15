@@ -30,9 +30,30 @@ type EventPayload = {
   startsAt: string
   endsAt?: string
   published?: boolean
+  registrationRequired?: boolean
   tagName?: string
   confirmEmailSubject?: string
   confirmEmailBody?: string
+  artistIds?: string[]
+}
+
+async function uniqueArtistIds(ids?: string[]) {
+  const unique = [...new Set((ids ?? []).map(id => id.trim()).filter(Boolean))]
+  if (unique.length === 0) return []
+  const artists = await prisma.artist.findMany({
+    where: { id: { in: unique } },
+    select: { id: true, slug: true },
+  })
+  return artists
+}
+
+async function revalidateEventSurfaces(slug: string, extraSlugs: string[] = []) {
+  revalidatePath('/admin/events')
+  revalidatePath('/events')
+  revalidatePath(`/events/${slug}`)
+  for (const artistSlug of extraSlugs) {
+    revalidatePath(`/artists/${artistSlug}`)
+  }
 }
 
 export async function createEvent(data: EventPayload) {
@@ -53,6 +74,8 @@ export async function createEvent(data: EventPayload) {
     update: {},
   })
 
+  const artists = await uniqueArtistIds(data.artistIds)
+
   const event = await withDbRetry(() =>
     prisma.event.create({
       data: {
@@ -64,16 +87,16 @@ export async function createEvent(data: EventPayload) {
         startsAt,
         endsAt: data.endsAt ? new Date(data.endsAt) : null,
         published: data.published !== false,
+        registrationRequired: data.registrationRequired !== false,
         confirmEmailSubject: data.confirmEmailSubject?.trim() || null,
         confirmEmailBody: data.confirmEmailBody?.trim() || null,
         tagId: tag.id,
+        artists: { connect: artists.map(a => ({ id: a.id })) },
       },
     }),
   )
 
-  revalidatePath('/admin/events')
-  revalidatePath('/events')
-  revalidatePath(`/events/${slug}`)
+  await revalidateEventSurfaces(slug, artists.map(a => a.slug))
   return event
 }
 
@@ -84,7 +107,10 @@ export async function updateEvent(id: string, data: EventPayload) {
   const startsAt = new Date(data.startsAt)
   if (Number.isNaN(startsAt.getTime())) throw new Error('Invalid start date')
 
-  const current = await prisma.event.findUnique({ where: { id }, include: { tag: true } })
+  const current = await prisma.event.findUnique({
+    where: { id },
+    include: { tag: true, artists: { select: { id: true, slug: true } } },
+  })
   if (!current) throw new Error('Event not found')
 
   let slug = (data.slug?.trim() || slugify(title)) || current.slug
@@ -100,6 +126,11 @@ export async function updateEvent(id: string, data: EventPayload) {
     update: {},
   })
 
+  const artists = await uniqueArtistIds(data.artistIds)
+  const artistSlugs = [
+    ...new Set([...current.artists.map(a => a.slug), ...artists.map(a => a.slug)]),
+  ]
+
   const event = await withDbRetry(() =>
     prisma.event.update({
       where: { id },
@@ -112,25 +143,31 @@ export async function updateEvent(id: string, data: EventPayload) {
         startsAt,
         endsAt: data.endsAt ? new Date(data.endsAt) : null,
         published: data.published !== false,
+        registrationRequired: data.registrationRequired !== false,
         confirmEmailSubject: data.confirmEmailSubject?.trim() || null,
         confirmEmailBody: data.confirmEmailBody?.trim() || null,
         tagId: tag.id,
+        artists: { set: artists.map(a => ({ id: a.id })) },
       },
     }),
   )
   await deleteMediaIfReplaced(current.coverImageUrl, data.coverImageUrl)
 
-  revalidatePath('/admin/events')
-  revalidatePath('/events')
-  revalidatePath(`/events/${slug}`)
+  await revalidateEventSurfaces(slug, artistSlugs)
+  if (current.slug !== slug) revalidatePath(`/events/${current.slug}`)
   return event
 }
 
 export async function deleteEvent(id: string) {
   await requireAdmin()
-  const event = await prisma.event.delete({ where: { id } })
+  const event = await prisma.event.findUnique({
+    where: { id },
+    include: { artists: { select: { slug: true } } },
+  })
+  if (!event) throw new Error('Event not found')
+
+  await prisma.event.delete({ where: { id } })
   await deleteMediaUrls([event.coverImageUrl])
-  revalidatePath('/admin/events')
-  revalidatePath('/events')
+  await revalidateEventSurfaces(event.slug, event.artists.map(a => a.slug))
   return event
 }

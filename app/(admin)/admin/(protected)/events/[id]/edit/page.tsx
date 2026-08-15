@@ -12,7 +12,7 @@ export default async function EditEventPage({
   const { id } = await params
   const event = await prisma.event.findUnique({
     where: { id },
-    include: { tag: true },
+    include: { tag: true, artists: { select: { id: true } } },
   })
   if (!event) notFound()
 
@@ -29,9 +29,11 @@ export default async function EditEventPage({
         startsAt: event.startsAt.toISOString(),
         endsAt: event.endsAt?.toISOString() ?? null,
         published: event.published,
+        registrationRequired: event.registrationRequired,
         tagName: event.tag?.name ?? null,
         confirmEmailSubject: event.confirmEmailSubject,
         confirmEmailBody: event.confirmEmailBody,
+        artistIds: event.artists.map(a => a.id),
       }}
     />
   )

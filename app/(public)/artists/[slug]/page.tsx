@@ -39,25 +39,43 @@ export default async function ArtistPage({ params }: Props) {
   })
   if (!artist) notFound()
 
-  const stories = await prisma.blogPost.findMany({
-    where: {
-      status: 'PUBLISHED',
-      audience: 'ARTIST',
-      artistId: artist.id,
-    },
-    orderBy: { publishedAt: 'desc' },
-    take: 12,
-    select: {
-      id: true,
-      title: true,
-      slug: true,
-      excerpt: true,
-      category: true,
-      publishedAt: true,
-      coverImageUrl: true,
-      readingTime: true,
-    },
-  })
+  const [stories, upcomingEvents] = await Promise.all([
+    prisma.blogPost.findMany({
+      where: {
+        status: 'PUBLISHED',
+        audience: 'ARTIST',
+        artistId: artist.id,
+      },
+      orderBy: { publishedAt: 'desc' },
+      take: 12,
+      select: {
+        id: true,
+        title: true,
+        slug: true,
+        excerpt: true,
+        category: true,
+        publishedAt: true,
+        coverImageUrl: true,
+        readingTime: true,
+      },
+    }),
+    prisma.event.findMany({
+      where: {
+        published: true,
+        startsAt: { gte: new Date(Date.now() - 1000 * 60 * 60 * 12) },
+        artists: { some: { id: artist.id } },
+      },
+      orderBy: { startsAt: 'asc' },
+      select: {
+        id: true,
+        title: true,
+        slug: true,
+        location: true,
+        startsAt: true,
+        coverImageUrl: true,
+      },
+    }),
+  ])
 
   const jsonLd = artistJsonLd({
     name:  artist.name,
@@ -156,6 +174,44 @@ export default async function ArtistPage({ params }: Props) {
 
         {artist.releases.length > 0 && (
           <ArtistDiscography artistName={artist.name} releases={artist.releases} />
+        )}
+
+        {upcomingEvents.length > 0 && (
+          <section className={styles.stories}>
+            <h2 className={styles.sectionTitle}>Upcoming Events</h2>
+            <p className={styles.storiesLead}>Live dates and appearances featuring {artist.name}.</p>
+            <div className={styles.storiesList}>
+              {upcomingEvents.map(event => (
+                <Link key={event.id} href={`/events/${event.slug}`} className={styles.storyCard}>
+                  <div
+                    className={`${styles.eventCover} ${!event.coverImageUrl ? styles.storyCoverEmpty : ''}`}
+                    style={
+                      event.coverImageUrl
+                        ? { backgroundImage: `url(${getCoverUrl(event.coverImageUrl, 'card')})` }
+                        : undefined
+                    }
+                  />
+                  <div className={styles.storyBody}>
+                    <div className={styles.storyCat}>Live</div>
+                    <h3 className={styles.storyTitle}>{event.title}</h3>
+                    <p className={styles.storyMeta}>
+                      {event.startsAt.toLocaleDateString('en-GB', {
+                        day: 'numeric',
+                        month: 'long',
+                      })}
+                      {' · '}
+                      {event.startsAt.toLocaleTimeString('en-GB', {
+                        hour: 'numeric',
+                        minute: '2-digit',
+                      })}
+                    </p>
+                    {event.location && <p className={styles.storyExc}>{event.location}</p>}
+                    <span className={styles.eventCta}>Get tickets →</span>
+                  </div>
+                </Link>
+              ))}
+            </div>
+          </section>
         )}
 
         {stories.length > 0 && (

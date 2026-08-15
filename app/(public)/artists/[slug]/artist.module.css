@@ -95,6 +95,24 @@
   place-items: center;
 }
 
+.eventCover {
+  width: 120px;
+  aspect-ratio: 3 / 4;
+  border-radius: 8px;
+  background-size: cover;
+  background-position: center top;
+  background-color: var(--bg-soft, #eee);
+}
+
+.eventCta {
+  margin-top: 0.35rem;
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--acc);
+}
+
 .storyBody {
   min-width: 0;
   display: flex;
@@ -144,4 +162,5 @@
   .avatar { width: 72px; height: 72px; }
   .storyCard { grid-template-columns: 88px 1fr; gap: 0.75rem; }
   .storyCover { width: 88px; }
+  .eventCover { width: 88px; }
 }

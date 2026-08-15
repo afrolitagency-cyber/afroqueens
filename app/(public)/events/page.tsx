@@ -1,5 +1,6 @@
 import Link from 'next/link'
 import { prisma } from '@/lib/prisma'
+import { getCoverUrl } from '@/lib/images'
 import styles from './events.module.css'
 
 export const dynamic = 'force-dynamic'
@@ -32,7 +33,7 @@ export default async function EventsPage() {
               <Link key={ev.id} href={`/events/${ev.slug}`} className={styles.card}>
                 <div
                   className={styles.cardCover}
-                  style={ev.coverImageUrl ? { backgroundImage: `url(${ev.coverImageUrl})` } : undefined}
+                  style={ev.coverImageUrl ? { backgroundImage: `url(${getCoverUrl(ev.coverImageUrl, 'card')})` } : undefined}
                   aria-hidden={!ev.coverImageUrl}
                 />
                 <div className={styles.cardBody}>
