@@ -22,6 +22,12 @@ export function getEmailFrom(displayName?: string): string {
   return `${displayName.trim()} <${email}>`
 }
 
+const CANONICAL_SITE_URL = 'https://afroqueensng.com'
+
 export function getSiteUrl(): string {
-  return (process.env.NEXTAUTH_URL || 'http://localhost:3000').replace(/\/$/, '')
+  const raw = (process.env.NEXTAUTH_URL || process.env.SITE_URL || '').replace(/\/$/, '')
+  if (raw && /localhost|127\.0\.0\.1/.test(raw)) return raw
+  // Ignore leftover Vercel preview URLs — invites and email links should use the live domain
+  if (!raw || /vercel\.app/i.test(raw)) return CANONICAL_SITE_URL
+  return raw
 }
