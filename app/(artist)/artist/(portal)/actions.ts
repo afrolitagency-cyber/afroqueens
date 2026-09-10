@@ -35,6 +35,7 @@ function sanitizeProfile(data: ArtistProfileFields): ArtistProfileFields {
     monthlyListeners: data.monthlyListeners?.trim() || null,
     bio: data.bio?.trim() || null,
     profileImageUrl: data.profileImageUrl?.trim() || null,
+    coverImageUrl: data.coverImageUrl?.trim() || null,
     streamSource: data.streamSource,
     spotifyTrackId: extractSpotifyTrackId(data.spotifyTrackId ?? undefined),
     youtubeVideoId: extractYoutubeVideoId(data.youtubeVideoId ?? undefined),

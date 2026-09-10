@@ -280,6 +280,7 @@ export async function approveArtistProfile(artistId: string): Promise<ActionResu
           monthlyListeners: merged.monthlyListeners,
           bio:              merged.bio,
           profileImageUrl:  merged.profileImageUrl,
+          coverImageUrl:    merged.coverImageUrl,
           streamSource:     merged.streamSource,
           spotifyTrackId:   extractSpotifyTrackId(merged.spotifyTrackId ?? undefined),
           youtubeVideoId:   extractYoutubeVideoId(merged.youtubeVideoId ?? undefined),

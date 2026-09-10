@@ -58,7 +58,8 @@ model Artist {
   location         String
   monthlyListeners String?       // e.g. "1.3M"
   bio              String?       @db.Text
-  profileImageUrl  String?       // Cloudinary
+  profileImageUrl  String?       // Cloudinary — circular avatar / cards
+  coverImageUrl    String?       // Cloudinary — artist page hero background
   streamSource     StreamSource  @default(YOUTUBE)
   spotifyTrackId   String?
   youtubeVideoId   String?
@@ -81,6 +82,7 @@ model Artist {
   releases         ArtistRelease[]
   blogPosts        BlogPost[]
   events           Event[]
+  moments          ArtistMoment[]
   account          User?
   invites          ArtistInvite[]
 }
@@ -104,6 +106,22 @@ model ArtistInvite {
 
   @@index([artistId])
   @@index([email])
+}
+
+/// Event / promo stills for an artist page (images first; optional external Reel link)
+model ArtistMoment {
+  id        String   @id @default(cuid())
+  artistId  String
+  artist    Artist   @relation(fields: [artistId], references: [id], onDelete: Cascade)
+  imageUrl  String
+  caption   String?
+  /// Optional Instagram / TikTok / external link (no video hosted here yet)
+  linkUrl   String?
+  order     Int      @default(0)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([artistId, order])
 }
 
 enum StreamSource {

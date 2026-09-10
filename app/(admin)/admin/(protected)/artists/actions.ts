@@ -23,6 +23,7 @@ interface ArtistPayload {
   monthlyListeners?: string
   bio?: string
   profileImageUrl?: string
+  coverImageUrl?: string
   streamSource: 'SPOTIFY' | 'YOUTUBE' | 'SOUNDCLOUD' | 'CUSTOM'
   spotifyTrackId?: string
   youtubeVideoId?: string
@@ -147,6 +148,7 @@ export async function createArtist(data: ArtistPayload): Promise<ActionResult<{ 
           monthlyListeners: data.monthlyListeners ?? null,
           bio:              data.bio ?? null,
           profileImageUrl:  data.profileImageUrl ?? null,
+          coverImageUrl:    data.coverImageUrl ?? null,
           ...streamData(data),
           ...linkData(data),
           featured:         data.featured ?? false,
@@ -171,7 +173,7 @@ export async function updateArtist(id: string, data: ArtistPayload): Promise<Act
 
   const existing = await prisma.artist.findUnique({
     where: { id },
-    select: { profileImageUrl: true, customAudioUrl: true, slug: true },
+    select: { profileImageUrl: true, coverImageUrl: true, customAudioUrl: true, slug: true },
   })
 
   try {
@@ -185,6 +187,7 @@ export async function updateArtist(id: string, data: ArtistPayload): Promise<Act
           monthlyListeners: data.monthlyListeners ?? null,
           bio:              data.bio ?? null,
           profileImageUrl:  data.profileImageUrl ?? null,
+          coverImageUrl:    data.coverImageUrl ?? null,
           ...streamData(data),
           ...linkData(data),
           featured:         data.featured ?? false,
@@ -198,6 +201,7 @@ export async function updateArtist(id: string, data: ArtistPayload): Promise<Act
     )
 
     await deleteMediaIfReplaced(existing?.profileImageUrl, data.profileImageUrl)
+    await deleteMediaIfReplaced(existing?.coverImageUrl, data.coverImageUrl)
     await deleteMediaIfReplaced(existing?.customAudioUrl, data.customAudioUrl)
 
     revalidatePath('/artists')
@@ -214,10 +218,10 @@ export async function deleteArtist(id: string) {
   await requireAuth()
   const artist = await prisma.artist.findUnique({
     where: { id },
-    select: { profileImageUrl: true, customAudioUrl: true },
+    select: { profileImageUrl: true, coverImageUrl: true, customAudioUrl: true },
   })
   await prisma.artist.delete({ where: { id } })
-  await deleteMediaUrls([artist?.profileImageUrl, artist?.customAudioUrl])
+  await deleteMediaUrls([artist?.profileImageUrl, artist?.coverImageUrl, artist?.customAudioUrl])
   revalidatePath('/artists')
   revalidatePath('/')
 }
@@ -304,6 +308,98 @@ export async function deleteArtistRelease(releaseId: string): Promise<ActionResu
     await withDbRetry(() => prisma.artistRelease.delete({ where: { id: releaseId } }))
     await deleteMediaUrls([release.coverUrl])
     revalidateArtist(release.artist.slug)
+    return actionOk()
+  } catch (err) {
+    return actionErr(dbErrorMessage(err))
+  }
+}
+
+export type ArtistMomentPayload = {
+  imageUrl: string
+  caption?: string
+  linkUrl?: string
+  order?: number
+}
+
+export async function createArtistMoment(
+  artistId: string,
+  data: ArtistMomentPayload,
+): Promise<ActionResult> {
+  await requireAuth()
+  const imageUrl = data.imageUrl?.trim()
+  if (!imageUrl) return actionErr('Upload an image for this moment.')
+
+  const artist = await prisma.artist.findUnique({
+    where: { id: artistId },
+    select: { slug: true },
+  })
+  if (!artist) return actionErr('Artist not found.')
+
+  try {
+    await withDbRetry(() =>
+      prisma.artistMoment.create({
+        data: {
+          artistId,
+          imageUrl,
+          caption: data.caption?.trim() || null,
+          linkUrl: normalizeArtistUrl(data.linkUrl),
+          order: data.order ?? 0,
+        },
+      }),
+    )
+    revalidateArtist(artist.slug)
+    return actionOk()
+  } catch (err) {
+    return actionErr(dbErrorMessage(err))
+  }
+}
+
+export async function updateArtistMoment(
+  momentId: string,
+  data: ArtistMomentPayload,
+): Promise<ActionResult> {
+  await requireAuth()
+  const imageUrl = data.imageUrl?.trim()
+  if (!imageUrl) return actionErr('Upload an image for this moment.')
+
+  const existing = await prisma.artistMoment.findUnique({
+    where: { id: momentId },
+    select: { imageUrl: true, artist: { select: { slug: true } } },
+  })
+  if (!existing) return actionErr('Moment not found.')
+
+  try {
+    await withDbRetry(() =>
+      prisma.artistMoment.update({
+        where: { id: momentId },
+        data: {
+          imageUrl,
+          caption: data.caption?.trim() || null,
+          linkUrl: normalizeArtistUrl(data.linkUrl),
+          order: data.order ?? 0,
+        },
+      }),
+    )
+    await deleteMediaIfReplaced(existing.imageUrl, imageUrl)
+    revalidateArtist(existing.artist.slug)
+    return actionOk()
+  } catch (err) {
+    return actionErr(dbErrorMessage(err))
+  }
+}
+
+export async function deleteArtistMoment(momentId: string): Promise<ActionResult> {
+  await requireAuth()
+  const moment = await prisma.artistMoment.findUnique({
+    where: { id: momentId },
+    select: { imageUrl: true, artist: { select: { slug: true } } },
+  })
+  if (!moment) return actionErr('Moment not found.')
+
+  try {
+    await withDbRetry(() => prisma.artistMoment.delete({ where: { id: momentId } }))
+    await deleteMediaUrls([moment.imageUrl])
+    revalidateArtist(moment.artist.slug)
     return actionOk()
   } catch (err) {
     return actionErr(dbErrorMessage(err))

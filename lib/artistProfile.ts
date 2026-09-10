@@ -11,6 +11,7 @@ export type ArtistProfileFields = {
   monthlyListeners: string | null
   bio: string | null
   profileImageUrl: string | null
+  coverImageUrl: string | null
   streamSource: StreamSourceValue
   spotifyTrackId: string | null
   youtubeVideoId: string | null
@@ -31,6 +32,7 @@ export function pickLiveProfile(artist: ArtistProfileFields): ArtistProfileField
     monthlyListeners: artist.monthlyListeners,
     bio: artist.bio,
     profileImageUrl: artist.profileImageUrl,
+    coverImageUrl: artist.coverImageUrl,
     streamSource: artist.streamSource,
     spotifyTrackId: artist.spotifyTrackId,
     youtubeVideoId: artist.youtubeVideoId,

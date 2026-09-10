@@ -92,7 +92,10 @@ export async function collectContentImageUrls(): Promise<
   Array<{ url: string; folder: MediaFolder; title?: string | null }>
 > {
   const [artists, releases, blogs, gallery, episodes, events] = await Promise.all([
-    prisma.artist.findMany({ where: { profileImageUrl: { not: null } }, select: { name: true, profileImageUrl: true } }),
+    prisma.artist.findMany({
+      where: { OR: [{ profileImageUrl: { not: null } }, { coverImageUrl: { not: null } }] },
+      select: { name: true, profileImageUrl: true, coverImageUrl: true },
+    }),
     prisma.artistRelease.findMany({ where: { coverUrl: { not: null } }, select: { title: true, coverUrl: true } }),
     prisma.blogPost.findMany({ where: { coverImageUrl: { not: null } }, select: { title: true, coverImageUrl: true } }),
     prisma.galleryItem.findMany({ select: { label: true, imageUrl: true } }),
@@ -103,6 +106,7 @@ export async function collectContentImageUrls(): Promise<
   const rows: Array<{ url: string; folder: MediaFolder; title?: string | null }> = []
   for (const a of artists) {
     if (a.profileImageUrl) rows.push({ url: a.profileImageUrl, folder: 'artists', title: a.name })
+    if (a.coverImageUrl) rows.push({ url: a.coverImageUrl, folder: 'artists', title: `${a.name} cover` })
   }
   for (const r of releases) {
     if (r.coverUrl) rows.push({ url: r.coverUrl, folder: 'artists', title: r.title })

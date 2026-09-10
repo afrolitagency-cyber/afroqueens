@@ -12,17 +12,28 @@ export function getResend(): Resend {
   return client
 }
 
-export function getEmailFrom(displayName?: string): string {
-  const raw = process.env.EMAIL_FROM || 'Afroqueens <onboarding@resend.dev>'
-  if (!displayName?.trim()) return raw
+const CANONICAL_FROM_EMAIL = 'noreply@afroqueensng.com'
+const CANONICAL_FROM_NAME = 'Afroqueens FM'
+const CANONICAL_SITE_URL = 'https://afroqueensng.com'
 
-  // Support "Name <email@domain>" or bare email in EMAIL_FROM
-  const match = raw.match(/<([^>]+)>/)
-  const email = match?.[1] || raw.trim()
-  return `${displayName.trim()} <${email}>`
+function looksLikeEmail(value: string): boolean {
+  return /^[^\s@<>]+@[^\s@<>]+\.[^\s@<>]+$/.test(value)
 }
 
-const CANONICAL_SITE_URL = 'https://afroqueensng.com'
+/** Always return `Name <email@domain>` so Resend does not reject the from field. */
+export function getEmailFrom(displayName?: string): string {
+  const raw = (process.env.EMAIL_FROM || '').trim().replace(/^['"]|['"]$/g, '')
+  const angled = raw.match(/<([^>]+)>/)
+  const extracted = (angled?.[1] || raw).trim()
+  const email = looksLikeEmail(extracted) ? extracted : CANONICAL_FROM_EMAIL
+
+  const nameFromEnv = raw.includes('<')
+    ? raw.slice(0, raw.indexOf('<')).trim().replace(/^['"]|['"]$/g, '')
+    : ''
+  const name = (displayName?.trim() || nameFromEnv || CANONICAL_FROM_NAME).replace(/"/g, '')
+
+  return `${name} <${email}>`
+}
 
 export function getSiteUrl(): string {
   const raw = (process.env.NEXTAUTH_URL || process.env.SITE_URL || '').replace(/\/$/, '')

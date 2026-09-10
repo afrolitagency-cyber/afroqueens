@@ -140,6 +140,18 @@ export default function ProfileEditor({
       <section className={`${styles.card} ${styles.blend}`}>
         <div className={styles.cardTitle}>Basics</div>
         <div className={styles.field}>
+          <label className={styles.label}>Cover / banner</label>
+          <CloudinaryUpload
+            folder="artists"
+            value={form.coverImageUrl ?? ''}
+            onChange={url => set('coverImageUrl', url || null)}
+            showLibrary={false}
+          />
+          <p className={styles.sub} style={{ margin: '0.35rem 0 0', fontSize: '0.78rem' }}>
+            Wide image for your page background — different from your profile photo.
+          </p>
+        </div>
+        <div className={styles.field}>
           <label className={styles.label}>Profile photo *</label>
           <CloudinaryUpload
             folder="artists"
@@ -148,7 +160,7 @@ export default function ProfileEditor({
             showLibrary={false}
           />
           <p className={styles.sub} style={{ margin: '0.35rem 0 0', fontSize: '0.78rem' }}>
-            Required for review. Use a clear, well-lit photo.
+            Required for review. Use a clear, well-lit portrait.
           </p>
         </div>
         <div className={styles.grid2}>

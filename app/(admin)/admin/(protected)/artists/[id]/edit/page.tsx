@@ -11,6 +11,9 @@ import ArtistPendingReview from '@/components/admin/artists/ArtistPendingReview'
 import ArtistDiscographyEditor, {
   type EditableRelease,
 } from '@/components/admin/artists/ArtistDiscographyEditor'
+import ArtistMomentsEditor, {
+  type EditableMoment,
+} from '@/components/admin/artists/ArtistMomentsEditor'
 import type { ArtistProfileFields, StreamSourceValue } from '@/lib/artistProfile'
 import { spotifyTrackUrl, youtubeWatchUrl } from '@/lib/mediaIds'
 import styles from '@/app/(admin)/admin/(protected)/artists/artists.module.css'
@@ -51,6 +54,7 @@ export default function EditArtistPage() {
   const [listeners, setListeners]             = useState('')
   const [bio, setBio]                         = useState('')
   const [profileImageUrl, setProfileImageUrl] = useState('')
+  const [coverImageUrl, setCoverImageUrl]     = useState('')
   const [streamSource, setStreamSource]       = useState<StreamSourceValue>('YOUTUBE')
   const [spotifyTrackId, setSpotifyTrackId]   = useState('')
   const [youtubeVideoId, setYoutubeVideoId]   = useState('')
@@ -64,6 +68,7 @@ export default function EditArtistPage() {
   const [featured, setFeatured]               = useState(false)
   const [order, setOrder]                     = useState(0)
   const [releases, setReleases]               = useState<EditableRelease[]>([])
+  const [moments, setMoments]                 = useState<EditableMoment[]>([])
   const [saveError, setSaveError]             = useState<string | null>(null)
   const [accountEmail, setAccountEmail]       = useState<string | null>(null)
   const [reviewStatus, setReviewStatus]       = useState<'NONE' | 'DRAFT' | 'PENDING' | 'CHANGES_REQUESTED'>('NONE')
@@ -91,6 +96,7 @@ export default function EditArtistPage() {
         setListeners(fieldStr(pending, a.monthlyListeners, 'monthlyListeners'))
         setBio(fieldStr(pending, a.bio, 'bio'))
         setProfileImageUrl(fieldStr(pending, a.profileImageUrl, 'profileImageUrl'))
+        setCoverImageUrl(fieldStr(pending, a.coverImageUrl, 'coverImageUrl'))
         setStreamSource(
           (pending?.streamSource as StreamSourceValue | undefined) ??
             (a.streamSource as StreamSourceValue | undefined) ??
@@ -114,6 +120,7 @@ export default function EditArtistPage() {
         setFeatured(a.featured ?? false)
         setOrder(a.order ?? 0)
         setReleases(a.releases ?? [])
+        setMoments(a.moments ?? [])
         setAccountEmail(a.account?.email ?? null)
         setReviewStatus(a.reviewStatus ?? 'NONE')
         setReviewNote(a.reviewNote ?? null)
@@ -143,7 +150,7 @@ export default function EditArtistPage() {
       const result = await updateArtist(id, {
         name, genre, location,
         monthlyListeners: listeners,
-        bio, profileImageUrl, streamSource,
+        bio, profileImageUrl, coverImageUrl, streamSource,
         spotifyTrackId, youtubeVideoId, soundcloudUrl, customAudioUrl,
         instagramUrl, twitterUrl, tiktokUrl, facebookUrl, releaseUrl,
         featured, order,
@@ -222,8 +229,19 @@ export default function EditArtistPage() {
       <div className={styles.formGrid} key={formEpoch}>
         <div className={styles.formMain}>
           <div className={styles.fieldGroup}>
+            <label className={styles.label}>Cover / banner</label>
+            <CloudinaryUpload folder="artists" value={coverImageUrl} onChange={setCoverImageUrl} />
+            <p className={styles.hint} style={{ marginTop: '0.4rem' }}>
+              Wide image for the artist page hero background. Separate from the profile photo.
+            </p>
+          </div>
+
+          <div className={styles.fieldGroup}>
             <label className={styles.label}>Profile Photo</label>
             <CloudinaryUpload folder="artists" value={profileImageUrl} onChange={setProfileImageUrl} />
+            <p className={styles.hint} style={{ marginTop: '0.4rem' }}>
+              Portrait used for the circular avatar and artist cards.
+            </p>
           </div>
 
           <div className={styles.row}>
@@ -313,6 +331,7 @@ export default function EditArtistPage() {
           />
 
           <ArtistDiscographyEditor artistId={id} initialReleases={releases} />
+          <ArtistMomentsEditor artistId={id} initialMoments={moments} />
         </div>
 
         <div className={styles.formSide}>

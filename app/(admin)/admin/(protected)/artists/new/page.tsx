@@ -21,6 +21,7 @@ type ArtistDraft = {
   listeners: string
   bio: string
   profileImageUrl: string
+  coverImageUrl: string
   streamSource: 'SPOTIFY' | 'YOUTUBE' | 'SOUNDCLOUD' | 'CUSTOM'
   spotifyTrackId: string
   youtubeVideoId: string
@@ -47,6 +48,7 @@ export default function NewArtistPage() {
   const [listeners, setListeners]             = useState('')
   const [bio, setBio]                         = useState('')
   const [profileImageUrl, setProfileImageUrl] = useState('')
+  const [coverImageUrl, setCoverImageUrl]     = useState('')
   const [streamSource, setStreamSource]       = useState<'SPOTIFY'|'YOUTUBE'|'SOUNDCLOUD'|'CUSTOM'>('YOUTUBE')
   const [spotifyTrackId, setSpotifyTrackId]   = useState('')
   const [youtubeVideoId, setYoutubeVideoId]   = useState('')
@@ -65,12 +67,12 @@ export default function NewArtistPage() {
   const [saveError, setSaveError]           = useState<string | null>(null)
 
   const getDraft = useCallback((): ArtistDraft => ({
-    name, genre, location, listeners, bio, profileImageUrl,
+    name, genre, location, listeners, bio, profileImageUrl, coverImageUrl,
     streamSource, spotifyTrackId, youtubeVideoId, soundcloudUrl,
     customAudioUrl, instagramUrl, twitterUrl, tiktokUrl, facebookUrl, releaseUrl,
     featured, order,
   }), [
-    name, genre, location, listeners, bio, profileImageUrl,
+    name, genre, location, listeners, bio, profileImageUrl, coverImageUrl,
     streamSource, spotifyTrackId, youtubeVideoId, soundcloudUrl,
     customAudioUrl, instagramUrl, twitterUrl, tiktokUrl, facebookUrl, releaseUrl,
     featured, order,
@@ -87,6 +89,7 @@ export default function NewArtistPage() {
     setListeners(draft.listeners ?? '')
     setBio(draft.bio ?? '')
     setProfileImageUrl(draft.profileImageUrl ?? '')
+    setCoverImageUrl(draft.coverImageUrl ?? '')
     setStreamSource(draft.streamSource ?? 'YOUTUBE')
     setSpotifyTrackId(draft.spotifyTrackId ?? '')
     setYoutubeVideoId(draft.youtubeVideoId ?? '')
@@ -105,7 +108,7 @@ export default function NewArtistPage() {
 
   // Auto-save draft as user types (debounced)
   useEffect(() => {
-    const hasContent = name || genre || location || bio || profileImageUrl || customAudioUrl
+    const hasContent = name || genre || location || bio || profileImageUrl || coverImageUrl || customAudioUrl
       || instagramUrl || twitterUrl || tiktokUrl || facebookUrl || releaseUrl
     if (!hasContent) return
 
@@ -115,7 +118,7 @@ export default function NewArtistPage() {
     }, 800)
 
     return () => clearTimeout(timer)
-  }, [getDraft, name, genre, location, bio, profileImageUrl, customAudioUrl,
+  }, [getDraft, name, genre, location, bio, profileImageUrl, coverImageUrl, customAudioUrl,
     instagramUrl, twitterUrl, tiktokUrl, facebookUrl, releaseUrl])
 
   const discardDraft = () => {
@@ -128,6 +131,7 @@ export default function NewArtistPage() {
     setListeners('')
     setBio('')
     setProfileImageUrl('')
+    setCoverImageUrl('')
     setStreamSource('YOUTUBE')
     setSpotifyTrackId('')
     setYoutubeVideoId('')
@@ -150,6 +154,7 @@ export default function NewArtistPage() {
         monthlyListeners: listeners,
         bio,
         profileImageUrl,
+        coverImageUrl,
         streamSource,
         spotifyTrackId,
         youtubeVideoId,
@@ -215,7 +220,18 @@ export default function NewArtistPage() {
       <div className={styles.formGrid}>
         {/* LEFT — main info */}
         <div className={styles.formMain}>
-          {/* Profile photo */}
+          <div className={styles.fieldGroup}>
+            <label className={styles.label}>Cover / banner</label>
+            <CloudinaryUpload
+              folder="artists"
+              value={coverImageUrl}
+              onChange={setCoverImageUrl}
+            />
+            <p className={styles.hint} style={{ marginTop: '0.4rem' }}>
+              Wide image for the artist page hero. Keep this different from the profile photo.
+            </p>
+          </div>
+
           <div className={styles.fieldGroup}>
             <label className={styles.label}>Profile Photo</label>
             <CloudinaryUpload
@@ -223,6 +239,9 @@ export default function NewArtistPage() {
               value={profileImageUrl}
               onChange={setProfileImageUrl}
             />
+            <p className={styles.hint} style={{ marginTop: '0.4rem' }}>
+              Portrait for the circular avatar and listing cards.
+            </p>
           </div>
 
           <div className={styles.row}>

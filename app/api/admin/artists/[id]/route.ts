@@ -11,6 +11,9 @@ export async function GET(_: Request, { params }: { params: { id: string } }) {
         orderBy: [{ order: 'asc' }, { year: 'desc' }],
         include: { tracks: { orderBy: { number: 'asc' } } },
       },
+      moments: {
+        orderBy: [{ order: 'asc' }, { createdAt: 'desc' }],
+      },
     },
   })
   if (!artist) return NextResponse.json({ error: 'Not found' }, { status: 404 })

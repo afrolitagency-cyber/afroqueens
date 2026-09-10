@@ -159,6 +159,21 @@ export default function ArtistPendingReview({
               No photo
             </div>
           )}
+          {pending.coverImageUrl ? (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img
+              src={pending.coverImageUrl}
+              alt=""
+              style={{
+                width: '100%',
+                aspectRatio: '16 / 9',
+                objectFit: 'cover',
+                borderRadius: 8,
+                border: '1px solid #e5e5e5',
+                marginTop: '0.65rem',
+              }}
+            />
+          ) : null}
         </div>
         <div>
           <Row label="Name" value={pending.name} />

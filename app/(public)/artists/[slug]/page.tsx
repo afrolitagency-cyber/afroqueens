@@ -7,6 +7,7 @@ import type { Metadata } from 'next'
 import { buildMetadata, artistJsonLd } from '@/lib/seo'
 import ArtistLinks from '@/components/public/artists/ArtistLinks'
 import ArtistDiscography from '@/components/public/artists/ArtistDiscography'
+import ArtistMoments from '@/components/public/artists/ArtistMoments'
 import { extractSpotifyTrackId, extractYoutubeVideoId } from '@/lib/mediaIds'
 import { getCoverUrl } from '@/lib/images'
 import styles from './artist.module.css'
@@ -34,6 +35,9 @@ export default async function ArtistPage({ params }: Props) {
       releases: {
         orderBy: [{ order: 'asc' }, { year: 'desc' }],
         include: { tracks: { orderBy: { number: 'asc' } } },
+      },
+      moments: {
+        orderBy: [{ order: 'asc' }, { createdAt: 'desc' }],
       },
     },
   })
@@ -107,10 +111,13 @@ export default async function ArtistPage({ params }: Props) {
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
       />
 
-      {/* Hero */}
+      {/* Hero — cover banner (wide) vs circular avatar (portrait) */}
       <div className={styles.hero}>
-        {artist.profileImageUrl && (
-          <div className={styles.heroBg} style={{ backgroundImage: `url(${artist.profileImageUrl})` }} />
+        {artist.coverImageUrl && (
+          <div
+            className={styles.heroBg}
+            style={{ backgroundImage: `url(${getCoverUrl(artist.coverImageUrl, 'hero')})` }}
+          />
         )}
         <div className={styles.heroOverlay} />
         <div className={`si ${styles.heroContent}`}>
@@ -213,6 +220,8 @@ export default async function ArtistPage({ params }: Props) {
             </div>
           </section>
         )}
+
+        <ArtistMoments artistName={artist.name} moments={artist.moments} />
 
         {stories.length > 0 && (
           <section className={styles.stories}>
