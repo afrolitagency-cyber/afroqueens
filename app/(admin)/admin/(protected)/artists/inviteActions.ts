@@ -8,6 +8,7 @@ import { withDbRetry, dbErrorMessage } from '@/lib/dbRetry'
 import { actionOk, actionErr, type ActionResult } from '@/lib/actions'
 import {
   createInviteToken,
+  hashInviteToken,
   inviteAcceptUrl,
   inviteExpiresAt,
   sendArtistInviteEmail,
@@ -90,19 +91,20 @@ export async function resendArtistInvite(
     }
   }
 
-  // Refresh expiry and optionally rotate nothing — keep same token so old links still work
+  // Only the hash is stored, so resending must issue a new token; earlier links stop working.
+  const token = createInviteToken()
   await withDbRetry(() =>
     prisma.artistInvite.update({
       where: { id: invite.id },
-      data: { expiresAt: inviteExpiresAt(7) },
+      data: { tokenHash: hashInviteToken(token), expiresAt: inviteExpiresAt(7) },
     }),
   )
 
-  const inviteUrl = inviteAcceptUrl(invite.token)
+  const inviteUrl = inviteAcceptUrl(token)
   const sent = await sendArtistInviteEmail({
     to: invite.email,
     artistName: artist.name,
-    token: invite.token,
+    token,
   })
 
   return {
@@ -216,7 +218,7 @@ async function createInviteForArtist(
         data: {
           artistId,
           email,
-          token,
+          tokenHash: hashInviteToken(token),
           expiresAt: inviteExpiresAt(7),
         },
       }),

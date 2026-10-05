@@ -1,9 +1,14 @@
 // lib/artistInvite.ts
-import { randomBytes } from 'crypto'
+import { createHash, randomBytes } from 'crypto'
 import { getEmailFrom, getResend, getSiteUrl } from './resend'
 
 export function createInviteToken() {
   return randomBytes(32).toString('hex')
+}
+
+/** Only this hash is stored; the raw token exists solely in the emailed link. */
+export function hashInviteToken(token: string) {
+  return createHash('sha256').update(token).digest('hex')
 }
 
 export function inviteExpiresAt(days = 7) {

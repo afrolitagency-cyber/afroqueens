@@ -10,6 +10,7 @@ import bcrypt from 'bcryptjs'
 import { withDbRetry, dbErrorMessage } from '@/lib/dbRetry'
 import { actionOk, actionErr, type ActionResult } from '@/lib/actions'
 import { normalizeArtistUrl } from '@/lib/artistLinks'
+import { hashInviteToken } from '@/lib/artistInvite'
 import { extractSpotifyTrackId, extractYoutubeVideoId } from '@/lib/mediaIds'
 import { deleteMediaIfReplaced, deleteMediaUrls } from '@/lib/media'
 import type { ArtistProfileFields, StreamSourceValue } from '@/lib/artistProfile'
@@ -151,7 +152,7 @@ export async function acceptArtistInvite(input: {
   }
 
   const invite = await prisma.artistInvite.findUnique({
-    where: { token },
+    where: { tokenHash: hashInviteToken(token) },
     include: {
       artist: {
         select: {
