@@ -2,19 +2,12 @@
 // app/(admin)/admin/episodes/actions.ts
 import { prisma } from '@/lib/prisma'
 import { revalidatePath } from 'next/cache'
-import { getServerSession } from 'next-auth'
-import { authOptions } from '@/lib/auth'
-import { redirect } from 'next/navigation'
+import { requireStaff } from '@/lib/authz'
 import { EpisodeCategory } from '@prisma/client'
 import { deleteMediaIfReplaced, deleteMediaUrls } from '@/lib/media'
 import { withDbRetry, dbErrorMessage } from '@/lib/dbRetry'
 import type { ActionResult } from '@/lib/actions'
 import { actionOk, actionErr } from '@/lib/actions'
-
-async function requireAuth() {
-  const session = await getServerSession(authOptions)
-  if (!session) redirect('/admin/login')
-}
 
 interface EpisodePayload {
   number: number
@@ -30,7 +23,7 @@ interface EpisodePayload {
 }
 
 export async function createEpisode(data: EpisodePayload): Promise<ActionResult> {
-  await requireAuth()
+  await requireStaff()
 
   if (!data.title?.trim()) return actionErr('Title is required.')
   if (!data.duration?.trim()) return actionErr('Duration is required.')
@@ -48,7 +41,7 @@ export async function createEpisode(data: EpisodePayload): Promise<ActionResult>
 }
 
 export async function updateEpisode(id: string, data: EpisodePayload): Promise<ActionResult> {
-  await requireAuth()
+  await requireStaff()
 
   const existing = await prisma.episode.findUnique({
     where: { id },
@@ -69,7 +62,7 @@ export async function updateEpisode(id: string, data: EpisodePayload): Promise<A
 }
 
 export async function deleteEpisode(id: string): Promise<ActionResult> {
-  await requireAuth()
+  await requireStaff()
   try {
     const episode = await prisma.episode.findUnique({
       where: { id },

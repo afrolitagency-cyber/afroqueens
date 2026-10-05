@@ -2,9 +2,7 @@
 // app/(admin)/admin/artists/actions.ts
 import { prisma } from '@/lib/prisma'
 import { revalidatePath } from 'next/cache'
-import { getServerSession } from 'next-auth'
-import { authOptions } from '@/lib/auth'
-import { redirect } from 'next/navigation'
+import { requireStaff } from '@/lib/authz'
 import slugify from 'slugify'
 import { deleteMediaIfReplaced, deleteMediaUrls } from '@/lib/media'
 import { withDbRetry, dbErrorMessage } from '@/lib/dbRetry'
@@ -79,13 +77,6 @@ function streamData(data: ArtistPayload) {
   }
 }
 
-async function requireAuth() {
-  const session = await getServerSession(authOptions)
-  if (!session) redirect('/admin/login')
-  if (session.user.role === 'ARTIST') redirect('/artist')
-  return session
-}
-
 function releaseData(data: ArtistReleasePayload) {
   return {
     title:       data.title.trim(),
@@ -129,7 +120,7 @@ function revalidateArtist(artistSlug?: string) {
 }
 
 export async function createArtist(data: ArtistPayload): Promise<ActionResult<{ id: string }>> {
-  await requireAuth()
+  await requireStaff()
 
   if (!data.name?.trim() || !data.genre?.trim() || !data.location?.trim()) {
     return actionErr('Name, genre, and location are required.')
@@ -169,7 +160,7 @@ export async function createArtist(data: ArtistPayload): Promise<ActionResult<{ 
 }
 
 export async function updateArtist(id: string, data: ArtistPayload): Promise<ActionResult> {
-  await requireAuth()
+  await requireStaff()
 
   const existing = await prisma.artist.findUnique({
     where: { id },
@@ -215,7 +206,7 @@ export async function updateArtist(id: string, data: ArtistPayload): Promise<Act
 }
 
 export async function deleteArtist(id: string) {
-  await requireAuth()
+  await requireStaff()
   const artist = await prisma.artist.findUnique({
     where: { id },
     select: { profileImageUrl: true, coverImageUrl: true, customAudioUrl: true },
@@ -230,7 +221,7 @@ export async function createArtistRelease(
   artistId: string,
   data: ArtistReleasePayload,
 ): Promise<ActionResult> {
-  await requireAuth()
+  await requireStaff()
   const validationError = validateRelease(data)
   if (validationError) return actionErr(validationError)
 
@@ -263,7 +254,7 @@ export async function updateArtistRelease(
   releaseId: string,
   data: ArtistReleasePayload,
 ): Promise<ActionResult> {
-  await requireAuth()
+  await requireStaff()
   const validationError = validateRelease(data)
   if (validationError) return actionErr(validationError)
 
@@ -297,7 +288,7 @@ export async function updateArtistRelease(
 }
 
 export async function deleteArtistRelease(releaseId: string): Promise<ActionResult> {
-  await requireAuth()
+  await requireStaff()
   const release = await prisma.artistRelease.findUnique({
     where: { id: releaseId },
     select: { coverUrl: true, artist: { select: { slug: true } } },
@@ -325,7 +316,7 @@ export async function createArtistMoment(
   artistId: string,
   data: ArtistMomentPayload,
 ): Promise<ActionResult> {
-  await requireAuth()
+  await requireStaff()
   const imageUrl = data.imageUrl?.trim()
   if (!imageUrl) return actionErr('Upload an image for this moment.')
 
@@ -358,7 +349,7 @@ export async function updateArtistMoment(
   momentId: string,
   data: ArtistMomentPayload,
 ): Promise<ActionResult> {
-  await requireAuth()
+  await requireStaff()
   const imageUrl = data.imageUrl?.trim()
   if (!imageUrl) return actionErr('Upload an image for this moment.')
 
@@ -389,7 +380,7 @@ export async function updateArtistMoment(
 }
 
 export async function deleteArtistMoment(momentId: string): Promise<ActionResult> {
-  await requireAuth()
+  await requireStaff()
   const moment = await prisma.artistMoment.findUnique({
     where: { id: momentId },
     select: { imageUrl: true, artist: { select: { slug: true } } },

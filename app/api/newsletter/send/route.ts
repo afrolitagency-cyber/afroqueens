@@ -1,7 +1,6 @@
 // app/api/newsletter/send/route.ts
-import { getServerSession } from 'next-auth'
 import { NextResponse } from 'next/server'
-import { authOptions } from '@/lib/auth'
+import { requireStaffApi } from '@/lib/authz'
 import {
   buildNewsletterHtml,
   buildUnsubscribeUrl,
@@ -28,10 +27,8 @@ function normalizeTemplate(value?: string): NewsletterTemplate {
 }
 
 export async function POST(req: Request) {
-  const session = await getServerSession(authOptions)
-  if (!session) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-  }
+  const auth = await requireStaffApi({ fresh: true })
+  if (auth.response) return auth.response
 
   if (!process.env.RESEND_API_KEY) {
     return NextResponse.json(
@@ -234,8 +231,8 @@ export async function POST(req: Request) {
 
 /** Preview recipient count without sending */
 export async function GET(req: Request) {
-  const session = await getServerSession(authOptions)
-  if (!session) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  const auth = await requireStaffApi()
+  if (auth.response) return auth.response
 
   const { searchParams } = new URL(req.url)
   const audience = (searchParams.get('audience') || 'all') as RecipientMode

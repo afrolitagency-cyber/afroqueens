@@ -1,14 +1,29 @@
 // app/api/media/delete/route.ts
 import { NextRequest, NextResponse } from 'next/server'
-import { getServerSession } from 'next-auth'
-import { authOptions } from '@/lib/auth'
+import { prisma } from '@/lib/prisma'
+import { requireUploaderApi } from '@/lib/authz'
 import { deleteMediaUrl, isHostedMediaUrl } from '@/lib/media'
+import type { ArtistProfileFields } from '@/lib/artistProfile'
+
+/**
+ * Artists may only delete files that exist in their pending submission and are not live,
+ * so a draft edit can't remove media the public page (or anyone else) still uses.
+ */
+async function artistMayDelete(artistId: string, url: string): Promise<boolean> {
+  const artist = await prisma.artist.findUnique({
+    where: { id: artistId },
+    select: { profileImageUrl: true, coverImageUrl: true, customAudioUrl: true, pendingProfile: true },
+  })
+  if (!artist) return false
+  const pending = (artist.pendingProfile ?? null) as Partial<ArtistProfileFields> | null
+  const pendingUrls = [pending?.profileImageUrl, pending?.coverImageUrl, pending?.customAudioUrl]
+  const liveUrls = [artist.profileImageUrl, artist.coverImageUrl, artist.customAudioUrl]
+  return pendingUrls.includes(url) && !liveUrls.includes(url)
+}
 
 export async function POST(req: NextRequest) {
-  const session = await getServerSession(authOptions)
-  if (!session) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-  }
+  const auth = await requireUploaderApi()
+  if (auth.response) return auth.response
 
   let url: string
   try {
@@ -23,6 +38,11 @@ export async function POST(req: NextRequest) {
   }
 
   if (!isHostedMediaUrl(url)) {
+    return NextResponse.json({ ok: true, skipped: true })
+  }
+
+  if (!auth.isStaff && !(await artistMayDelete(auth.artistId!, url))) {
+    // Leave the file in place; the client still clears the field from the draft.
     return NextResponse.json({ ok: true, skipped: true })
   }
 

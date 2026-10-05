@@ -1,15 +1,14 @@
 // app/api/upload/route.ts
 import { NextRequest, NextResponse } from 'next/server'
 import { uploadToCloudinary } from '@/lib/cloudinary'
-import { getServerSession } from 'next-auth'
-import { authOptions } from '@/lib/auth'
+import { requireUploaderApi } from '@/lib/authz'
 import { isMediaFolder, recordMediaAsset } from '@/lib/mediaAssets'
+import { validateImageFile } from '@/lib/uploadValidation'
 
 export async function POST(req: NextRequest) {
-  const session = await getServerSession(authOptions)
-  if (!session) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-  }
+  const auth = await requireUploaderApi()
+  if (auth.response) return auth.response
+  const { session, isStaff } = auth
 
   const formData = await req.formData()
   const file = formData.get('file') as File | null
@@ -22,6 +21,14 @@ export async function POST(req: NextRequest) {
 
   if (!isMediaFolder(folderRaw)) {
     return NextResponse.json({ error: 'Invalid folder' }, { status: 400 })
+  }
+  if (!isStaff && folderRaw !== 'artists') {
+    return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
+  }
+
+  const invalid = validateImageFile(file)
+  if (invalid) {
+    return NextResponse.json({ error: invalid }, { status: 400 })
   }
 
   try {

@@ -2,9 +2,7 @@
 // app/(admin)/admin/(protected)/artists/inviteActions.ts
 import { prisma } from '@/lib/prisma'
 import { revalidatePath } from 'next/cache'
-import { getServerSession } from 'next-auth'
-import { authOptions } from '@/lib/auth'
-import { redirect } from 'next/navigation'
+import { requireStaff } from '@/lib/authz'
 import slugify from 'slugify'
 import { withDbRetry, dbErrorMessage } from '@/lib/dbRetry'
 import { actionOk, actionErr, type ActionResult } from '@/lib/actions'
@@ -20,13 +18,6 @@ import { extractSpotifyTrackId, extractYoutubeVideoId } from '@/lib/mediaIds'
 import { pickLiveProfile, type ArtistProfileFields } from '@/lib/artistProfile'
 import { Prisma } from '@prisma/client'
 
-async function requireAdmin() {
-  const session = await getServerSession(authOptions)
-  if (!session) redirect('/admin/login')
-  if (session.user.role === 'ARTIST') redirect('/artist')
-  return session
-}
-
 export type InviteArtistResult =
   | { ok: true; inviteUrl: string; emailSent: boolean; emailError?: string; artistId?: string }
   | { ok: false; error: string }
@@ -35,7 +26,7 @@ export async function inviteArtist(
   artistId: string,
   email: string,
 ): Promise<InviteArtistResult> {
-  await requireAdmin()
+  await requireStaff({ fresh: true })
 
   const trimmed = email.trim().toLowerCase()
   if (!trimmed || !trimmed.includes('@')) {
@@ -66,7 +57,7 @@ export async function resendArtistInvite(
   artistId: string,
   email?: string,
 ): Promise<InviteArtistResult> {
-  await requireAdmin()
+  await requireStaff({ fresh: true })
 
   const artist = await prisma.artist.findUnique({
     where: { id: artistId },
@@ -130,7 +121,7 @@ export async function createAndInviteArtist(input: {
   genre?: string
   location?: string
 }): Promise<InviteArtistResult> {
-  await requireAdmin()
+  await requireStaff({ fresh: true })
 
   const name = input.name.trim()
   const email = input.email.trim().toLowerCase()
@@ -255,7 +246,7 @@ async function createInviteForArtist(
 }
 
 export async function approveArtistProfile(artistId: string): Promise<ActionResult> {
-  await requireAdmin()
+  await requireStaff({ fresh: true })
 
   const artist = await prisma.artist.findUnique({ where: { id: artistId } })
   if (!artist) return actionErr('Artist not found.')
@@ -314,7 +305,7 @@ export async function rejectArtistProfile(
   artistId: string,
   note?: string,
 ): Promise<ActionResult> {
-  await requireAdmin()
+  await requireStaff({ fresh: true })
 
   try {
     await withDbRetry(() =>
@@ -341,7 +332,7 @@ export async function requestArtistChanges(
   artistId: string,
   note: string,
 ): Promise<ActionResult<{ emailSent: boolean; emailError?: string }>> {
-  await requireAdmin()
+  await requireStaff({ fresh: true })
 
   const trimmed = note.trim()
   if (!trimmed) return actionErr('Write a short note for the artist (what to fix).')

@@ -2,8 +2,7 @@
 // app/(admin)/admin/settings/theme/actions.ts
 import { prisma } from '@/lib/prisma'
 import { revalidatePath } from 'next/cache'
-import { getServerSession } from 'next-auth'
-import { authOptions } from '@/lib/auth'
+import { requireStaff } from '@/lib/authz'
 import { withDbRetry, dbErrorMessage } from '@/lib/dbRetry'
 import type { ActionResult } from '@/lib/actions'
 import { actionOk, actionErr } from '@/lib/actions'
@@ -15,8 +14,7 @@ export async function updateSiteSettings({
   theme: 'DARK' | 'LIGHT'
   design: 'ONE' | 'TWO'
 }): Promise<ActionResult> {
-  const session = await getServerSession(authOptions)
-  if (!session) return actionErr('Unauthorized')
+  await requireStaff()
 
   try {
     await withDbRetry(() =>

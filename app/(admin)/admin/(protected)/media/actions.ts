@@ -1,26 +1,17 @@
 'use server'
 // app/(admin)/admin/(protected)/media/actions.ts
-import { getServerSession } from 'next-auth'
-import { authOptions } from '@/lib/auth'
-import { redirect } from 'next/navigation'
+import { requireStaff } from '@/lib/authz'
 import { revalidatePath } from 'next/cache'
 import { actionErr, actionOk, type ActionResult } from '@/lib/actions'
 import { backfillMediaLibrary, deleteMediaAssetById } from '@/lib/mediaAssets'
 import { prisma } from '@/lib/prisma'
 import { dbErrorMessage } from '@/lib/dbRetry'
 
-async function requireAdmin() {
-  const session = await getServerSession(authOptions)
-  if (!session) redirect('/admin/login')
-  if (session.user.role === 'ARTIST') redirect('/artist')
-  return session
-}
-
 export async function updateMediaDetails(
   id: string,
   data: { title?: string; alt?: string; caption?: string },
 ): Promise<ActionResult> {
-  await requireAdmin()
+  await requireStaff()
   try {
     await prisma.mediaAsset.update({
       where: { id },
@@ -38,7 +29,7 @@ export async function updateMediaDetails(
 }
 
 export async function deleteMediaAsset(id: string): Promise<ActionResult> {
-  await requireAdmin()
+  await requireStaff()
   const result = await deleteMediaAssetById(id)
   if (!result.ok) return actionErr(result.error)
   revalidatePath('/admin/media')
@@ -48,7 +39,7 @@ export async function deleteMediaAsset(id: string): Promise<ActionResult> {
 export async function syncMediaFromContent(): Promise<
   ActionResult<{ created: number; skipped: number; titled: number }>
 > {
-  await requireAdmin()
+  await requireStaff()
   try {
     const result = await backfillMediaLibrary()
     revalidatePath('/admin/media')

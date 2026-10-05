@@ -1,32 +1,25 @@
 'use server'
 
 import { prisma } from '@/lib/prisma'
-import { getServerSession } from 'next-auth'
-import { authOptions } from '@/lib/auth'
+import { requireStaff } from '@/lib/authz'
 import { upsertSubscriber, type NewsletterSource } from '@/lib/newsletter'
 import { sendSubscriptionConfirmEmail } from '@/lib/newsletterConfirm'
 import { withDbRetry } from '@/lib/dbRetry'
 
-async function requireAdmin() {
-  const session = await getServerSession(authOptions)
-  if (!session) throw new Error('Unauthorized')
-  return session
-}
-
 export async function removeSubscriber(id: string) {
-  await requireAdmin()
+  await requireStaff()
   return withDbRetry(() => prisma.newsletterSubscriber.delete({ where: { id } }))
 }
 
 export async function toggleSubscriberActive(id: string, active: boolean) {
-  await requireAdmin()
+  await requireStaff()
   return withDbRetry(() =>
     prisma.newsletterSubscriber.update({ where: { id }, data: { active } }),
   )
 }
 
 export async function addSubscriberManual(email: string, name?: string, tagNames?: string[]) {
-  await requireAdmin()
+  await requireStaff()
   const sub = await withDbRetry(() =>
     upsertSubscriber({
       email,
@@ -40,7 +33,7 @@ export async function addSubscriberManual(email: string, name?: string, tagNames
 }
 
 export async function addSubscriberFromInbox(email: string, name: string) {
-  await requireAdmin()
+  await requireStaff()
   const sub = await withDbRetry(() =>
     upsertSubscriber({
       email,
@@ -63,7 +56,7 @@ export async function importSubscribersCsv(
   rows: { email: string; name?: string; tags?: string }[],
   options?: { confirmNow?: boolean },
 ) {
-  await requireAdmin()
+  await requireStaff()
   let imported = 0
   let skipped = 0
   const confirmNow = options?.confirmNow === true
@@ -100,7 +93,7 @@ export async function importSubscribersCsv(
 }
 
 export async function createTag(name: string) {
-  await requireAdmin()
+  await requireStaff()
   const slug = name.trim().toLowerCase()
   if (!slug) throw new Error('Tag name required')
   return prisma.newsletterTag.upsert({
@@ -111,12 +104,12 @@ export async function createTag(name: string) {
 }
 
 export async function deleteTag(id: string) {
-  await requireAdmin()
+  await requireStaff()
   await prisma.newsletterTag.delete({ where: { id } })
 }
 
 export async function setSubscriberTags(subscriberId: string, tagIds: string[]) {
-  await requireAdmin()
+  await requireStaff()
   await prisma.newsletterSubscriber.update({
     where: { id: subscriberId },
     data: {
@@ -129,7 +122,7 @@ export async function updateSubscriber(
   id: string,
   data: { name?: string | null; tagIds?: string[] },
 ) {
-  await requireAdmin()
+  await requireStaff()
   return withDbRetry(() =>
     prisma.newsletterSubscriber.update({
       where: { id },
@@ -145,7 +138,7 @@ export async function updateSubscriber(
 }
 
 export async function bulkSetSubscriberTags(subscriberIds: string[], tagIds: string[]) {
-  await requireAdmin()
+  await requireStaff()
   for (const id of subscriberIds) {
     await prisma.newsletterSubscriber.update({
       where: { id },
@@ -156,7 +149,7 @@ export async function bulkSetSubscriberTags(subscriberIds: string[], tagIds: str
 
 /** Add tags to subscribers without removing existing ones. */
 export async function connectTagsToSubscribers(subscriberIds: string[], tagIds: string[]) {
-  await requireAdmin()
+  await requireStaff()
   if (!subscriberIds.length || !tagIds.length) return
   for (const id of subscriberIds) {
     await prisma.newsletterSubscriber.update({

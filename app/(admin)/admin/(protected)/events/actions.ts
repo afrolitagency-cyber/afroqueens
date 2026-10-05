@@ -1,16 +1,10 @@
 'use server'
 
 import { revalidatePath } from 'next/cache'
-import { getServerSession } from 'next-auth'
-import { authOptions } from '@/lib/auth'
+import { requireStaff } from '@/lib/authz'
 import { prisma } from '@/lib/prisma'
 import { withDbRetry } from '@/lib/dbRetry'
 import { deleteMediaIfReplaced, deleteMediaUrls } from '@/lib/media'
-
-async function requireAdmin() {
-  const session = await getServerSession(authOptions)
-  if (!session) throw new Error('Unauthorized')
-}
 
 function slugify(text: string) {
   return text
@@ -57,7 +51,7 @@ async function revalidateEventSurfaces(slug: string, extraSlugs: string[] = []) 
 }
 
 export async function createEvent(data: EventPayload) {
-  await requireAdmin()
+  await requireStaff({ fresh: data.published !== false })
   const title = data.title.trim()
   if (!title) throw new Error('Title is required')
   const startsAt = new Date(data.startsAt)
@@ -101,7 +95,7 @@ export async function createEvent(data: EventPayload) {
 }
 
 export async function updateEvent(id: string, data: EventPayload) {
-  await requireAdmin()
+  await requireStaff({ fresh: data.published !== false })
   const title = data.title.trim()
   if (!title) throw new Error('Title is required')
   const startsAt = new Date(data.startsAt)
@@ -159,7 +153,7 @@ export async function updateEvent(id: string, data: EventPayload) {
 }
 
 export async function deleteEvent(id: string) {
-  await requireAdmin()
+  await requireStaff()
   const event = await prisma.event.findUnique({
     where: { id },
     include: { artists: { select: { slug: true } } },

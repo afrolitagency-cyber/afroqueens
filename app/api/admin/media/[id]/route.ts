@@ -1,25 +1,15 @@
 // app/api/admin/media/[id]/route.ts
 import { NextRequest, NextResponse } from 'next/server'
-import { getServerSession } from 'next-auth'
-import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
 import { deleteMediaAssetById } from '@/lib/mediaAssets'
-
-async function requireAdmin() {
-  const session = await getServerSession(authOptions)
-  if (!session) return { error: NextResponse.json({ error: 'Unauthorized' }, { status: 401 }) }
-  if (session.user.role === 'ARTIST') {
-    return { error: NextResponse.json({ error: 'Forbidden' }, { status: 403 }) }
-  }
-  return { session }
-}
+import { requireStaffApi } from '@/lib/authz'
 
 export async function PATCH(
   req: NextRequest,
   { params }: { params: { id: string } },
 ) {
-  const auth = await requireAdmin()
-  if ('error' in auth && auth.error) return auth.error
+  const auth = await requireStaffApi()
+  if (auth.response) return auth.response
 
   let body: { alt?: string }
   try {
@@ -42,8 +32,8 @@ export async function DELETE(
   _: NextRequest,
   { params }: { params: { id: string } },
 ) {
-  const auth = await requireAdmin()
-  if ('error' in auth && auth.error) return auth.error
+  const auth = await requireStaffApi()
+  if (auth.response) return auth.response
 
   const result = await deleteMediaAssetById(params.id)
   if (!result.ok) {

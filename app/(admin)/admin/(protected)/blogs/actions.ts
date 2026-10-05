@@ -2,9 +2,7 @@
 // app/(admin)/admin/blogs/actions.ts
 import { prisma } from '@/lib/prisma'
 import { revalidatePath } from 'next/cache'
-import { getServerSession } from 'next-auth'
-import { authOptions } from '@/lib/auth'
-import { redirect } from 'next/navigation'
+import { requireStaff } from '@/lib/authz'
 import { deleteMediaIfReplaced, deleteMediaUrl } from '@/lib/media'
 import { withDbRetry, dbErrorMessage } from '@/lib/dbRetry'
 import type { ActionResult } from '@/lib/actions'
@@ -84,14 +82,8 @@ async function enforceFeaturedLimit(excludeId?: string) {
   })
 }
 
-async function requireAuth() {
-  const session = await getServerSession(authOptions)
-  if (!session) redirect('/admin/login')
-  return session
-}
-
 export async function createBlogPost(data: BlogPayload): Promise<ActionResult> {
-  await requireAuth()
+  await requireStaff({ fresh: data.status === 'PUBLISHED' })
 
   if (!data.title?.trim()) return actionErr('Title is required.')
   if (!data.slug?.trim()) return actionErr('Slug is required.')
@@ -153,7 +145,7 @@ export async function createBlogPost(data: BlogPayload): Promise<ActionResult> {
 }
 
 export async function updateBlogPost(id: string, data: BlogPayload): Promise<ActionResult> {
-  await requireAuth()
+  await requireStaff({ fresh: data.status === 'PUBLISHED' })
 
   const existing = await prisma.blogPost.findUnique({
     where: { id },
@@ -231,12 +223,13 @@ export async function updateBlogPost(id: string, data: BlogPayload): Promise<Act
 }
 
 export async function deleteBlogPost(id: string): Promise<void> {
+  await requireStaff()
   const result = await deleteBlogPostSafe(id)
   if (!result.ok) throw new Error(result.error)
 }
 
 export async function deleteBlogPostSafe(id: string): Promise<ActionResult> {
-  await requireAuth()
+  await requireStaff()
   try {
     const post = await prisma.blogPost.findUnique({
       where: { id },
